@@ -15,12 +15,18 @@ You need Ruby 3.1 or newer.
 
 ```bash
 bundle install
-bundle exec jekyll serve
+bundle exec jekyll serve --livereload
 ```
 
-The site is then at http://127.0.0.1:4000/scale-your-amd/. The `baseurl` in
-`_config.yml` is part of that path; if it stops matching the repository name,
-every stylesheet and script 404s and the site renders unstyled.
+The site is then at http://127.0.0.1:4000/scale-your-amd/. Note the trailing
+path: `/` on its own returns 404, because `baseurl` in `_config.yml` is part of
+every URL. If `baseurl` stops matching the repository name, every stylesheet and
+script 404s and the site renders unstyled.
+
+`--livereload` rebuilds and refreshes the browser on save, which takes about a
+tenth of a second. It serves the reload socket on port 35729, so over SSH you
+need that port forwarded as well as 4000. Edits to `_config.yml` are the one
+thing not picked up automatically; restart the server after those.
 
 ## Adding a chapter
 
