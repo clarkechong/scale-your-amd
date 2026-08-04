@@ -63,9 +63,14 @@ kramdown:
 sass:
   style: compressed
 
+# `docs` and `tools` are excluded because Jekyll copies extensionless-front-matter
+# files through verbatim, which was publishing the internal roadmap at
+# /docs/structure.md on the live site.
 exclude:
   - CLAUDE.md
   - Gemfile
   - Gemfile.lock
   - README.md
+  - docs
+  - tools
   - vendor

@@ -21,10 +21,10 @@
       </button>
 
       {% if page.previous_section_url != "" %}
-        <div class="left-button section-button"><a href="{{ page.previous_section_url }}" aria-label="Previous part"><svg viewBox="-78.5 0 512 512"><path d="M257 64L291 98 128 262 291 426 257 460 61 262 257 64Z" /></svg></a></div>
+        <div class="left-button section-button"><a href="{{ page.previous_section_url | relative_url }}" aria-label="Previous chapter"><svg viewBox="-78.5 0 512 512"><path d="M257 64L291 98 128 262 291 426 257 460 61 262 257 64Z" /></svg></a></div>
       {% endif %}
       {% if page.next_section_url != "" %}
-        <div class="right-button section-button"><a href="{{ page.next_section_url }}" aria-label="Next part"><svg viewBox="-78.5 0 512 512"><path d="M98 460L64 426 227 262 64 98 98 64 294 262 98 460Z" /></svg></a></div>
+        <div class="right-button section-button"><a href="{{ page.next_section_url | relative_url }}" aria-label="Next chapter"><svg viewBox="-78.5 0 512 512"><path d="M98 460L64 426 227 262 64 98 98 64 294 262 98 460Z" /></svg></a></div>
       {% endif %}
 
       <div class="collapse navbar-collapse text-right" id="navbarNav">
@@ -33,10 +33,10 @@
             <a class="nav-link" href="{{ '/' | relative_url }}">Contents</a>
           </li>
           {% if page.previous_section_url != "" %}
-            <li class="nav-item nav-hidden"><a class="nav-link" href="{{ page.previous_section_url }}">Previous Part</a></li>
+            <li class="nav-item nav-hidden"><a class="nav-link" href="{{ page.previous_section_url | relative_url }}">Previous Chapter</a></li>
           {% endif %}
           {% if page.next_section_url != "" %}
-            <li class="nav-item nav-hidden"><a class="nav-link" href="{{ page.next_section_url }}">Next Part</a></li>
+            <li class="nav-item nav-hidden"><a class="nav-link" href="{{ page.next_section_url | relative_url }}">Next Chapter</a></li>
           {% endif %}
 
           {% if site.enable_darkmode %}

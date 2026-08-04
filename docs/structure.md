@@ -118,33 +118,53 @@ programming chapter. Say this once on the landing page so nobody hunts for it.
 
 ## Conventions
 
-**One Markdown file per chapter at the repository root**, `layout: distill`.
-Front matter chains the chapters together; nothing is inferred, so adding a
-chapter means editing its neighbours too.
+**One Markdown file per chapter in `pages/`**, `layout: distill`, with `index.md`
+staying at the repository root because it is the site landing page. Front matter
+chains the chapters together; nothing is inferred, so adding a chapter means
+editing its neighbours too.
 
 | File | `section_number` | Title |
 |---|---|---|
 | `index.md` | 0 | How To Scale Your Model with AMD |
-| `rooflines.md` | 1 | All About Rooflines |
-| `amd-gpus.md` | 2 | How to Think About AMD GPUs |
-| `profiling.md` | 3 | How to Profile AMD GPU Programs |
-| `sharding.md` | 4 | Sharded Matrices and How to Multiply Them |
-| `transformers.md` | 5 | All the Transformer Math You Need |
-| `training.md` | 6 | How to Parallelize a Transformer for Training |
-| `moe.md` | 7 | Mixture-of-Experts at Scale |
-| `getting-to-roofline.md` | 8 | Getting to Roofline |
-| `llama.md` | 9 | Training Llama 3 on MI300X |
-| `deepseek.md` | 10 | Training DeepSeek-V2-Lite on MI300X |
-| `inference.md` | 11 | How to Think About Inference |
-| `serving.md` | 12 | Getting Your Model Into Production |
-| `conclusion.md` | 13 | Conclusions and Further Reading |
-| `appendix-install.md` | — | Appendix A — Installing JAX on ROCm |
-| `appendix-protocol.md` | — | Appendix B — How We Measure |
+| `pages/rooflines.md` | 1 | All About Rooflines |
+| `pages/amd-gpus.md` | 2 | How to Think About AMD GPUs |
+| `pages/profiling.md` | 3 | How to Profile AMD GPU Programs |
+| `pages/sharding.md` | 4 | Sharded Matrices and How to Multiply Them |
+| `pages/transformers.md` | 5 | All the Transformer Math You Need |
+| `pages/training.md` | 6 | How to Parallelize a Transformer for Training |
+| `pages/moe.md` | 7 | Mixture-of-Experts at Scale |
+| `pages/getting-to-roofline.md` | 8 | Getting to Roofline |
+| `pages/llama.md` | 9 | Training Llama 3 on MI300X |
+| `pages/deepseek.md` | 10 | Training DeepSeek-V2-Lite on MI300X |
+| `pages/inference.md` | 11 | How to Think About Inference |
+| `pages/serving.md` | 12 | Getting Your Model Into Production |
+| `pages/conclusion.md` | 13 | Conclusions and Further Reading |
+| `pages/appendix-install.md` | `section_label: Appendix A` | Installing JAX on ROCm |
+| `pages/appendix-protocol.md` | `section_label: Appendix B` | How We Measure |
 
-`profiling.md` currently carries `section_number: 1` and needs to move to 3.
-`index.md` also still points at it as "Part 1: Profiling" in both the front matter
-and the links list, so the two files have to be fixed together or navigation
-breaks in a way the build will not catch.
+All fifteen files exist as skeletons: correct front matter, the section headings
+below, and a "To write" blockquote per section carrying the brief for it. Writing a
+chapter means replacing those blockquotes, and
+`grep -rn '^> \*\*To write' pages/` is the remaining-work list, currently 164
+sections.
+
+Three mechanical rules the build will not catch if you break them:
+
+- **Internal links go through the `relative_url` filter.** Section URLs in front
+  matter are site-root-relative (`/pages/moe`) and the layout pipes them through
+  `relative_url`; body links pipe it themselves. A bare `/pages/moe` drops the
+  `baseurl` and 404s on the deployed site.
+- **Every `toc` name must match a heading exactly**, because the anchor is the
+  slugified name. Avoid apostrophes and slashes in headings: kramdown deletes them
+  when it builds heading IDs, while Liquid's `slugify` turns them into hyphens, so
+  the two disagree and the sidebar link silently 404s. Colons, commas and question
+  marks are handled the same way by both and are safe.
+- **Appendices carry `section_label` instead of `section_number`**, which the layout
+  uses in place of "Chapter N".
+
+`tools/check_links.py` checks all three against the built site, plus that the
+prev/next chain is symmetric. Run it after every structural edit; Jekyll exits 0 on
+all of these.
 
 Note the tension in the numbering: slugs are stable but `section_number` is
 ordinal, so inserting a chapter mid-book means editing every file after it. That
@@ -231,11 +251,13 @@ One line under each table.
 
 ## Notation
 
-Fixed for the whole book, introduced in Chapter 5, and repeated as a table in
-the front matter of every chapter that uses it. Getting this wrong is expensive
-later, so decide now. Put the table in `_includes/notation.liquid` and include it
-rather than pasting it thirteen times; a notation table that drifts between
-chapters is worse than no table.
+Fixed for the whole book, introduced in Chapter 5, and repeated at the top of
+every chapter that uses it. Getting this wrong is expensive later, so decide now.
+
+The table lives in `_includes/notation.liquid` and is included rather than pasted
+thirteen times, because a notation table that drifts between chapters is worse than
+no table. Chapters wrap the include in a collapsible `details` block so it does not
+push the opening paragraph down the page.
 
 | Symbol | Meaning |
 |---|---|
