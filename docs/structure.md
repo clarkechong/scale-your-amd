@@ -3,9 +3,9 @@
 Planning document for *How To Scale Your Model with AMD*. Not published; this is
 the working outline the chapters get written against.
 
-The book grows. Chapters ship in waves and stand on their own; later chapters
-slot in as siblings, because slugs are names rather than numbers. Voice and
-structure rules live in `CLAUDE.md` at the repo root and are not repeated here.
+The book grows. Chapters ship in waves and stand on their own, and later chapters
+slot in as siblings. Voice and structure rules live in `CLAUDE.md` at the repo root
+and are not repeated here.
 
 ## Contents
 
@@ -126,33 +126,34 @@ editing its neighbours too.
 | File | `section_number` | Title |
 |---|---|---|
 | `index.md` | 0 | How To Scale Your Model with AMD |
-| `pages/rooflines.md` | 1 | All About Rooflines |
-| `pages/amd-gpus.md` | 2 | How to Think About AMD GPUs |
-| `pages/profiling.md` | 3 | How to Profile AMD GPU Programs |
-| `pages/sharding.md` | 4 | Sharded Matrices and How to Multiply Them |
-| `pages/transformers.md` | 5 | All the Transformer Math You Need |
-| `pages/training.md` | 6 | How to Parallelize a Transformer for Training |
-| `pages/moe.md` | 7 | Mixture-of-Experts at Scale |
-| `pages/getting-to-roofline.md` | 8 | Getting to Roofline |
-| `pages/llama.md` | 9 | Training Llama 3 on MI300X |
-| `pages/deepseek.md` | 10 | Training DeepSeek-V2-Lite on MI300X |
-| `pages/inference.md` | 11 | How to Think About Inference |
-| `pages/serving.md` | 12 | Getting Your Model Into Production |
-| `pages/conclusion.md` | 13 | Conclusions and Further Reading |
-| `pages/appendix-install.md` | `section_label: Appendix A` | Installing JAX on ROCm |
-| `pages/appendix-protocol.md` | `section_label: Appendix B` | How We Measure |
+| `pages/1-rooflines.md` | 1 | All About Rooflines |
+| `pages/2-amd-gpus.md` | 2 | How to Think About AMD GPUs |
+| `pages/3-profiling.md` | 3 | How to Profile AMD GPU Programs |
+| `pages/4-sharding.md` | 4 | Sharded Matrices and How to Multiply Them |
+| `pages/5-transformers.md` | 5 | All the Transformer Math You Need |
+| `pages/6-training.md` | 6 | How to Parallelize a Transformer for Training |
+| `pages/7-moe.md` | 7 | Mixture-of-Experts at Scale |
+| `pages/8-getting-to-roofline.md` | 8 | Getting to Roofline |
+| `pages/9-llama.md` | 9 | Training Llama 3 on MI300X |
+| `pages/10-deepseek.md` | 10 | Training DeepSeek-V2-Lite on MI300X |
+| `pages/11-inference.md` | 11 | How to Think About Inference |
+| `pages/12-serving.md` | 12 | Getting Your Model Into Production |
+| `pages/13-conclusion.md` | 13 | Conclusions and Further Reading |
+| `pages/a-appendix-install.md` | `section_label: Appendix A` | Installing JAX on ROCm |
+| `pages/b-appendix-protocol.md` | `section_label: Appendix B` | How We Measure |
 
-All fifteen files exist as skeletons: correct front matter, the section headings
-below, and a "To write" blockquote per section carrying the brief for it. Writing a
-chapter means replacing those blockquotes, and
-`grep -rn '^> \*\*To write' pages/` is the remaining-work list, currently 164
-sections.
+All fifteen files have been through a first drafting pass. The sections that could be
+written without a measurement are written; the rest carry an HTML comment stating what
+the section owes, what blocks it, and what would unblock it. **`grep -rn 'BLOCKED'
+pages/` is the remaining-work list**, and `docs/writing-notes.md` is the review
+document for that pass: it records the blockers in dependency order, the derivations
+worth checking, and four places where this roadmap turned out to be wrong.
 
-Three mechanical rules the build will not catch if you break them:
+Five mechanical rules the build will not catch if you break them:
 
 - **Internal links go through the `relative_url` filter.** Section URLs in front
-  matter are site-root-relative (`/pages/moe`) and the layout pipes them through
-  `relative_url`; body links pipe it themselves. A bare `/pages/moe` drops the
+  matter are site-root-relative (`/pages/7-moe`) and the layout pipes them through
+  `relative_url`; body links pipe it themselves. A bare `/pages/7-moe` drops the
   `baseurl` and 404s on the deployed site.
 - **Every `toc` name must match a heading exactly**, because the anchor is the
   slugified name. Avoid apostrophes and slashes in headings: kramdown deletes them
@@ -161,15 +162,27 @@ Three mechanical rules the build will not catch if you break them:
   marks are handled the same way by both and are safe.
 - **Appendices carry `section_label` instead of `section_number`**, which the layout
   uses in place of "Chapter N".
+- **No pipes in table cells, and escaping does not save you.** Kramdown splits rows on
+  `|` before inline parsing, and `\|` inside a code span renders as a literal
+  backslash. So a mesh-axis size like `|X|` cannot appear in a table cell at all;
+  rename the column. Fine in prose and in fenced code blocks.
+- **Wrap HLO snippets containing `{{` in `{% raw %}`.** Liquid parses `{{` everywhere,
+  including inside fenced code blocks, so a `replica_groups={{0,1},{2,3}}` literal is
+  a build failure rather than a rendering glitch, reported against a misleading line
+  number.
 
-`tools/check_links.py` checks all three against the built site, plus that the
+`tools/check_links.py` checks the first three against the built site, plus that the
 prev/next chain is symmetric. Run it after every structural edit; Jekyll exits 0 on
-all of these.
+all of these. The last two announce themselves: the pipe rule as a visibly wrong
+table, the `raw` rule as a failed build.
 
-Note the tension in the numbering: slugs are stable but `section_number` is
-ordinal, so inserting a chapter mid-book means editing every file after it. That
-is cheap and worth it for readable navigation, but do the insert-and-renumber in
-one commit rather than leaving the chain half-broken.
+**Filenames carry the ordinal too**, `pages/7-moe.md`, so the file tree reads in book
+order and a chapter's number is visible without opening it. The cost is that inserting
+a chapter mid-book is a rename of every file after it as well as an edit to every
+`section_number`, so do the insert-and-renumber in one commit rather than leaving the
+chain half-broken. Two smaller consequences worth knowing: the numbers are not
+zero-padded, so a plain lexicographic listing orders them 1, 10, 11, 12, 13, 2, 3, and
+the appendices use `a-` and `b-` in place of a number, which sorts them last.
 
 **"Chapter" is the file, "Part" is the grouping.** The source book uses "Part"
 for both and it reads ambiguously. Navbar and front matter say Chapter N;

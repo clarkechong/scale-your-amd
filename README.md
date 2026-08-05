@@ -31,17 +31,24 @@ thing not picked up automatically; restart the server after those.
 ## Layout
 
 `index.md` at the repository root is the landing page. Every chapter and appendix is
-one Markdown file in `pages/`, and all fifteen already exist as skeletons: correct
-front matter and navigation, the section headings, and a `> **To write.**`
-blockquote per section carrying the brief for it.
+one Markdown file in `pages/`, **prefixed with its chapter number** so the file tree
+reads in book order: `1-rooflines.md` through `13-conclusion.md`, then
+`a-appendix-install.md` and `b-appendix-protocol.md`. The prefix is part of the URL, so
+renaming a file means updating every link to it.
+
+All fifteen have been through a first drafting pass. Sections that could be written
+without a measurement are written; the rest carry an HTML comment saying what the
+section owes, what blocks it and what would unblock it.
 
 ```bash
-grep -rn '^> \*\*To write' pages/ | wc -l   # remaining work, by section
+grep -rn 'BLOCKED' pages/     # remaining work, by section
 ```
 
-`docs/structure.md` is the roadmap those skeletons were generated from. It is the
-document to argue with about what a chapter should contain; the skeletons are just
-its shape in Jekyll form.
+`docs/structure.md` is the roadmap the chapters are written against, and it is the
+document to argue with about what a chapter should contain.
+`docs/writing-notes.md` is the review document for the drafting pass: the blockers in
+dependency order, the derivations worth checking, and where the roadmap turned out to
+be wrong.
 
 ## Adding or editing a chapter
 
@@ -50,7 +57,7 @@ Copy any file in `pages/` as a starting point and set the front matter:
 - `section_number` is the chapter number shown under the title. Appendices set
   `section_label` instead (`"Appendix A"`), which the layout uses in its place.
 - `previous_section_url` / `next_section_url` are **site-root-relative** paths such
-  as `/pages/moe`, and `previous_section_name` / `next_section_name` are their
+  as `/pages/7-moe`, and `previous_section_name` / `next_section_name` are their
   labels. The layout pipes the URLs through `relative_url`, so they pick up
   `baseurl` automatically and work from any directory depth. These drive both the
   arrows in the navbar and the line under the title. Nothing is inferred, so
@@ -73,8 +80,8 @@ Copy any file in `pages/` as a starting point and set the front matter:
 
 Inside the body you can use:
 
-- `[text]({{ '/pages/moe' | relative_url }})` for an internal link. A bare
-  `/pages/moe` drops `baseurl` and 404s on the deployed site. Keep Liquid out of
+- `[text]({{ '/pages/7-moe' | relative_url }})` for an internal link. A bare
+  `/pages/7-moe` drops `baseurl` and 404s on the deployed site. Keep Liquid out of
   Markdown table cells: it renders before kramdown so it does work, but the pipe in
   a filter reads like a cell delimiter and the next person to edit the table will
   assume it is broken.
