@@ -27,11 +27,12 @@ toc:
 **Depends on:** nothing. This is a reference page and readers arrive at it directly from
 [Chapter 3]({{ '/pages/3-profiling' | relative_url }}) or from a search result.
 
-> **Verified against:** the versions and commands below were checked on **4 August 2026**
-> against AMD's ROCm JAX installation documentation and against our own build on ROCm
-> 7.2.4. **This appendix exists precisely because this material rots**, so treat anything
-> here older than a couple of ROCm releases as a hint rather than an instruction, and
-> follow the links to the current version.
+> **Verified against:** the versions and commands below were checked on **5 August 2026**
+> against AMD's ROCm JAX installation documentation and against the container this book
+> measures in, `rocm/jax-training:maxtext-v26.5` (ROCm 7.14.0, `jax` 0.10.0).
+> **This appendix exists precisely because this material rots**, so treat anything here
+> older than a couple of ROCm releases as a hint rather than an instruction, and follow the
+> links to the current version.
 
 **Use the container.** If you take one thing from this page, take that. The ROCm JAX stack
 is four packages whose versions have to agree with each other and with the ROCm install on
@@ -65,12 +66,26 @@ looks like an unrelated crash. `--cap-add=SYS_PTRACE` and the seccomp setting ar
 the profiler attach, so drop them and
 [Chapter 3]({{ '/pages/3-profiling' | relative_url }}) stops working.
 
-**Two image families, and the difference matters for reproducibility.**
+**Three image families, and the difference matters for reproducibility.**
 `rocm/jax` images are validated and released by AMD alongside ROCm releases, quarterly.
 `rocm/jax-community` images track upstream JAX releases against the latest available ROCm
-and are not put through the same testing. **Use `rocm/jax` for anything you intend to
-quote a number from**, and pin a version-specific tag rather than `latest`, since `latest`
-is not a reproducible reference.
+and are not put through the same testing. `rocm/jax-training` images add MaxText, its
+dependencies and AMD's tuning environment on top, which is what makes them the right
+starting point for anything in Part III. **Pin a version-specific tag rather than
+`latest`**, since `latest` is not a reproducible reference.
+
+**This book measures inside one specific tag**, and it is the training image rather than the
+plain one:
+
+```bash
+docker pull rocm/jax-training:maxtext-v26.5
+```
+
+That single string pins ROCm 7.14.0, `jax` 0.10.0, both plugin wheels, RCCL 2.30.4, XProf
+2.23.0 and a MaxText checkout, which is the entire stack table in
+[Appendix B]({{ '/pages/b-appendix-protocol' | relative_url }}). It also presets `XLA_FLAGS`
+in ways that change measured numbers, which that appendix spells out. **If you want to
+reproduce a number from this book, start here rather than from the wheel path below.**
 
 ## The Wheel Path
 
@@ -96,9 +111,9 @@ pip3 freeze | grep jax
 ```
 
 **The version above is the one AMD's documentation currently gives as its example, not the
-one this book's measurements were taken with**, which is 0.11.0. Substitute the version you
-want and check it against the compatibility matrix below; the pattern is what to copy, not
-the number.
+one this book's measurements were taken with**, which is 0.10.0 on ROCm 7.14.0. Substitute
+the version you want and check it against the compatibility matrix below; the pattern is
+what to copy, not the number.
 
 **What each package is**, since the split confuses people:
 
@@ -121,13 +136,28 @@ for is a silent fallback to CPU:
 ```python
 import jax, jax.numpy as jnp
 
-assert jax.default_backend() == "rocm", "ROCm plugin NOT active"
+device = jax.devices()[0]
+assert "rocm" in device.client.platform_version, f"not ROCm: {device.client.platform_version}"
 x = jnp.arange(8.0)
 y = jax.jit(lambda a: (a * a).sum())(x)
 y.block_until_ready()
 assert float(y) == 140.0
-print("OK:", len(jax.devices()), "devices")
+print("OK:", len(jax.devices()), "devices,", device.device_kind)
 ```
+
+**Do not assert on `jax.default_backend()`, which is the obvious thing to write and is
+wrong.** On a correctly installed ROCm stack it returns `"gpu"`, not `"rocm"`, and so does
+CUDA, so the assertion both fails on a working install and would not have caught the thing
+you were worried about. `device.client.platform_version` is the field that actually names
+the backend; on this book's stack it reads `PJRT C API` followed by `rocm 71400`. The device
+repr is a decent second-best, since ROCm devices print as `rocm:0` while CUDA prints
+`cuda:0`.
+
+**Tip:** set `JAX_PLATFORMS=rocm`. The training images ship `libtpu` as a transitive
+dependency, and it initialises on import, so every JAX program prints a paragraph of TPU
+warnings about `TPU_ACCELERATOR_TYPE` and `TPU_WORKER_HOSTNAMES` before running perfectly
+well on ROCm. It is noise rather than a symptom, but it is alarming noise in a log, and
+naming the platform explicitly skips it entirely.
 
 ## The ROCm Version Matrix
 
@@ -201,8 +231,10 @@ because `build.py`'s copy glob can miss what Bazel produced, in which case find 
 
 ## Known-Broken Combinations
 
-> **Verified against:** ROCm 7.2.4 with `jax` 0.11.0 and the matching 0.11.0 plugin
-> wheels, on 8x MI300X (gfx942), observed **July 2026**.
+> **Verified against:** `rocm/jax-training:maxtext-v26.5` (ROCm 7.14.0, `jax` 0.10.0,
+> plugin wheels 0.10.0+rocm7.14.0), on 8x MI300X (gfx942) in SPX/NPS1, observed
+> **5 August 2026**. The command-buffer row below was first observed on ROCm 7.2.4 with
+> `jax` 0.11.0 in **July 2026**.
 
 **HIP command-buffer capture segfaults on some embedding-gradient paths.** Symptom is a
 crash inside the HIP runtime during a training step with an embedding layer, reproducible
@@ -217,26 +249,44 @@ XLA_FLAGS="--xla_gpu_enable_command_buffer="
 categories. The cost is losing whatever launch-overhead reduction command buffers were
 providing, which for large kernels is negligible.
 
+**Note:** `rocm/jax-training:maxtext-v26.5` already applies this workaround in the image's
+own `XLA_FLAGS`, so if you are working inside that container you have it whether you meant
+to or not. That is worth knowing before you conclude the bug is fixed.
+
+**`libtpu` initialises on import and prints TPU errors on a ROCm-only box.** The training
+images carry `libtpu` 0.0.40 as a transitive dependency. Every JAX program emits
+`could not determine TPU accelerator type` and an `INVALID_ARGUMENT` about
+`TPU_WORKER_HOSTNAMES` before running correctly on ROCm. **This is cosmetic**, and
+`JAX_PLATFORMS=rocm` removes it:
+
+```bash
+JAX_PLATFORMS=rocm python your_script.py
+```
+
+**`jax.default_backend()` returns `"gpu"`, not `"rocm"`.** This is not a bug, but it breaks
+the obvious installation check and it is the single most common way people convince
+themselves a working install is broken. See the verification snippet above for what to
+assert instead.
+
 **Everything about the profiler's broken views is in
 [Chapter 3]({{ '/pages/3-profiling' | relative_url }})** rather than here, because a reader
 hitting those symptoms is reading a profile rather than installing software.
 
-<!-- BLOCKED: this section should have more rows and currently has one, because the rest
-     of what we know is either fixed, or specific to development branches, or not
-     reproducible enough to publish.
+<!-- BLOCKED: two rows still owed, both needing a clean reproduction rather than a
+     recollection. The container-tag question that used to be here is resolved: the book is
+     now pinned to rocm/jax-training:maxtext-v26.5 and both this page and Appendix B quote
+     it.
 
-     Candidates to check and add, each of which needs a reproduction on the pinned stack
-     before it belongs on a page a reader will trust:
+     Still to check:
        - Whether the four-package version-mismatch failure produces a usable error message
          or a silent CPU fallback. The verification snippet above assumes silent fallback;
-         confirm and document the actual symptom.
+         confirm and document the actual symptom. Needs deliberately installing a
+         mismatched pair in a scratch container, which we have not done because it means
+         breaking the working environment.
        - Whether the shm-size default really does cause a multi-process JAX failure, and
          what the failure looks like. Asserted above from experience, not from a clean
-         reproduction.
-       - Whether any currently-published rocm/jax tag matches this book's measurement stack
-         (jax 0.11.0, ROCm 7.2.4). If one does, quote it here and in Appendix B, because a
-         single container tag is far more reproducible for a reader than a list of four
-         wheel versions. This is the highest-value missing item on the page. -->
+         reproduction. Note our own container runs with /dev/shm at 1008 GB, so we cannot
+         observe the failure without deliberately constraining it. -->
 
 ## References
 
@@ -251,6 +301,8 @@ hitting those symptoms is reading a profile rather than installing software.
 - [JAX installation guide](https://docs.jax.dev/en/latest/installation.html) (JAX). The
   `jax[rocm7-local]` extra, and the upstream statement that JAX ships no extra which
   installs ROCm itself.
-- [rocm/jax on Docker Hub](https://hub.docker.com/r/rocm/jax/tags) and
-  [rocm/jax-community](https://hub.docker.com/r/rocm/jax-community/tags). The tag lists,
-  for pinning something other than `latest`.
+- [rocm/jax on Docker Hub](https://hub.docker.com/r/rocm/jax/tags),
+  [rocm/jax-community](https://hub.docker.com/r/rocm/jax-community/tags) and
+  [rocm/jax-training](https://hub.docker.com/r/rocm/jax-training/tags). The tag lists, for
+  pinning something other than `latest`. The last of these holds
+  `maxtext-v26.5`, the tag every measurement in this book was taken in.

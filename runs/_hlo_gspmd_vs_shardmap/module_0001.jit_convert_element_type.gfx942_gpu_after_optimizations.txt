@@ -1,0 +1,7 @@
+HloModule jit_convert_element_type, is_scheduled=true, entry_computation_layout={(bf16[])->bf16[]}, allow_spmd_sharding_propagation_to_parameters={true}, allow_spmd_sharding_propagation_to_output={true}, frontend_attributes={fingerprint_before_lhs="66921c67edb8ff35f2c6f9458f0c2ab6"}
+
+ENTRY %main.1 (args_0_.1: bf16[]) -> bf16[] {
+  %args_0_.1 = bf16[] parameter(0), metadata={op_name="args[0]" scheduling_name="args_0_.1"}
+  ROOT %copy.1 = bf16[] copy(%args_0_.1)
+}
+

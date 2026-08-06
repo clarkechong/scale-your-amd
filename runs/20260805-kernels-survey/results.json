@@ -1,0 +1,125 @@
+{
+  "workload": "kernels-survey",
+  "tag": null,
+  "finished_at": "2026-08-05T15:47:17.511588+00:00",
+  "wall_seconds": 10.554949760437012,
+  "protocol": {
+    "warmup": 3,
+    "repeats": 10,
+    "statistic": "median"
+  },
+  "constants": {
+    "cus": 304,
+    "clock_ghz": 2.1,
+    "bf16_flops": 1307400000000000.0,
+    "fp16_flops": 1307400000000000.0,
+    "fp8_flops": 2614900000000000.0,
+    "fp32_flops": 163400000000000.0,
+    "hbm_bytes_per_s": 5300000000000.0,
+    "hbm_bytes": 206158430208,
+    "xgmi_links": 7,
+    "xgmi_link_unidir_bytes_per_s": 64000000000.0,
+    "xgmi_egress_unidir_bytes_per_s": 448000000000.0,
+    "rccl_realised_bytes_per_s": 320000000000.0
+  },
+  "notes": {
+    "libraries": {
+      "ok": true,
+      "packages": {
+        "triton": {
+          "version": null,
+          "importable": false,
+          "import_error": "ModuleNotFoundError"
+        },
+        "jax-triton": {
+          "version": null,
+          "importable": false,
+          "import_error": "ModuleNotFoundError"
+        },
+        "aiter": {
+          "version": null,
+          "importable": false,
+          "import_error": "ModuleNotFoundError"
+        },
+        "tokamax": {
+          "version": "0.0.12",
+          "importable": true
+        },
+        "transformer_engine_rocm_jax": {
+          "version": "2.15.0.dev0+rocm7.15.0a20260707.72d01a0",
+          "importable": true
+        }
+      }
+    },
+    "pallas": {
+      "ok": false,
+      "error": "ValueError: Mosaic GPU does not yet support AMD ROCm devices. Use ``compiler_params=pltriton.CompilerParams()`` for ROCm.",
+      "traceback": [
+        "           ^^^^^^^^^^^^^^^^^^^^^^^^",
+        "  File \"/opt/venv/lib/python3.12/site-packages/jax/_src/pallas/pallas_call.py\", line 1192, in gpu_lowering",
+        "    raise ValueError(",
+        "ValueError: Mosaic GPU does not yet support AMD ROCm devices. Use ``compiler_params=pltriton.CompilerParams()`` for ROCm.",
+        "--------------------",
+        "For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these."
+      ]
+    },
+    "pallas_mosaic": {
+      "ok": true,
+      "mosaic_gpu_importable": true,
+      "registered_lowering_platforms": "<not introspectable>"
+    },
+    "ffi": {
+      "ok": true,
+      "api": {
+        "jax.ffi": true,
+        "register_ffi_target": true,
+        "ffi_call": true,
+        "jex.ffi": false
+      },
+      "registrations": {
+        "error": "AttributeError: module 'jax.ffi' has no attribute 'registrations'"
+      }
+    },
+    "rocprofv3": {
+      "ok": true,
+      "present": true,
+      "version": [
+        "version: 1.3.2",
+        "        git_revision: 2b22ab0195cc1461cd9abf3b969e9dd7c10af350",
+        "        library_arch: x86_64-unknown-linux-gnu"
+      ],
+      "counters_found": {
+        "OccupancyPercent": true,
+        "MfmaUtil": true,
+        "SQ_INSTS_MFMA": true,
+        "TCC_HIT_sum": true,
+        "TCC_MISS_sum": true,
+        "VALUBusy": true,
+        "MemUnitStalled": true
+      },
+      "total_counter_lines": 8
+    },
+    "fusion": {
+      "ok": true,
+      "elementwise_chain_s": 0.00027789128944277763,
+      "elementwise_around_gemm_s": 0.0016687465831637383,
+      "kernels": {
+        "fusible": {
+          "distinct_kernels": 1,
+          "kernel_names": [
+            "loop_add_fusion.kd"
+          ]
+        },
+        "unfusible": {
+          "distinct_kernels": 3,
+          "kernel_names": [
+            "Cijk_Ailk_Bljk_BBS_BH_UserArgs_MT256x224x64_MI16x16x1_SN_LDSB1_AFC0_AG",
+            "wrapped_convert.kd",
+            "loop_add_fusion.kd"
+          ]
+        }
+      }
+    }
+  },
+  "measurements": []
+}

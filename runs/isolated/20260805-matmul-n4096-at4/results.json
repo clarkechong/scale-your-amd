@@ -1,0 +1,94 @@
+{
+  "workload": "matmul",
+  "tag": "n4096-at4",
+  "finished_at": "2026-08-05T12:03:37.217141+00:00",
+  "wall_seconds": 97.4136414527893,
+  "protocol": {
+    "warmup": 3,
+    "repeats": 10,
+    "statistic": "median"
+  },
+  "constants": {
+    "cus": 304,
+    "clock_ghz": 2.1,
+    "bf16_flops": 1307400000000000.0,
+    "fp16_flops": 1307400000000000.0,
+    "fp8_flops": 2614900000000000.0,
+    "fp32_flops": 163400000000000.0,
+    "hbm_bytes_per_s": 5300000000000.0,
+    "hbm_bytes": 206158430208,
+    "xgmi_links": 7,
+    "xgmi_link_unidir_bytes_per_s": 64000000000.0,
+    "xgmi_egress_unidir_bytes_per_s": 448000000000.0,
+    "rccl_realised_bytes_per_s": 320000000000.0
+  },
+  "notes": {
+    "device": "rocm:0",
+    "device_kind": "AMD Instinct MI300X",
+    "dtype": "bfloat16",
+    "peak_flops": 1307400000000000.0,
+    "autotune_level_override": 4
+  },
+  "measurements": [
+    {
+      "name": "matmul-4096",
+      "warmup": 3,
+      "repeats": 10,
+      "times_s": [
+        0.0005673710256814957,
+        0.0003441888839006424,
+        0.0003155414015054703,
+        0.0003112778067588806,
+        0.0003132494166493416,
+        0.00032176729291677475,
+        0.000290529802441597,
+        0.00027071963995695114,
+        0.00025159306824207306,
+        0.00025746505707502365
+      ],
+      "median_s": 0.0003122636117041111,
+      "mean_s": 0.000324370339512825,
+      "stdev_s": 9.044233955710654e-05,
+      "min_s": 0.00025159306824207306,
+      "max_s": 0.0005673710256814957,
+      "median_mean_gap_pct": 3.8770856913631615,
+      "flops": 137438953472.0,
+      "bytes": 100663296.0,
+      "achieved_flops_per_s": 440137589909873.44,
+      "achieved_bytes_per_s": 322366398859.77057,
+      "predicted_s": 0.00010512387446229158,
+      "ratio_to_prediction": 2.970434768517988,
+      "meta": {
+        "n": 4096,
+        "arithmetic_intensity": 1365.3333333333333,
+        "trace_dir": "runs/isolated/20260805-matmul-n4096-at4/trace/n4096",
+        "kernel": {
+          "kernel_name": "Cijk_Ailk_Bljk_BBS_BH_Bias_HA_S_SAV_UserArgs_MT512x112x64_MI16x16x1_SN_LDSB0_AFC1_AG0_AGGSUA0_AGNTAB0_AFEM1_AFEM1_ASEM1_CD1_1_CLR1_CLS0_CADS0_DTLA0_DTLB0_DTLM0_DTVA1_DTVB0_DTVMXSA0_DTVMXSB0_DTVSM0_DPLB0_EPS0_ELFLR0_EMLLn1_FDSI0_GRPM1_GRVWA8_GRVWB4_GSUAMBSK_GLS0_HPLR0_ISA942_ICIW0_IU1_K1_LDSTI0_LBSPPA0_LBSPPB128_LBSPPMXSA0_LBSPPMXSB0_LBSPPM0_LPA0_LPB16_LPMXSA0_LPMXSB0_LPM0_LRVW8_LWPMn1_MIAV0_MIWT8_7_MXLIBL_MXSFNS_MO40_MGRIPM1_NTn1_NTA0_NTB0_NTC0_NTD4_NTE0_NTMXSA0_NTMXSB0_NTM0_NTWS0_NVn1_NVA0_NVB0_NVC0_NVD0_NVE0_NVMXSA0_NVMXSB0_NVM0_NVWS0_NEPBS8_NLCA1_NLCB1_ONLL1_PAP0_PGL0_PGR2_PLR1_PKA1_SGROB0_SIA3_SS1_SPO0_SRVW0_SSO0_SVW8_SK0_SKFTR0_SKFDPO0_SKXCCM0_SNLL0_SIP1_SGRO0_TDMI0_TDMIM0_TDMS0_TIN0_THn1_THA0_THB0_THC0_THD0_THE0_THMXSA0_THMXSB0_THM0_THWS0_TLDS1_TLDSM1_ULSGRO0_USL1_USLMX0_UIOFGRO0_UPLRP0_USFGROn1_USI0_VSn1_VWA8_VWB1_WSGRA0_WSGRB0_WS64_WG64_4_1.kd",
+          "op_name": "jit(<lambda>)/dot_general:",
+          "occurrences": 10.0,
+          "avg_duration_us": 164.22,
+          "min_duration_us": 151.325,
+          "max_duration_us": 171.809,
+          "total_duration_us": 1642.206,
+          "grid": "296,1,1",
+          "block": "256,1,1",
+          "selected_by": "op_name contains dot",
+          "distinct_kernels": 1,
+          "all_kernels": [
+            {
+              "name": "Cijk_Ailk_Bljk_BBS_BH_Bias_HA_S_SAV_UserArgs_MT512x112x64_MI16x16x1_SN_LDSB0_AFC1_AG0_AGGSUA0_AGNTAB0_AFEM1_AFEM1_ASEM1_CD1_1_CLR1_CLS0_CADS0_DTLA0_DTLB0_DTLM0_DTVA1_DTVB0_DTVMXSA0_DTVMXSB0_DTVSM0_DPLB0_EPS0_ELFLR0_EMLLn1_FDSI0_GRPM1_GRVWA8_GRVWB4_GSUAMBSK_GLS0_HPLR0_ISA942_ICIW0_IU1_K1_LDSTI0_LBSPPA0_LBSPPB128_LBSPPMXSA0_LBSPPMXSB0_LBSPPM0_LPA0_LPB16_LPMXSA0_LPMXSB0_LPM0_LRVW8_LWPMn1_MIAV0_MIWT8_7_MXLIBL_MXSFNS_MO40_MGRIPM1_NTn1_NTA0_NTB0_NTC0_NTD4_NTE0_NTMXSA0_NTMXSB0_NTM0_NTWS0_NVn1_NVA0_NVB0_NVC0_NVD0_NVE0_NVMXSA0_NVMXSB0_NVM0_NVWS0_NEPBS8_NLCA1_NLCB1_ONLL1_PAP0_PGL0_PGR2_PLR1_PKA1_SGROB0_SIA3_SS1_SPO0_SRVW0_SSO0_SVW8_SK0_SKFTR0_SKFDPO0_SKXCCM0_SNLL0_SIP1_SGRO0_TDMI0_TDMIM0_TDMS0_TIN0_THn1_THA0_THB0_THC0_THD0_THE0_THMXSA0_THMXSB0_THM0_THWS0_TLDS1_TLDSM1_ULSGRO0_USL1_USLMX0_UIOFGRO0_UPLRP0_USFGROn1_USI0_VSn1_VWA8_VWB1_WSGRA0_WSGRB0_WS64_WG64_4_1.kd",
+              "op_name": "jit(<lambda>)/dot_general:",
+              "occurrences": 10.0,
+              "avg_us": 164.22
+            }
+          ]
+        },
+        "kernel_time_s": 0.00015132499999999998,
+        "kernel_tflops": 908.2369302626797,
+        "kernel_fraction_of_peak": 0.6946894066564783,
+        "kernel_vs_prediction": 1.4394922254723495,
+        "dispatch_overhead_s": 0.00016093861170411112
+      }
+    }
+  ]
+}

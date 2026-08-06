@@ -1,0 +1,70 @@
+HloModule jit_shardmap, entry_computation_layout={(bf16[4096,4096]{1,0}, bf16[4096,14336]{1,0})->bf16[4096,14336]{1,0}}, allow_spmd_sharding_propagation_to_parameters={false,false}, allow_spmd_sharding_propagation_to_output={true}, num_partitions=8, frontend_attributes={xla.sdy.meshes={mesh = #sdy.mesh<["Y"=8]>}}
+
+FileNames
+1 "/root/work/scale-your-amd/bench/gspmd_vs_shardmap.py"
+2 "<frozen runpy>"
+3 "/root/work/scale-your-amd/bench/_harness.py"
+
+FunctionNames
+1 "main.<locals>.shardmap.<locals>.inner"
+2 "_run_module_as_main"
+3 "_run_code"
+4 "<module>"
+5 "main"
+6 "Run.measure"
+7 "measure"
+8 "warm"
+9 "main.<locals>.<lambda>"
+10 "main.<locals>.shardmap"
+
+FileLocations
+1 {file_name_id=1 function_name_id=1 line=114 end_line=114 column=19 end_column=55}
+2 {file_name_id=1 function_name_id=1 line=114 end_line=114 column=32 end_column=49}
+3 {file_name_id=2 function_name_id=2 line=198 end_line=199 column=11 end_column=42}
+4 {file_name_id=2 function_name_id=3 line=88 end_line=88 column=4 end_column=27}
+5 {file_name_id=1 function_name_id=4 line=179 end_line=179 column=21 end_column=27}
+6 {file_name_id=1 function_name_id=5 line=134 end_line=140 column=12 end_column=13}
+7 {file_name_id=3 function_name_id=6 line=224 end_line=224 column=28 end_column=60}
+8 {file_name_id=3 function_name_id=7 line=140 end_line=140 column=4 end_column=20}
+9 {file_name_id=3 function_name_id=8 line=113 end_line=113 column=30 end_column=34}
+10 {file_name_id=1 function_name_id=9 line=135 end_line=135 column=29 end_column=36}
+11 {file_name_id=1 function_name_id=10 line=116 end_line=116 column=15 end_column=26}
+
+StackFrames
+1 {file_location_id=1 parent_frame_id=1}
+2 {file_location_id=1 parent_frame_id=2}
+3 {file_location_id=2 parent_frame_id=1}
+4 {file_location_id=3 parent_frame_id=1}
+5 {file_location_id=4 parent_frame_id=5}
+6 {file_location_id=5 parent_frame_id=6}
+7 {file_location_id=6 parent_frame_id=7}
+8 {file_location_id=7 parent_frame_id=8}
+9 {file_location_id=8 parent_frame_id=9}
+10 {file_location_id=9 parent_frame_id=10}
+11 {file_location_id=10 parent_frame_id=11}
+12 {file_location_id=11 parent_frame_id=12}
+
+
+%region_0.1 (psum_invariant.2: bf16[], psum_invariant.3: bf16[]) -> bf16[] {
+  %psum_invariant.2 = bf16[] parameter(0), metadata={op_name="psum_invariant"}
+  %psum_invariant.3 = bf16[] parameter(1), metadata={op_name="psum_invariant"}
+  ROOT %add.1 = bf16[] add(%psum_invariant.2, %psum_invariant.3), metadata={op_name="add" stack_frame_id=2}
+}
+
+%xla.sdy.manual_computation_body.2 (shard_map.5: bf16[4096,512], shard_map.6: bf16[512,14336]) -> bf16[4096,14336] {
+  %shard_map.5 = bf16[4096,512]{1,0} parameter(0), metadata={op_name="shard_map"}
+  %shard_map.6 = bf16[512,14336]{1,0} parameter(1), metadata={op_name="shard_map"}
+  %dot_general.1 = bf16[4096,14336]{1,0} dot(%shard_map.5, %shard_map.6), lhs_contracting_dims={1}, rhs_contracting_dims={0}, metadata={op_name="dot_general" stack_frame_id=3}
+  ROOT %psum_invariant.5 = bf16[4096,14336]{1,0} all-reduce(%dot_general.1), channel_id=1, replica_groups={{0,1,2,3,4,5,6,7}}, use_global_device_ids=true, to_apply=%region_0.1, metadata={op_name="psum_invariant" stack_frame_id=1}
+}
+
+ENTRY %main.3 (a.1: bf16[4096,4096], b.1: bf16[4096,14336]) -> bf16[4096,14336] {
+  %a.1 = bf16[4096,4096]{1,0} parameter(0), sharding={devices=[1,8]<=[8]}, frontend_attributes={xla.sdy.sharding="#sdy.sharding<@mesh, [{}, {\"Y\"}]>"}, metadata={op_name="a"}
+  %b.1 = bf16[4096,14336]{1,0} parameter(1), sharding={devices=[8,1]<=[8]}, frontend_attributes={xla.sdy.sharding="#sdy.sharding<@mesh, [{\"Y\"}, {}]>"}, metadata={op_name="b"}
+  %shard_map.9 = (bf16[4096,512]{1,0}, bf16[512,14336]{1,0}) custom-call(%a.1, %b.1), custom_call_target="xla.sdy.GlobalToLocalShape", custom_call_has_side_effect=true, frontend_attributes={xla.sdy.in_shardings="#sdy.sharding_per_value<[<@mesh, [{}, {\"Y\"}]>, <@mesh, [{\"Y\"}, {}]>]>",xla.sdy.manual_axes="#sdy<manual_axes{\"Y\"}>"}, metadata={op_name="jit(shardmap)/shard_map" stack_frame_id=12}
+  %shard_map.10 = bf16[4096,512]{1,0} get-tuple-element(%shard_map.9), index=0, metadata={op_name="jit(shardmap)/shard_map" stack_frame_id=12}
+  %shard_map.11 = bf16[512,14336]{1,0} get-tuple-element(%shard_map.9), index=1, metadata={op_name="jit(shardmap)/shard_map" stack_frame_id=12}
+  %shard_map.12 = bf16[4096,14336]{1,0} call(%shard_map.10, %shard_map.11), to_apply=%xla.sdy.manual_computation_body.2, frontend_attributes={inlineable="false"}, metadata={op_name="jit(shardmap)/shard_map" stack_frame_id=12}
+  ROOT %shard_map.13 = bf16[4096,14336]{1,0} custom-call(%shard_map.12), custom_call_target="xla.sdy.LocalToGlobalShape", custom_call_has_side_effect=true, frontend_attributes={xla.sdy.manual_axes="#sdy<manual_axes{\"Y\"}>",xla.sdy.out_shardings="#sdy.sharding_per_value<[<@mesh, [{}, {}]>]>"}, metadata={op_name="jit(shardmap)/shard_map" stack_frame_id=12}
+}
+

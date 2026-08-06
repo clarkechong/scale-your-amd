@@ -1,0 +1,9 @@
+xla_cpu_enable_fast_min_max: false
+xla_gpu_all_gather_combine_threshold_bytes: 8589934592
+xla_gpu_autotune_level: 0
+xla_gpu_cuda_data_dir: "None"
+xla_gpu_enable_latency_hiding_scheduler: true
+xla_gpu_enable_triton_gemm: false
+xla_gpu_reduce_scatter_combine_threshold_bytes: 8589934592
+xla_dump_to: "/root/work/scale-your-amd/runs/_hlo_gspmd_vs_shardmap"
+xla_detailed_logging: false

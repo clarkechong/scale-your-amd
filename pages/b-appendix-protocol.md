@@ -36,36 +36,69 @@ unmeasured claim is what it would take to measure it.
 
 ## The Software Stack
 
+**Everything in this book is one `docker pull`.** That is the whole of the stack
+specification, and it is deliberately a single string rather than a list of wheel versions,
+because a list of wheel versions is five things a reader has to reconcile and an image tag
+is one thing they can actually run.
+
+```bash
+docker pull rocm/jax-training:maxtext-v26.5
+```
+
 > **The stack every [measured] number in this book was taken on**, unless the claim says
-> otherwise:
+> otherwise. All of it comes with the image above:
 >
 > | Component | Version |
 > |---|---|
-> | ROCm | 7.2.4 |
-> | `jax` | 0.11.0 |
-> | `jaxlib` | 0.11.0 |
-> | `jax-rocm7-pjrt` | 0.11.0 |
-> | `jax-rocm7-plugin` | 0.11.0 |
-> | XProf | 2.22.3 |
-> | Hardware | 8x MI300X (gfx942), SPX partitioning mode |
-> | Dates | Captures from July 2026 onward; individual claims carry their own date |
+> | Container | `rocm/jax-training:maxtext-v26.5`, build `5ffe026e`, 17 July 2026 |
+> | ROCm | 7.14.0 |
+> | `jax` | 0.10.0 |
+> | `jaxlib` | 0.10.0 |
+> | `jax-rocm7-pjrt` | 0.10.0+rocm7.14.0 |
+> | `jax-rocm7-plugin` | 0.10.0+rocm7.14.0 |
+> | RCCL | 2.30.4 |
+> | XProf | 2.23.0 |
+> | MaxText | ROCm fork, `release/v26.5`, commit `a7c6c7e5` |
+> | Hardware | 8x MI300X (gfx942), SPX compute partition, NPS1 memory partition |
+> | Dates | Captures from August 2026 onward; individual claims carry their own date |
 
-**A container tag would be better than that table and we owe you one.** Four wheel versions
-plus a ROCm version is five things a reader has to reconcile; a single image tag is one
-string that pins all of them and is actually reproducible.
-[Appendix A]({{ '/pages/a-appendix-install' | relative_url }}) has the container path, and
-identifying the published `rocm/jax` tag that matches the stack above is the outstanding
-item on this page.
+**Note the RCCL line, because it is not the one in the ROCm tarball.** The image rebuilds
+RCCL from `ROCm/rocm-systems` rather than shipping the stock library, so a reader who
+installs ROCm 7.14.0 from scratch and a reader who pulls this image are not running the same
+collectives. Chapter 4's sweep is a measurement of the image.
 
-<!-- BLOCKED: find and quote the public rocm/jax tag matching ROCm 7.2.4 with jax 0.11.0,
-     and rerun at least one measurement inside it to confirm the numbers hold. Until then
-     the table above is honest but harder to reproduce than it should be. Our own captures
-     were taken in an internal dev image, which an external reader cannot pull, and that
-     is the gap.
+**The image is also not a clean-room environment, and pretending otherwise would invalidate
+half this book.** It presets `XLA_FLAGS`, and two of those flags change numbers we care
+about:
 
-     Also worth recording once it exists: whether any number in the book moves between the
-     internal image and the public one. If a number moves, that is a finding rather than an
-     inconvenience. -->
+```
+--xla_gpu_autotune_level=0                      # autotuning OFF
+--xla_gpu_enable_latency_hiding_scheduler=True  # overlap ON
+--xla_gpu_enable_triton_gemm=False
+--xla_gpu_enable_cublaslt=True
+--xla_gpu_enable_command_buffer=''              # the Appendix A workaround, pre-applied
+--xla_gpu_all_gather_combine_threshold_bytes=8589934592
+--xla_gpu_reduce_scatter_combine_threshold_bytes=8589934592
+--xla_gpu_memory_limit_slop_factor=95
+--xla_gpu_enable_all_gather_combine_by_dim=FALSE
+```
+
+**We measure the container as it ships, and we say so.** The alternative was to clear
+`XLA_FLAGS` and define our own baseline, which would produce numbers nobody could reproduce
+without also copying our flag list. So the as-shipped configuration is the baseline
+throughout, and where a flag matters we give both arms explicitly: the matmul in
+[Chapter 3]({{ '/pages/3-profiling' | relative_url }}) is quoted at both autotune levels, and
+the overlap section in [Chapter 4]({{ '/pages/4-sharding' | relative_url }}) toggles the
+latency-hiding scheduler rather than assuming it.
+
+**Tip:** the container also ships `libtpu`, which initialises on import and prints a wall of
+TPU warnings before every JAX program runs correctly on ROCm. It is harmless, and
+`JAX_PLATFORMS=rocm` silences it. Every command in this book sets it.
+
+**The protocol below is implemented, not just described.** `bench/_harness.py` in the
+book's repository enforces the warmup and repeat counts, and `bench/_env.py` writes an
+`env.json` next to every result recording the table above as it actually was at run time.
+If a number here and a number in the repository disagree, the repository is right.
 
 ## Warmup and Repeats
 

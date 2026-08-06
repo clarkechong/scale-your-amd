@@ -1,0 +1,373 @@
+{
+  "workload": "maxtext",
+  "tag": "cap-fsdp2-tp4",
+  "finished_at": "2026-08-05T16:04:10.814730+00:00",
+  "wall_seconds": 231.08539462089539,
+  "protocol": {
+    "warmup": 3,
+    "repeats": 10,
+    "statistic": "median"
+  },
+  "constants": {
+    "cus": 304,
+    "clock_ghz": 2.1,
+    "bf16_flops": 1307400000000000.0,
+    "fp16_flops": 1307400000000000.0,
+    "fp8_flops": 2614900000000000.0,
+    "fp32_flops": 163400000000000.0,
+    "hbm_bytes_per_s": 5300000000000.0,
+    "hbm_bytes": 206158430208,
+    "xgmi_links": 7,
+    "xgmi_link_unidir_bytes_per_s": 64000000000.0,
+    "xgmi_egress_unidir_bytes_per_s": 448000000000.0,
+    "rccl_realised_bytes_per_s": 320000000000.0
+  },
+  "notes": {
+    "config": "/workspace/maxtext/src/maxtext/configs/base.yml",
+    "command": "/opt/venv/bin/python -m maxtext.trainers.pre_train.train /workspace/maxtext/src/maxtext/configs/base.yml model_name=llama3-8b hardware=gpu dataset_type=synthetic enable_checkpointing=false steps=22 per_device_batch_size=4.0 max_target_length=8192 remat_policy=minimal_flash run_name=cap-fsdp2-tp4 base_output_directory=/root/work/scale-your-amd/runs/20260805-maxtext-cap-fsdp2-tp4/maxtext ici_fsdp_parallelism=2 ici_tensor_parallelism=4 attention=cudnn_flash_te max_segments_per_seq=1 profiler=xplane skip_first_n_steps_for_profiler=10 profiler_steps=5",
+    "model": "llama3-8b",
+    "ici": "fsdp=2,tensor=4",
+    "overrides": [
+      "model_name=llama3-8b",
+      "hardware=gpu",
+      "dataset_type=synthetic",
+      "enable_checkpointing=false",
+      "steps=22",
+      "per_device_batch_size=4.0",
+      "max_target_length=8192",
+      "remat_policy=minimal_flash",
+      "run_name=cap-fsdp2-tp4",
+      "base_output_directory=/root/work/scale-your-amd/runs/20260805-maxtext-cap-fsdp2-tp4/maxtext",
+      "ici_fsdp_parallelism=2",
+      "ici_tensor_parallelism=4",
+      "attention=cudnn_flash_te",
+      "max_segments_per_seq=1",
+      "profiler=xplane",
+      "skip_first_n_steps_for_profiler=10",
+      "profiler_steps=5"
+    ],
+    "returncode": 0,
+    "wall_seconds": 224.15580558776855,
+    "steps": [
+      {
+        "step": 0,
+        "seconds": 33.58,
+        "tflops_per_device": 50.226,
+        "tokens_per_second_per_device": 975.819
+      },
+      {
+        "step": 1,
+        "seconds": 7.14,
+        "tflops_per_device": 236.208,
+        "tokens_per_second_per_device": 4589.196
+      },
+      {
+        "step": 2,
+        "seconds": 6.795,
+        "tflops_per_device": 248.199,
+        "tokens_per_second_per_device": 4822.167
+      },
+      {
+        "step": 3,
+        "seconds": 6.803,
+        "tflops_per_device": 247.905,
+        "tokens_per_second_per_device": 4816.448
+      },
+      {
+        "step": 4,
+        "seconds": 6.811,
+        "tflops_per_device": 247.641,
+        "tokens_per_second_per_device": 4811.329
+      },
+      {
+        "step": 5,
+        "seconds": 6.817,
+        "tflops_per_device": 247.425,
+        "tokens_per_second_per_device": 4807.133
+      },
+      {
+        "step": 6,
+        "seconds": 6.824,
+        "tflops_per_device": 247.152,
+        "tokens_per_second_per_device": 4801.825
+      },
+      {
+        "step": 7,
+        "seconds": 6.824,
+        "tflops_per_device": 247.156,
+        "tokens_per_second_per_device": 4801.903
+      },
+      {
+        "step": 8,
+        "seconds": 6.828,
+        "tflops_per_device": 246.998,
+        "tokens_per_second_per_device": 4798.828
+      },
+      {
+        "step": 9,
+        "seconds": 6.826,
+        "tflops_per_device": 247.08,
+        "tokens_per_second_per_device": 4800.421
+      },
+      {
+        "step": 10,
+        "seconds": 6.843,
+        "tflops_per_device": 246.465,
+        "tokens_per_second_per_device": 4788.474
+      },
+      {
+        "step": 11,
+        "seconds": 6.845,
+        "tflops_per_device": 246.392,
+        "tokens_per_second_per_device": 4787.056
+      },
+      {
+        "step": 12,
+        "seconds": 6.852,
+        "tflops_per_device": 246.146,
+        "tokens_per_second_per_device": 4782.288
+      },
+      {
+        "step": 13,
+        "seconds": 6.848,
+        "tflops_per_device": 246.287,
+        "tokens_per_second_per_device": 4785.022
+      },
+      {
+        "step": 14,
+        "seconds": 6.856,
+        "tflops_per_device": 246.001,
+        "tokens_per_second_per_device": 4779.473
+      },
+      {
+        "step": 15,
+        "seconds": 6.819,
+        "tflops_per_device": 247.319,
+        "tokens_per_second_per_device": 4805.071
+      },
+      {
+        "step": 16,
+        "seconds": 6.842,
+        "tflops_per_device": 246.519,
+        "tokens_per_second_per_device": 4789.527
+      },
+      {
+        "step": 17,
+        "seconds": 6.844,
+        "tflops_per_device": 246.429,
+        "tokens_per_second_per_device": 4787.785
+      },
+      {
+        "step": 18,
+        "seconds": 6.849,
+        "tflops_per_device": 246.244,
+        "tokens_per_second_per_device": 4784.189
+      },
+      {
+        "step": 19,
+        "seconds": 6.846,
+        "tflops_per_device": 246.371,
+        "tokens_per_second_per_device": 4786.655
+      },
+      {
+        "step": 20,
+        "seconds": 6.849,
+        "tflops_per_device": 246.237,
+        "tokens_per_second_per_device": 4784.058
+      },
+      {
+        "step": 21,
+        "seconds": 6.847,
+        "tflops_per_device": 246.319,
+        "tokens_per_second_per_device": 4785.646
+      }
+    ],
+    "summary": {
+      "steps_measured": 12,
+      "first_measured_step": 10,
+      "step_s_median": 6.846500000000001,
+      "step_s_mean": 6.845,
+      "step_s_min": 6.819,
+      "step_s_max": 6.856,
+      "median_mean_gap_pct": -0.021909004600904766,
+      "tflops_per_device_median": 246.345,
+      "mfu_vs_boost_clock": 0.18842358880220283,
+      "mfu_vs_sustained_clock": 0.24883333333333332,
+      "devices": 8
+    },
+    "overlap": {
+      "per_device": {
+        "GPU:0": {
+          "comm_ns": 15997261709.0,
+          "hidden_ns": 1632088033.0,
+          "hidden_fraction": 0.10202296259751713
+        },
+        "GPU:1": {
+          "comm_ns": 16091726098.0,
+          "hidden_ns": 1631989572.0,
+          "hidden_fraction": 0.10141793130587998
+        },
+        "GPU:2": {
+          "comm_ns": 15972725098.0,
+          "hidden_ns": 1653522793.0,
+          "hidden_fraction": 0.10352164598431882
+        },
+        "GPU:3": {
+          "comm_ns": 15639105712.0,
+          "hidden_ns": 1639778770.0,
+          "hidden_fraction": 0.10485118524020115
+        },
+        "GPU:4": {
+          "comm_ns": 15612911224.0,
+          "hidden_ns": 1622836994.0,
+          "hidden_fraction": 0.10394198562439735
+        },
+        "GPU:5": {
+          "comm_ns": 16203358218.0,
+          "hidden_ns": 1607446718.0,
+          "hidden_fraction": 0.09920454120518785
+        },
+        "GPU:6": {
+          "comm_ns": 15873692061.0,
+          "hidden_ns": 1630768272.0,
+          "hidden_fraction": 0.10273402468267775
+        },
+        "GPU:7": {
+          "comm_ns": 16186763119.0,
+          "hidden_ns": 1614811405.0,
+          "hidden_fraction": 0.09976123040341132
+        }
+      },
+      "total_comm_s": 127.577543239,
+      "total_hidden_s": 13.033242557,
+      "hidden_fraction": 0.10215937872846406,
+      "exposed_s": 114.544300682
+    },
+    "phases": {
+      "total_us": 285338351.447,
+      "phases": {
+        "forward": 50790886.569000006,
+        "backward": 99402607.93999997,
+        "optimizer": 0.0,
+        "collective": 127577543.239,
+        "unattributed": 7567313.698999997
+      },
+      "shares": {
+        "forward": 0.17800231308350473,
+        "backward": 0.34836749927204735,
+        "optimizer": 0.0,
+        "collective": 0.4471096948308289,
+        "unattributed": 0.02652049281361879
+      },
+      "backward_over_forward": 1.9570953502644688
+    },
+    "scopes": [
+      {
+        "scope": "layers",
+        "total_duration_us": 128720712.62799998,
+        "kernels": 45,
+        "collective_us": 43512078.831999995,
+        "share": 0.45111605914604547
+      },
+      {
+        "scope": "closed_call",
+        "total_duration_us": 63540873.863000005,
+        "kernels": 2,
+        "collective_us": 36690607.442,
+        "share": 0.22268606214612677
+      },
+      {
+        "scope": "<unnamed kernel>",
+        "total_duration_us": 53352073.34699999,
+        "kernels": 81,
+        "collective_us": 45784759.648,
+        "share": 0.18697827711011303
+      },
+      {
+        "scope": "_FusedDotProductAttention_0",
+        "total_duration_us": 24221215.440999996,
+        "kernels": 9,
+        "collective_us": 0.0,
+        "share": 0.08488594441711053
+      },
+      {
+        "scope": "logits_dense",
+        "total_duration_us": 5441258.152,
+        "kernels": 5,
+        "collective_us": 352053.726,
+        "share": 0.019069494599679434
+      },
+      {
+        "scope": "body",
+        "total_duration_us": 3314148.094,
+        "kernels": 19,
+        "collective_us": 0.0,
+        "share": 0.011614800734613427
+      },
+      {
+        "scope": "<unscoped>",
+        "total_duration_us": 2534432.248000001,
+        "kernels": 96,
+        "collective_us": 97428.95199999999,
+        "share": 0.008882199799457233
+      },
+      {
+        "scope": "decoder.apply_output_head",
+        "total_duration_us": 2529509.501,
+        "kernels": 1,
+        "collective_us": 0.0,
+        "share": 0.008864947484880393
+      },
+      {
+        "scope": "token_embedder",
+        "total_duration_us": 1603408.9470000002,
+        "kernels": 12,
+        "collective_us": 1131047.4150000003,
+        "share": 0.0056193250534631485
+      },
+      {
+        "scope": "k",
+        "total_duration_us": 46708.543999999994,
+        "kernels": 6,
+        "collective_us": 1861.077,
+        "share": 0.0001636952893402969
+      },
+      {
+        "scope": "decoder_norm",
+        "total_duration_us": 19942.351000000002,
+        "kernels": 6,
+        "collective_us": 7706.147,
+        "share": 6.989018790803583e-05
+      },
+      {
+        "scope": "decoder",
+        "total_duration_us": 12961.192000000001,
+        "kernels": 5,
+        "collective_us": 0.0,
+        "share": 4.5423939453885394e-05
+      },
+      {
+        "scope": "TransformerLinenPure",
+        "total_duration_us": 572.469,
+        "kernels": 1,
+        "collective_us": 0.0,
+        "share": 2.0062813046227785e-06
+      },
+      {
+        "scope": "_one_hot",
+        "total_duration_us": 289.942,
+        "kernels": 1,
+        "collective_us": 0.0,
+        "share": 1.0161339985657521e-06
+      },
+      {
+        "scope": "_where",
+        "total_duration_us": 244.728,
+        "kernels": 1,
+        "collective_us": 0.0,
+        "share": 8.576765049596106e-07
+      }
+    ]
+  },
+  "measurements": []
+}

@@ -1,0 +1,1639 @@
+{
+  "workload": "transformer-block",
+  "tag": "ch6-fsdp",
+  "finished_at": "2026-08-05T13:34:23.040800+00:00",
+  "wall_seconds": 109.9741837978363,
+  "protocol": {
+    "warmup": 3,
+    "repeats": 10,
+    "statistic": "median"
+  },
+  "constants": {
+    "cus": 304,
+    "clock_ghz": 2.1,
+    "bf16_flops": 1307400000000000.0,
+    "fp16_flops": 1307400000000000.0,
+    "fp8_flops": 2614900000000000.0,
+    "fp32_flops": 163400000000000.0,
+    "hbm_bytes_per_s": 5300000000000.0,
+    "hbm_bytes": 206158430208,
+    "xgmi_links": 7,
+    "xgmi_link_unidir_bytes_per_s": 64000000000.0,
+    "xgmi_egress_unidir_bytes_per_s": 448000000000.0,
+    "rccl_realised_bytes_per_s": 320000000000.0
+  },
+  "notes": {
+    "strategy": "fsdp",
+    "devices": 8,
+    "config": {
+      "d_model": 4096,
+      "d_ff": 14336,
+      "n_heads": 32,
+      "n_kv_heads": 8,
+      "head_dim": 128
+    },
+    "params_per_layer": 218103808,
+    "layers": 4,
+    "seq_len": 1024,
+    "annotated": true,
+    "latency_hiding_override": null
+  },
+  "measurements": [
+    {
+      "name": "fsdp-1024tok",
+      "warmup": 3,
+      "repeats": 10,
+      "times_s": [
+        0.04942489881068468,
+        0.049077014438807964,
+        0.05795761477202177,
+        0.04762167111039162,
+        0.04601005744189024,
+        0.058102261275053024,
+        0.05039178393781185,
+        0.04605278465896845,
+        0.047141144052147865,
+        0.04880185052752495
+      ],
+      "median_s": 0.048939432483166456,
+      "mean_s": 0.05005810810253024,
+      "stdev_s": 0.004435185851711195,
+      "min_s": 0.04601005744189024,
+      "max_s": 0.058102261275053024,
+      "median_mean_gap_pct": 2.2858369265899627,
+      "flops": 43705587204096.0,
+      "bytes": null,
+      "achieved_flops_per_s": 893054638897361.0,
+      "achieved_bytes_per_s": null,
+      "predicted_s": null,
+      "ratio_to_prediction": null,
+      "meta": {
+        "tokens_per_device": 1024,
+        "global_tokens": 8192,
+        "batch": 8,
+        "seq_len": 1024,
+        "trace_dir": "/root/work/scale-your-amd/runs/20260805-transformer-block-ch6-fsdp/trace/1024",
+        "mfu": 0.08538460292348947,
+        "collective_timing": {
+          "devices": 8,
+          "iterations": 360,
+          "events_per_device": {
+            "GPU:0": 360,
+            "GPU:1": 360,
+            "GPU:2": 360,
+            "GPU:3": 360,
+            "GPU:4": 360,
+            "GPU:5": 360,
+            "GPU:6": 360,
+            "GPU:7": 360
+          },
+          "span_s_median": 0.00038795,
+          "span_s_min": 0.000105549,
+          "busy_s_median": 9.4744e-05,
+          "busy_s_min": 3.3432e-05,
+          "skew_fraction": 0.7557829617218714,
+          "kernel_name": "ncclDevKernel_Generic_2(ncclDevKernelArgsStorage<5120ul>) [clone .kd]"
+        },
+        "kernel_total_us": 3702977.971,
+        "collective_total_us": 2535141.905,
+        "collective_share": 0.6846224646363147,
+        "collective_exposed_share": 0.0019359439861218006,
+        "overlap": {
+          "per_device": {
+            "GPU:0": {
+              "comm_ns": 327096835.0,
+              "hidden_ns": 38594075.0,
+              "hidden_fraction": 0.11798975370703296
+            },
+            "GPU:1": {
+              "comm_ns": 289508656.0,
+              "hidden_ns": 32945598.0,
+              "hidden_fraction": 0.11379831765721023
+            },
+            "GPU:2": {
+              "comm_ns": 309657548.0,
+              "hidden_ns": 37126449.0,
+              "hidden_fraction": 0.11989518498673897
+            },
+            "GPU:3": {
+              "comm_ns": 328462615.0,
+              "hidden_ns": 40873811.0,
+              "hidden_fraction": 0.12443976615116457
+            },
+            "GPU:4": {
+              "comm_ns": 339783881.0,
+              "hidden_ns": 39858483.0,
+              "hidden_fraction": 0.11730539683840976
+            },
+            "GPU:5": {
+              "comm_ns": 304641879.0,
+              "hidden_ns": 36892024.0,
+              "hidden_fraction": 0.12109964697270004
+            },
+            "GPU:6": {
+              "comm_ns": 322374152.0,
+              "hidden_ns": 39552776.0,
+              "hidden_fraction": 0.12269214437514829
+            },
+            "GPU:7": {
+              "comm_ns": 313616339.0,
+              "hidden_ns": 35614217.0,
+              "hidden_fraction": 0.11355982635840922
+            }
+          },
+          "total_comm_s": 2.535141905,
+          "total_hidden_s": 0.301457433,
+          "hidden_fraction": 0.11891146306462873,
+          "exposed_s": 2.233684472
+        },
+        "phases": {
+          "total_us": 3702977.971,
+          "phases": {
+            "forward": 321056.4739999999,
+            "backward": 710634.4589999998,
+            "optimizer": 0.0,
+            "collective": 2535141.9049999993,
+            "unattributed": 136145.133
+          },
+          "shares": {
+            "forward": 0.08670223709521492,
+            "backward": 0.19190890806409278,
+            "optimizer": 0.0,
+            "collective": 0.6846224646363146,
+            "unattributed": 0.03676639020437748
+          },
+          "backward_over_forward": 2.2134251028994982
+        },
+        "scopes": [
+          {
+            "scope": "mlp",
+            "total_duration_us": 1280712.4730000007,
+            "kernels": 32,
+            "collective_us": 872452.202,
+            "share": 0.3458601382535745
+          },
+          {
+            "scope": "qkv_proj",
+            "total_duration_us": 517954.504,
+            "kernels": 16,
+            "collective_us": 435028.853,
+            "share": 0.13987512430707896
+          },
+          {
+            "scope": "silu",
+            "total_duration_us": 469576.06700000004,
+            "kernels": 16,
+            "collective_us": 441503.237,
+            "share": 0.12681038631001892
+          },
+          {
+            "scope": "<unnamed kernel>",
+            "total_duration_us": 444018.21400000004,
+            "kernels": 22,
+            "collective_us": 307873.081,
+            "share": 0.11990841357343847
+          },
+          {
+            "scope": "layer_0",
+            "total_duration_us": 376386.591,
+            "kernels": 9,
+            "collective_us": 309452.24399999995,
+            "share": 0.10164429654934072
+          },
+          {
+            "scope": "attention",
+            "total_duration_us": 149991.23,
+            "kernels": 19,
+            "collective_us": 0.0,
+            "share": 0.04050556907836383
+          },
+          {
+            "scope": "layer_2",
+            "total_duration_us": 139705.589,
+            "kernels": 8,
+            "collective_us": 72737.084,
+            "share": 0.03772790173047454
+          },
+          {
+            "scope": "layer_3",
+            "total_duration_us": 117211.86299999998,
+            "kernels": 8,
+            "collective_us": 44810.649,
+            "share": 0.031653405426105355
+          },
+          {
+            "scope": "layer_1",
+            "total_duration_us": 105235.13399999999,
+            "kernels": 8,
+            "collective_us": 43138.937,
+            "share": 0.028419054832125003
+          },
+          {
+            "scope": "out_proj",
+            "total_duration_us": 47636.64000000001,
+            "kernels": 9,
+            "collective_us": 0.0,
+            "share": 0.012864413553920115
+          },
+          {
+            "scope": "BTNH",
+            "total_duration_us": 33734.198,
+            "kernels": 12,
+            "collective_us": 0.0,
+            "share": 0.009110018548365812
+          },
+          {
+            "scope": "<unscoped>",
+            "total_duration_us": 9287.585000000001,
+            "kernels": 4,
+            "collective_us": 8145.618,
+            "share": 0.0025081394144756044
+          },
+          {
+            "scope": "mlp_norm",
+            "total_duration_us": 4930.294999999999,
+            "kernels": 12,
+            "collective_us": 0.0,
+            "share": 0.0013314405428851521
+          },
+          {
+            "scope": "attention_norm",
+            "total_duration_us": 4370.242,
+            "kernels": 10,
+            "collective_us": 0.0,
+            "share": 0.0011801965969621482
+          },
+          {
+            "scope": "BNTS",
+            "total_duration_us": 2227.346,
+            "kernels": 3,
+            "collective_us": 0.0,
+            "share": 0.0006015012828711208
+          }
+        ]
+      }
+    },
+    {
+      "name": "fsdp-2048tok",
+      "warmup": 3,
+      "repeats": 10,
+      "times_s": [
+        0.041972977109253407,
+        0.03961420804262161,
+        0.039148999378085136,
+        0.0408973740413785,
+        0.04012134484946728,
+        0.03911791183054447,
+        0.03906963672488928,
+        0.045882318168878555,
+        0.04804998077452183,
+        0.041262125596404076
+      ],
+      "median_s": 0.04050935944542289,
+      "mean_s": 0.04151368765160442,
+      "stdev_s": 0.003078846315974485,
+      "min_s": 0.03906963672488928,
+      "max_s": 0.04804998077452183,
+      "median_mean_gap_pct": 2.4792497830893425,
+      "flops": 87411174408192.0,
+      "bytes": null,
+      "achieved_flops_per_s": 2157801940214794.0,
+      "achieved_bytes_per_s": null,
+      "predicted_s": null,
+      "ratio_to_prediction": null,
+      "meta": {
+        "tokens_per_device": 2048,
+        "global_tokens": 16384,
+        "batch": 16,
+        "seq_len": 1024,
+        "trace_dir": "/root/work/scale-your-amd/runs/20260805-transformer-block-ch6-fsdp/trace/2048",
+        "mfu": 0.2063065951712171,
+        "collective_timing": {
+          "devices": 8,
+          "iterations": 30,
+          "events_per_device": {
+            "GPU:0": 30,
+            "GPU:1": 30,
+            "GPU:2": 30,
+            "GPU:3": 30,
+            "GPU:4": 30,
+            "GPU:5": 30,
+            "GPU:6": 30,
+            "GPU:7": 30
+          },
+          "span_s_median": 0.005532698,
+          "span_s_min": 0.000111795,
+          "busy_s_median": 0.004790866,
+          "busy_s_min": 6.9389e-05,
+          "skew_fraction": 0.13408141922801498,
+          "kernel_name": "ncclDevKernel_Generic_2(ncclDevKernelArgsStorage<5120ul>) [clone .kd]"
+        },
+        "kernel_total_us": 2857352.237,
+        "collective_total_us": 970710.098,
+        "collective_share": 0.33972363834959696,
+        "collective_exposed_share": 0.11826565676642205,
+        "overlap": {
+          "per_device": {
+            "GPU:0": {
+              "comm_ns": 124568211.0,
+              "hidden_ns": 1378682.0,
+              "hidden_fraction": 0.011067687244862174
+            },
+            "GPU:1": {
+              "comm_ns": 118218939.0,
+              "hidden_ns": 1246596.0,
+              "hidden_fraction": 0.010544807883955041
+            },
+            "GPU:2": {
+              "comm_ns": 112702336.0,
+              "hidden_ns": 1409466.0,
+              "hidden_fraction": 0.01250609392870082
+            },
+            "GPU:3": {
+              "comm_ns": 122636825.0,
+              "hidden_ns": 1369179.0,
+              "hidden_fraction": 0.011164501364088641
+            },
+            "GPU:4": {
+              "comm_ns": 119621711.0,
+              "hidden_ns": 1261788.0,
+              "hidden_fraction": 0.010548152082526224
+            },
+            "GPU:5": {
+              "comm_ns": 127679209.0,
+              "hidden_ns": 1484343.0,
+              "hidden_fraction": 0.011625565443470126
+            },
+            "GPU:6": {
+              "comm_ns": 123393049.0,
+              "hidden_ns": 1364129.0,
+              "hidden_fraction": 0.011055152709614947
+            },
+            "GPU:7": {
+              "comm_ns": 121889818.0,
+              "hidden_ns": 1540745.0,
+              "hidden_fraction": 0.01264047338228038
+            }
+          },
+          "total_comm_s": 0.970710098,
+          "total_hidden_s": 0.011054928,
+          "hidden_fraction": 0.011388495929708562,
+          "exposed_s": 0.95965517
+        },
+        "phases": {
+          "total_us": 2857352.237,
+          "phases": {
+            "forward": 584103.4350000003,
+            "backward": 1117921.213999999,
+            "optimizer": 0.0,
+            "collective": 970710.098,
+            "unattributed": 184617.48999999996
+          },
+          "shares": {
+            "forward": 0.20442122165983426,
+            "backward": 0.39124375340358114,
+            "optimizer": 0.0,
+            "collective": 0.33972363834959696,
+            "unattributed": 0.0646113865869873
+          },
+          "backward_over_forward": 1.9139096725222964
+        },
+        "scopes": [
+          {
+            "scope": "<unnamed kernel>",
+            "total_duration_us": 717721.6379999998,
+            "kernels": 19,
+            "collective_us": 533104.148,
+            "share": 0.251184165783338
+          },
+          {
+            "scope": "mlp",
+            "total_duration_us": 708476.4149999999,
+            "kernels": 16,
+            "collective_us": 0.0,
+            "share": 0.24794857484698687
+          },
+          {
+            "scope": "qkv_proj",
+            "total_duration_us": 559274.4509999999,
+            "kernels": 31,
+            "collective_us": 428902.627,
+            "share": 0.1957317140525856
+          },
+          {
+            "scope": "attention",
+            "total_duration_us": 290157.761,
+            "kernels": 23,
+            "collective_us": 0.0,
+            "share": 0.1015477746295092
+          },
+          {
+            "scope": "layer_2",
+            "total_duration_us": 104366.77600000001,
+            "kernels": 7,
+            "collective_us": 0.0,
+            "share": 0.03652569488932771
+          },
+          {
+            "scope": "layer_1",
+            "total_duration_us": 103300.14399999999,
+            "kernels": 7,
+            "collective_us": 0.0,
+            "share": 0.0361524010454018
+          },
+          {
+            "scope": "layer_3",
+            "total_duration_us": 103270.76,
+            "kernels": 7,
+            "collective_us": 0.0,
+            "share": 0.03614211739901775
+          },
+          {
+            "scope": "layer_0",
+            "total_duration_us": 102990.47600000002,
+            "kernels": 7,
+            "collective_us": 0.0,
+            "share": 0.036044025187504394
+          },
+          {
+            "scope": "out_proj",
+            "total_duration_us": 77055.99399999999,
+            "kernels": 12,
+            "collective_us": 0.0,
+            "share": 0.026967621633132235
+          },
+          {
+            "scope": "BTNH",
+            "total_duration_us": 57445.742,
+            "kernels": 12,
+            "collective_us": 0.0,
+            "share": 0.02010453638026567
+          },
+          {
+            "scope": "<unscoped>",
+            "total_duration_us": 10058.503,
+            "kernels": 4,
+            "collective_us": 8703.323,
+            "share": 0.003520218078034598
+          },
+          {
+            "scope": "mlp_norm",
+            "total_duration_us": 8033.724999999999,
+            "kernels": 16,
+            "collective_us": 0.0,
+            "share": 0.002811597707825757
+          },
+          {
+            "scope": "attention_norm",
+            "total_duration_us": 7937.484000000001,
+            "kernels": 13,
+            "collective_us": 0.0,
+            "share": 0.0027779158261334097
+          },
+          {
+            "scope": "BNTS",
+            "total_duration_us": 7262.3679999999995,
+            "kernels": 7,
+            "collective_us": 0.0,
+            "share": 0.0025416425409367544
+          }
+        ]
+      }
+    },
+    {
+      "name": "fsdp-3072tok",
+      "warmup": 3,
+      "repeats": 10,
+      "times_s": [
+        0.0479998579248786,
+        0.048882488161325455,
+        0.048519919626414776,
+        0.04976272955536842,
+        0.048208595253527164,
+        0.04824419505894184,
+        0.04878430534154177,
+        0.048636400140821934,
+        0.049602060578763485,
+        0.04812685586512089
+      ],
+      "median_s": 0.048578159883618355,
+      "mean_s": 0.04867674075067043,
+      "stdev_s": 0.0006039233363179016,
+      "min_s": 0.0479998579248786,
+      "max_s": 0.04976272955536842,
+      "median_mean_gap_pct": 0.20293248506788444,
+      "flops": 131116761612288.0,
+      "bytes": null,
+      "achieved_flops_per_s": 2699088683606221.0,
+      "achieved_bytes_per_s": null,
+      "predicted_s": null,
+      "ratio_to_prediction": null,
+      "meta": {
+        "tokens_per_device": 3072,
+        "global_tokens": 24576,
+        "batch": 24,
+        "seq_len": 1024,
+        "trace_dir": "/root/work/scale-your-amd/runs/20260805-transformer-block-ch6-fsdp/trace/3072",
+        "mfu": 0.2580588079017727,
+        "collective_timing": {
+          "devices": 8,
+          "iterations": 30,
+          "events_per_device": {
+            "GPU:0": 30,
+            "GPU:1": 30,
+            "GPU:2": 30,
+            "GPU:3": 30,
+            "GPU:4": 30,
+            "GPU:5": 30,
+            "GPU:6": 30,
+            "GPU:7": 30
+          },
+          "span_s_median": 0.0056141855,
+          "span_s_min": 0.000105516,
+          "busy_s_median": 0.004785535,
+          "busy_s_min": 7.46e-05,
+          "skew_fraction": 0.147599415801277,
+          "kernel_name": "ncclDevKernel_Generic_2(ncclDevKernelArgsStorage<5120ul>) [clone .kd]"
+        },
+        "kernel_total_us": 3477175.138,
+        "collective_total_us": 858592.7760000001,
+        "collective_share": 0.24692249942113792,
+        "collective_exposed_share": 0.09851206821059086,
+        "overlap": {
+          "per_device": {
+            "GPU:0": {
+              "comm_ns": 106359355.0,
+              "hidden_ns": 1483905.0,
+              "hidden_fraction": 0.013951805179713624
+            },
+            "GPU:1": {
+              "comm_ns": 106992918.0,
+              "hidden_ns": 1480098.0,
+              "hidden_fraction": 0.013833607192580727
+            },
+            "GPU:2": {
+              "comm_ns": 108247849.0,
+              "hidden_ns": 1532128.0,
+              "hidden_fraction": 0.014153888637546968
+            },
+            "GPU:3": {
+              "comm_ns": 108424108.0,
+              "hidden_ns": 1538943.0,
+              "hidden_fraction": 0.014193734478313624
+            },
+            "GPU:4": {
+              "comm_ns": 108897844.0,
+              "hidden_ns": 1369776.0,
+              "hidden_fraction": 0.012578541040720696
+            },
+            "GPU:5": {
+              "comm_ns": 112496453.0,
+              "hidden_ns": 1697162.0,
+              "hidden_fraction": 0.015086360100615795
+            },
+            "GPU:6": {
+              "comm_ns": 101575766.0,
+              "hidden_ns": 1338915.0,
+              "hidden_fraction": 0.013181441329224138
+            },
+            "GPU:7": {
+              "comm_ns": 105598483.0,
+              "hidden_ns": 1647696.0,
+              "hidden_fraction": 0.015603405969383102
+            }
+          },
+          "total_comm_s": 0.858592776,
+          "total_hidden_s": 0.012088623,
+          "hidden_fraction": 0.014079576881974604,
+          "exposed_s": 0.846504153
+        },
+        "phases": {
+          "total_us": 3477175.138,
+          "phases": {
+            "forward": 802069.8969999996,
+            "backward": 1552914.781000001,
+            "optimizer": 0.0,
+            "collective": 858592.7760000001,
+            "unattributed": 263597.68399999995
+          },
+          "shares": {
+            "forward": 0.23066709762032117,
+            "backward": 0.4466024055070191,
+            "optimizer": 0.0,
+            "collective": 0.24692249942113792,
+            "unattributed": 0.07580799745152209
+          },
+          "backward_over_forward": 1.9361339788569594
+        },
+        "scopes": [
+          {
+            "scope": "mlp",
+            "total_duration_us": 940437.0999999999,
+            "kernels": 16,
+            "collective_us": 0.0,
+            "share": 0.2704600897787737
+          },
+          {
+            "scope": "<unnamed kernel>",
+            "total_duration_us": 693655.8340000001,
+            "kernels": 18,
+            "collective_us": 430058.15,
+            "share": 0.19948832212086298
+          },
+          {
+            "scope": "qkv_proj",
+            "total_duration_us": 590191.061,
+            "kernels": 31,
+            "collective_us": 419484.358,
+            "share": 0.16973291179674826
+          },
+          {
+            "scope": "attention",
+            "total_duration_us": 434776.8730000001,
+            "kernels": 23,
+            "collective_us": 0.0,
+            "share": 0.12503738113406473
+          },
+          {
+            "scope": "layer_2",
+            "total_duration_us": 147221.765,
+            "kernels": 7,
+            "collective_us": 0.0,
+            "share": 0.042339473612099665
+          },
+          {
+            "scope": "layer_1",
+            "total_duration_us": 146364.44700000001,
+            "kernels": 7,
+            "collective_us": 0.0,
+            "share": 0.04209291772521584
+          },
+          {
+            "scope": "layer_3",
+            "total_duration_us": 144598.125,
+            "kernels": 7,
+            "collective_us": 0.0,
+            "share": 0.041584941586569
+          },
+          {
+            "scope": "layer_0",
+            "total_duration_us": 141887.70700000002,
+            "kernels": 7,
+            "collective_us": 0.0,
+            "share": 0.040805453095932046
+          },
+          {
+            "scope": "out_proj",
+            "total_duration_us": 109803.473,
+            "kernels": 12,
+            "collective_us": 0.0,
+            "share": 0.031578355602518406
+          },
+          {
+            "scope": "BTNH",
+            "total_duration_us": 87603.869,
+            "kernels": 12,
+            "collective_us": 0.0,
+            "share": 0.025193976582493328
+          },
+          {
+            "scope": "<unscoped>",
+            "total_duration_us": 10665.493,
+            "kernels": 4,
+            "collective_us": 9050.268,
+            "share": 0.003067286684367177
+          },
+          {
+            "scope": "attention_norm",
+            "total_duration_us": 10243.827,
+            "kernels": 13,
+            "collective_us": 0.0,
+            "share": 0.0029460198561905167
+          },
+          {
+            "scope": "BNTS",
+            "total_duration_us": 9908.302000000001,
+            "kernels": 7,
+            "collective_us": 0.0,
+            "share": 0.002849526298436338
+          },
+          {
+            "scope": "mlp_norm",
+            "total_duration_us": 9817.261999999999,
+            "kernels": 16,
+            "collective_us": 0.0,
+            "share": 0.0028233441257280723
+          }
+        ]
+      }
+    },
+    {
+      "name": "fsdp-4096tok",
+      "warmup": 3,
+      "repeats": 10,
+      "times_s": [
+        0.05741512589156628,
+        0.05854692589491606,
+        0.06523544993251562,
+        0.43563888873904943,
+        0.05922945309430361,
+        0.05894372798502445,
+        0.05897348374128342,
+        0.059468841180205345,
+        0.06020455900579691,
+        0.05944355111569166
+      ],
+      "median_s": 0.059336502104997635,
+      "mean_s": 0.09731000065803527,
+      "stdev_s": 0.11889482419103854,
+      "min_s": 0.05741512589156628,
+      "max_s": 0.43563888873904943,
+      "median_mean_gap_pct": 63.996860626941654,
+      "flops": 174822348816384.0,
+      "bytes": null,
+      "achieved_flops_per_s": 2946286731008020.5,
+      "achieved_bytes_per_s": null,
+      "predicted_s": null,
+      "ratio_to_prediction": null,
+      "meta": {
+        "tokens_per_device": 4096,
+        "global_tokens": 32768,
+        "batch": 32,
+        "seq_len": 1024,
+        "trace_dir": "/root/work/scale-your-amd/runs/20260805-transformer-block-ch6-fsdp/trace/4096",
+        "mfu": 0.28169331602876135,
+        "collective_timing": {
+          "devices": 8,
+          "iterations": 30,
+          "events_per_device": {
+            "GPU:0": 30,
+            "GPU:1": 30,
+            "GPU:2": 30,
+            "GPU:3": 30,
+            "GPU:4": 30,
+            "GPU:5": 30,
+            "GPU:6": 30,
+            "GPU:7": 30
+          },
+          "span_s_median": 0.0056715535,
+          "span_s_min": 0.000115635,
+          "busy_s_median": 0.0047986825,
+          "busy_s_min": 7.1353e-05,
+          "skew_fraction": 0.15390333530310518,
+          "kernel_name": "ncclDevKernel_Generic_2(ncclDevKernelArgsStorage<5120ul>) [clone .kd]"
+        },
+        "kernel_total_us": 4360613.386,
+        "collective_total_us": 971407.4430000001,
+        "collective_share": 0.22276853208742595,
+        "collective_exposed_share": 0.0808723522581192,
+        "overlap": {
+          "per_device": {
+            "GPU:0": {
+              "comm_ns": 110658750.0,
+              "hidden_ns": 1512089.0,
+              "hidden_fraction": 0.013664432320083138
+            },
+            "GPU:1": {
+              "comm_ns": 120036686.0,
+              "hidden_ns": 1560310.0,
+              "hidden_fraction": 0.01299860944178349
+            },
+            "GPU:2": {
+              "comm_ns": 116324475.0,
+              "hidden_ns": 1666537.0,
+              "hidden_fraction": 0.014326623868278794
+            },
+            "GPU:3": {
+              "comm_ns": 123884982.0,
+              "hidden_ns": 1618112.0,
+              "hidden_fraction": 0.013061405618963564
+            },
+            "GPU:4": {
+              "comm_ns": 129766853.0,
+              "hidden_ns": 1413553.0,
+              "hidden_fraction": 0.010893020577450545
+            },
+            "GPU:5": {
+              "comm_ns": 135380663.0,
+              "hidden_ns": 1663453.0,
+              "hidden_fraction": 0.012287227460246668
+            },
+            "GPU:6": {
+              "comm_ns": 120075005.0,
+              "hidden_ns": 1397355.0,
+              "hidden_fraction": 0.011637351170628725
+            },
+            "GPU:7": {
+              "comm_ns": 115280029.0,
+              "hidden_ns": 1713360.0,
+              "hidden_fraction": 0.014862591680992724
+            }
+          },
+          "total_comm_s": 0.971407443,
+          "total_hidden_s": 0.012544769,
+          "hidden_fraction": 0.012914013672015895,
+          "exposed_s": 0.958862674
+        },
+        "phases": {
+          "total_us": 4360613.386,
+          "phases": {
+            "forward": 1027217.6019999997,
+            "backward": 2033907.439,
+            "optimizer": 0.0,
+            "collective": 971407.4430000001,
+            "unattributed": 328080.90199999994
+          },
+          "shares": {
+            "forward": 0.23556722668832347,
+            "backward": 0.4664269126747115,
+            "optimizer": 0.0,
+            "collective": 0.22276853208742595,
+            "unattributed": 0.07523732854953905
+          },
+          "backward_over_forward": 1.9800161475426123
+        },
+        "scopes": [
+          {
+            "scope": "mlp",
+            "total_duration_us": 1250867.9880000001,
+            "kernels": 16,
+            "collective_us": 0.0,
+            "share": 0.28685597123009887
+          },
+          {
+            "scope": "<unnamed kernel>",
+            "total_duration_us": 870726.822,
+            "kernels": 18,
+            "collective_us": 542645.92,
+            "share": 0.19967989475873246
+          },
+          {
+            "scope": "qkv_proj",
+            "total_duration_us": 648778.1009999998,
+            "kernels": 31,
+            "collective_us": 419879.135,
+            "share": 0.14878138545438108
+          },
+          {
+            "scope": "attention",
+            "total_duration_us": 556669.059,
+            "kernels": 23,
+            "collective_us": 0.0,
+            "share": 0.12765843007023234
+          },
+          {
+            "scope": "layer_1",
+            "total_duration_us": 187342.49099999998,
+            "kernels": 7,
+            "collective_us": 0.0,
+            "share": 0.04296241707679792
+          },
+          {
+            "scope": "layer_2",
+            "total_duration_us": 187156.676,
+            "kernels": 7,
+            "collective_us": 0.0,
+            "share": 0.042919804952412724
+          },
+          {
+            "scope": "layer_3",
+            "total_duration_us": 186989.853,
+            "kernels": 7,
+            "collective_us": 0.0,
+            "share": 0.04288154817859838
+          },
+          {
+            "scope": "layer_0",
+            "total_duration_us": 182764.795,
+            "kernels": 7,
+            "collective_us": 0.0,
+            "share": 0.04191263449008731
+          },
+          {
+            "scope": "out_proj",
+            "total_duration_us": 137192.241,
+            "kernels": 12,
+            "collective_us": 0.0,
+            "share": 0.0314616841383975
+          },
+          {
+            "scope": "BTNH",
+            "total_duration_us": 106372.56100000002,
+            "kernels": 12,
+            "collective_us": 0.0,
+            "share": 0.024393944517419323
+          },
+          {
+            "scope": "BNTS",
+            "total_duration_us": 12311.771,
+            "kernels": 7,
+            "collective_us": 0.0,
+            "share": 0.002823403477943642
+          },
+          {
+            "scope": "attention_norm",
+            "total_duration_us": 11495.475,
+            "kernels": 13,
+            "collective_us": 0.0,
+            "share": 0.0026362059605896005
+          },
+          {
+            "scope": "mlp_norm",
+            "total_duration_us": 11106.648000000005,
+            "kernels": 16,
+            "collective_us": 0.0,
+            "share": 0.002547038000584628
+          },
+          {
+            "scope": "<unscoped>",
+            "total_duration_us": 10838.905000000002,
+            "kernels": 4,
+            "collective_us": 8882.388,
+            "share": 0.00248563769372422
+          }
+        ]
+      }
+    },
+    {
+      "name": "fsdp-5120tok",
+      "warmup": 3,
+      "repeats": 10,
+      "times_s": [
+        0.06761332228779793,
+        0.06932127382606268,
+        0.06909913569688797,
+        0.07030097208917141,
+        0.06946955900639296,
+        0.06921511422842741,
+        0.06931716948747635,
+        0.07008672785013914,
+        0.06931299716234207,
+        0.06925882119685411
+      ],
+      "median_s": 0.06931508332490921,
+      "mean_s": 0.0692995092831552,
+      "stdev_s": 0.0007106084588776228,
+      "min_s": 0.06761332228779793,
+      "max_s": 0.07030097208917141,
+      "median_mean_gap_pct": -0.022468474402613348,
+      "flops": 218527936020480.0,
+      "bytes": null,
+      "achieved_flops_per_s": 3152675082220515.0,
+      "achieved_bytes_per_s": null,
+      "predicted_s": null,
+      "ratio_to_prediction": null,
+      "meta": {
+        "tokens_per_device": 5120,
+        "global_tokens": 40960,
+        "batch": 40,
+        "seq_len": 1024,
+        "trace_dir": "/root/work/scale-your-amd/runs/20260805-transformer-block-ch6-fsdp/trace/5120",
+        "mfu": 0.30142602514728806,
+        "collective_timing": {
+          "devices": 8,
+          "iterations": 30,
+          "events_per_device": {
+            "GPU:0": 30,
+            "GPU:1": 30,
+            "GPU:2": 30,
+            "GPU:3": 30,
+            "GPU:4": 30,
+            "GPU:5": 30,
+            "GPU:6": 30,
+            "GPU:7": 30
+          },
+          "span_s_median": 0.0057049455,
+          "span_s_min": 0.000121741,
+          "busy_s_median": 0.004799585,
+          "busy_s_min": 7.5602e-05,
+          "skew_fraction": 0.1586974844895539,
+          "kernel_name": "ncclDevKernel_Generic_2(ncclDevKernelArgsStorage<5120ul>) [clone .kd]"
+        },
+        "kernel_total_us": 5067858.102,
+        "collective_total_us": 880379.242,
+        "collective_share": 0.17371821078663657,
+        "collective_exposed_share": 0.0692430098872176,
+        "overlap": {
+          "per_device": {
+            "GPU:0": {
+              "comm_ns": 111306095.0,
+              "hidden_ns": 1650665.0,
+              "hidden_fraction": 0.014829960569544732
+            },
+            "GPU:1": {
+              "comm_ns": 106532694.0,
+              "hidden_ns": 1731771.0,
+              "hidden_fraction": 0.016255770270861638
+            },
+            "GPU:2": {
+              "comm_ns": 115779742.0,
+              "hidden_ns": 1784789.0,
+              "hidden_fraction": 0.015415382425018704
+            },
+            "GPU:3": {
+              "comm_ns": 109079838.0,
+              "hidden_ns": 1723982.0,
+              "hidden_fraction": 0.015804772280648235
+            },
+            "GPU:4": {
+              "comm_ns": 108468926.0,
+              "hidden_ns": 1388822.0,
+              "hidden_fraction": 0.012803869746069027
+            },
+            "GPU:5": {
+              "comm_ns": 116959394.0,
+              "hidden_ns": 1870656.0,
+              "hidden_fraction": 0.0159940637175326
+            },
+            "GPU:6": {
+              "comm_ns": 102547250.0,
+              "hidden_ns": 1427440.0,
+              "hidden_fraction": 0.013919827201607064
+            },
+            "GPU:7": {
+              "comm_ns": 109705303.0,
+              "hidden_ns": 1890378.0,
+              "hidden_fraction": 0.017231418612462152
+            }
+          },
+          "total_comm_s": 0.880379242,
+          "total_hidden_s": 0.013468503,
+          "hidden_fraction": 0.015298524042210436,
+          "exposed_s": 0.866910739
+        },
+        "phases": {
+          "total_us": 5067858.102,
+          "phases": {
+            "forward": 1271965.7249999994,
+            "backward": 2503141.075000001,
+            "optimizer": 0.0,
+            "collective": 880379.242,
+            "unattributed": 412372.06000000006
+          },
+          "shares": {
+            "forward": 0.2509868467899734,
+            "backward": 0.49392485437036043,
+            "optimizer": 0.0,
+            "collective": 0.17371821078663657,
+            "unattributed": 0.08137008805302971
+          },
+          "backward_over_forward": 1.9679312310086046
+        },
+        "scopes": [
+          {
+            "scope": "mlp",
+            "total_duration_us": 1532715.737,
+            "kernels": 16,
+            "collective_us": 0.0,
+            "share": 0.30243856598808927
+          },
+          {
+            "scope": "<unnamed kernel>",
+            "total_duration_us": 857971.734,
+            "kernels": 18,
+            "collective_us": 445599.674,
+            "share": 0.16929671603500632
+          },
+          {
+            "scope": "qkv_proj",
+            "total_duration_us": 709340.4589999997,
+            "kernels": 31,
+            "collective_us": 425613.971,
+            "share": 0.1399684925511357
+          },
+          {
+            "scope": "attention",
+            "total_duration_us": 674444.52,
+            "kernels": 23,
+            "collective_us": 0.0,
+            "share": 0.13308275536243497
+          },
+          {
+            "scope": "layer_1",
+            "total_duration_us": 228974.762,
+            "kernels": 7,
+            "collective_us": 0.0,
+            "share": 0.04518176266806612
+          },
+          {
+            "scope": "layer_3",
+            "total_duration_us": 228620.051,
+            "kernels": 7,
+            "collective_us": 0.0,
+            "share": 0.04511177037687311
+          },
+          {
+            "scope": "layer_2",
+            "total_duration_us": 227231.717,
+            "kernels": 7,
+            "collective_us": 0.0,
+            "share": 0.04483782150694479
+          },
+          {
+            "scope": "layer_0",
+            "total_duration_us": 224153.664,
+            "kernels": 7,
+            "collective_us": 0.0,
+            "share": 0.04423045386995723
+          },
+          {
+            "scope": "out_proj",
+            "total_duration_us": 177664.648,
+            "kernels": 12,
+            "collective_us": 0.0,
+            "share": 0.03505714730447675
+          },
+          {
+            "scope": "BTNH",
+            "total_duration_us": 154144.965,
+            "kernels": 12,
+            "collective_us": 0.0,
+            "share": 0.030416195934761393
+          },
+          {
+            "scope": "BNTS",
+            "total_duration_us": 14773.438,
+            "kernels": 7,
+            "collective_us": 0.0,
+            "share": 0.0029151246350346215
+          },
+          {
+            "scope": "attention_norm",
+            "total_duration_us": 13910.992000000002,
+            "kernels": 13,
+            "collective_us": 0.0,
+            "share": 0.002744945047792501
+          },
+          {
+            "scope": "mlp_norm",
+            "total_duration_us": 12617.605999999998,
+            "kernels": 16,
+            "collective_us": 0.0,
+            "share": 0.002489731509061103
+          },
+          {
+            "scope": "<unscoped>",
+            "total_duration_us": 11293.809,
+            "kernels": 4,
+            "collective_us": 9165.597,
+            "share": 0.002228517210366045
+          }
+        ]
+      }
+    },
+    {
+      "name": "fsdp-6144tok",
+      "warmup": 3,
+      "repeats": 10,
+      "times_s": [
+        0.08016133587807417,
+        0.08022288139909506,
+        0.08057215437293053,
+        0.0796384820714593,
+        0.07981783244758844,
+        0.08011861331760883,
+        0.08034938108175993,
+        0.08020375855267048,
+        0.07984583079814911,
+        0.08041565865278244
+      ],
+      "median_s": 0.08018254721537232,
+      "mean_s": 0.08013459285721183,
+      "stdev_s": 0.00029059095600137504,
+      "min_s": 0.0796384820714593,
+      "max_s": 0.08057215437293053,
+      "median_mean_gap_pct": -0.05980647887336829,
+      "flops": 262233523224576.0,
+      "bytes": null,
+      "achieved_flops_per_s": 3270456381489231.0,
+      "achieved_bytes_per_s": null,
+      "predicted_s": null,
+      "ratio_to_prediction": null,
+      "meta": {
+        "tokens_per_device": 6144,
+        "global_tokens": 49152,
+        "batch": 48,
+        "seq_len": 1024,
+        "trace_dir": "/root/work/scale-your-amd/runs/20260805-transformer-block-ch6-fsdp/trace/6144",
+        "mfu": 0.31268704886504045,
+        "collective_timing": {
+          "devices": 8,
+          "iterations": 30,
+          "events_per_device": {
+            "GPU:0": 30,
+            "GPU:1": 30,
+            "GPU:2": 30,
+            "GPU:3": 30,
+            "GPU:4": 30,
+            "GPU:5": 30,
+            "GPU:6": 30,
+            "GPU:7": 30
+          },
+          "span_s_median": 0.0056891275,
+          "span_s_min": 8.0436e-05,
+          "busy_s_median": 0.0048105085,
+          "busy_s_min": 3.736e-05,
+          "skew_fraction": 0.1544382684339558,
+          "kernel_name": "ncclDevKernel_Generic_2(ncclDevKernelArgsStorage<5120ul>) [clone .kd]"
+        },
+        "kernel_total_us": 5906818.703,
+        "collective_total_us": 898091.547,
+        "collective_share": 0.15204318807751294,
+        "collective_exposed_share": 0.059994458483326234,
+        "overlap": {
+          "per_device": {
+            "GPU:0": {
+              "comm_ns": 112293258.0,
+              "hidden_ns": 1401328.0,
+              "hidden_fraction": 0.012479181964780112
+            },
+            "GPU:1": {
+              "comm_ns": 109825919.0,
+              "hidden_ns": 1406897.0,
+              "hidden_fraction": 0.012810245639738285
+            },
+            "GPU:2": {
+              "comm_ns": 117917450.0,
+              "hidden_ns": 1482622.0,
+              "hidden_fraction": 0.01257338926511725
+            },
+            "GPU:3": {
+              "comm_ns": 112903368.0,
+              "hidden_ns": 1508277.0,
+              "hidden_fraction": 0.013359008032426456
+            },
+            "GPU:4": {
+              "comm_ns": 110188978.0,
+              "hidden_ns": 1148824.0,
+              "hidden_fraction": 0.010425942965003269
+            },
+            "GPU:5": {
+              "comm_ns": 121110306.0,
+              "hidden_ns": 1548163.0,
+              "hidden_fraction": 0.012783082225884227
+            },
+            "GPU:6": {
+              "comm_ns": 104484293.0,
+              "hidden_ns": 1236537.0,
+              "hidden_fraction": 0.011834668776482989
+            },
+            "GPU:7": {
+              "comm_ns": 109367975.0,
+              "hidden_ns": 1619714.0,
+              "hidden_fraction": 0.014809764924329998
+            }
+          },
+          "total_comm_s": 0.898091547,
+          "total_hidden_s": 0.011352362,
+          "hidden_fraction": 0.012640539862469054,
+          "exposed_s": 0.886739185
+        },
+        "phases": {
+          "total_us": 5906818.703,
+          "phases": {
+            "forward": 1568277.9359999998,
+            "backward": 2987090.698000001,
+            "optimizer": 0.0,
+            "collective": 898091.547,
+            "unattributed": 453358.522
+          },
+          "shares": {
+            "forward": 0.26550297458824845,
+            "backward": 0.5057021127943024,
+            "optimizer": 0.0,
+            "collective": 0.15204318807751294,
+            "unattributed": 0.07675172453993634
+          },
+          "backward_over_forward": 1.9046947160519136
+        },
+        "scopes": [
+          {
+            "scope": "mlp",
+            "total_duration_us": 1927386.5219999999,
+            "kernels": 16,
+            "collective_us": 0.0,
+            "share": 0.32629857439523313
+          },
+          {
+            "scope": "<unnamed kernel>",
+            "total_duration_us": 915131.286,
+            "kernels": 19,
+            "collective_us": 461772.764,
+            "share": 0.15492794548361813
+          },
+          {
+            "scope": "attention",
+            "total_duration_us": 811238.8620000001,
+            "kernels": 24,
+            "collective_us": 0.0,
+            "share": 0.13733938737411763
+          },
+          {
+            "scope": "qkv_proj",
+            "total_duration_us": 738833.3959999998,
+            "kernels": 23,
+            "collective_us": 430052.261,
+            "share": 0.12508144115287567
+          },
+          {
+            "scope": "layer_2",
+            "total_duration_us": 272651.62899999996,
+            "kernels": 5,
+            "collective_us": 0.0,
+            "share": 0.04615879421887853
+          },
+          {
+            "scope": "layer_3",
+            "total_duration_us": 270526.853,
+            "kernels": 5,
+            "collective_us": 0.0,
+            "share": 0.045799078421452616
+          },
+          {
+            "scope": "layer_1",
+            "total_duration_us": 269178.56,
+            "kernels": 5,
+            "collective_us": 0.0,
+            "share": 0.04557081798757215
+          },
+          {
+            "scope": "layer_0",
+            "total_duration_us": 268445.032,
+            "kernels": 5,
+            "collective_us": 0.0,
+            "share": 0.04544663472804068
+          },
+          {
+            "scope": "out_proj",
+            "total_duration_us": 207777.90899999996,
+            "kernels": 12,
+            "collective_us": 0.0,
+            "share": 0.03517594147497233
+          },
+          {
+            "scope": "BTNH",
+            "total_duration_us": 163059.519,
+            "kernels": 12,
+            "collective_us": 0.0,
+            "share": 0.02760530282014312
+          },
+          {
+            "scope": "BNTS",
+            "total_duration_us": 22818.39,
+            "kernels": 8,
+            "collective_us": 0.0,
+            "share": 0.00386305914356417
+          },
+          {
+            "scope": "attention_norm",
+            "total_duration_us": 16315.432,
+            "kernels": 13,
+            "collective_us": 0.0,
+            "share": 0.0027621352237734327
+          },
+          {
+            "scope": "mlp_norm",
+            "total_duration_us": 14728.467,
+            "kernels": 16,
+            "collective_us": 0.0,
+            "share": 0.0024934686064631705
+          },
+          {
+            "scope": "<unscoped>",
+            "total_duration_us": 8726.846,
+            "kernels": 4,
+            "collective_us": 6266.522,
+            "share": 0.001477418969295222
+          }
+        ]
+      }
+    },
+    {
+      "name": "fsdp-8192tok",
+      "warmup": 3,
+      "repeats": 10,
+      "times_s": [
+        0.09675587713718414,
+        0.10051239840686321,
+        0.09903568867594004,
+        0.09904960077255964,
+        0.10043121315538883,
+        0.09893260058015585,
+        0.09913451410830021,
+        0.11113640293478966,
+        0.09886294323951006,
+        0.09809609595686197
+      ],
+      "median_s": 0.09904264472424984,
+      "mean_s": 0.10019473349675537,
+      "stdev_s": 0.0039896031561726455,
+      "min_s": 0.09675587713718414,
+      "max_s": 0.11113640293478966,
+      "median_mean_gap_pct": 1.1632249681065383,
+      "flops": 349644697632768.0,
+      "bytes": null,
+      "achieved_flops_per_s": 3530243953059142.5,
+      "achieved_bytes_per_s": null,
+      "predicted_s": null,
+      "ratio_to_prediction": null,
+      "meta": {
+        "tokens_per_device": 8192,
+        "global_tokens": 65536,
+        "batch": 64,
+        "seq_len": 1024,
+        "trace_dir": "/root/work/scale-your-amd/runs/20260805-transformer-block-ch6-fsdp/trace/8192",
+        "mfu": 0.33752523644821236,
+        "collective_timing": {
+          "devices": 8,
+          "iterations": 30,
+          "events_per_device": {
+            "GPU:0": 30,
+            "GPU:1": 30,
+            "GPU:2": 30,
+            "GPU:3": 30,
+            "GPU:4": 30,
+            "GPU:5": 30,
+            "GPU:6": 30,
+            "GPU:7": 30
+          },
+          "span_s_median": 0.0068944635,
+          "span_s_min": 0.000116812,
+          "busy_s_median": 0.0048042145,
+          "busy_s_min": 6.991e-05,
+          "skew_fraction": 0.30317790499579844,
+          "kernel_name": "ncclDevKernel_Generic_2(ncclDevKernelArgsStorage<5120ul>) [clone .kd]"
+        },
+        "kernel_total_us": 7502479.584,
+        "collective_total_us": 1006333.907,
+        "collective_share": 0.13413350822655168,
+        "collective_exposed_share": 0.048506524774007014,
+        "overlap": {
+          "per_device": {
+            "GPU:0": {
+              "comm_ns": 121394475.0,
+              "hidden_ns": 1813734.0,
+              "hidden_fraction": 0.014940828237858436
+            },
+            "GPU:1": {
+              "comm_ns": 128402884.0,
+              "hidden_ns": 1883723.0,
+              "hidden_fraction": 0.014670410362433916
+            },
+            "GPU:2": {
+              "comm_ns": 129637214.0,
+              "hidden_ns": 1886570.0,
+              "hidden_fraction": 0.01455268855129824
+            },
+            "GPU:3": {
+              "comm_ns": 126154217.0,
+              "hidden_ns": 1867731.0,
+              "hidden_fraction": 0.014805141234398847
+            },
+            "GPU:4": {
+              "comm_ns": 115989995.0,
+              "hidden_ns": 1706186.0,
+              "hidden_fraction": 0.01470976871755189
+            },
+            "GPU:5": {
+              "comm_ns": 136575432.0,
+              "hidden_ns": 1990553.0,
+              "hidden_fraction": 0.014574751628828823
+            },
+            "GPU:6": {
+              "comm_ns": 116379431.0,
+              "hidden_ns": 1669704.0,
+              "hidden_fraction": 0.014347071348028845
+            },
+            "GPU:7": {
+              "comm_ns": 131800259.0,
+              "hidden_ns": 2053726.0,
+              "hidden_fraction": 0.015582108985081736
+            }
+          },
+          "total_comm_s": 1.006333907,
+          "total_hidden_s": 0.014871927,
+          "hidden_fraction": 0.014778322479796957,
+          "exposed_s": 0.99146198
+        },
+        "phases": {
+          "total_us": 7502479.584,
+          "phases": {
+            "forward": 2005345.9289999998,
+            "backward": 3891405.785000002,
+            "optimizer": 0.0,
+            "collective": 1006333.907,
+            "unattributed": 599393.963
+          },
+          "shares": {
+            "forward": 0.26729108777272215,
+            "backward": 0.518682622382462,
+            "optimizer": 0.0,
+            "collective": 0.13413350822655168,
+            "unattributed": 0.07989278161826452
+          },
+          "backward_over_forward": 1.9405159622213004
+        },
+        "scopes": [
+          {
+            "scope": "mlp",
+            "total_duration_us": 2462488.6850000005,
+            "kernels": 16,
+            "collective_us": 0.0,
+            "share": 0.3282233103641593
+          },
+          {
+            "scope": "<unnamed kernel>",
+            "total_duration_us": 1122043.3070000003,
+            "kernels": 18,
+            "collective_us": 522649.344,
+            "share": 0.14955632926917942
+          },
+          {
+            "scope": "attention",
+            "total_duration_us": 1068206.5080000001,
+            "kernels": 24,
+            "collective_us": 0.0,
+            "share": 0.14238046182465963
+          },
+          {
+            "scope": "qkv_proj",
+            "total_duration_us": 852484.2110000001,
+            "kernels": 20,
+            "collective_us": 475009.739,
+            "share": 0.11362699510946116
+          },
+          {
+            "scope": "layer_2",
+            "total_duration_us": 363578.84099999996,
+            "kernels": 5,
+            "collective_us": 0.0,
+            "share": 0.048461156998731256
+          },
+          {
+            "scope": "layer_1",
+            "total_duration_us": 360123.998,
+            "kernels": 5,
+            "collective_us": 0.0,
+            "share": 0.04800066350970293
+          },
+          {
+            "scope": "layer_3",
+            "total_duration_us": 359747.11299999995,
+            "kernels": 5,
+            "collective_us": 0.0,
+            "share": 0.04795042878453236
+          },
+          {
+            "scope": "layer_0",
+            "total_duration_us": 356853.379,
+            "kernels": 5,
+            "collective_us": 0.0,
+            "share": 0.04756472510248953
+          },
+          {
+            "scope": "out_proj",
+            "total_duration_us": 254210.1,
+            "kernels": 12,
+            "collective_us": 0.0,
+            "share": 0.03388347774276329
+          },
+          {
+            "scope": "BTNH",
+            "total_duration_us": 224329.858,
+            "kernels": 12,
+            "collective_us": 0.0,
+            "share": 0.029900762206459344
+          },
+          {
+            "scope": "BNTS",
+            "total_duration_us": 27730.897,
+            "kernels": 8,
+            "collective_us": 0.0,
+            "share": 0.0036962309179940584
+          },
+          {
+            "scope": "attention_norm",
+            "total_duration_us": 20398.239,
+            "kernels": 13,
+            "collective_us": 0.0,
+            "share": 0.002718866312345836
+          },
+          {
+            "scope": "mlp_norm",
+            "total_duration_us": 18553.107000000004,
+            "kernels": 16,
+            "collective_us": 0.0,
+            "share": 0.0024729300216380307
+          },
+          {
+            "scope": "<unscoped>",
+            "total_duration_us": 11731.341,
+            "kernels": 4,
+            "collective_us": 8674.824,
+            "share": 0.0015636618358840443
+          }
+        ]
+      }
+    }
+  ]
+}

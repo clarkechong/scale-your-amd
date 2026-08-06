@@ -1,0 +1,30 @@
+HloModule jit_broadcast_in_dim, entry_computation_layout={(bf16[])->bf16[4096,4096]{1,0}}, allow_spmd_sharding_propagation_to_parameters={true}, allow_spmd_sharding_propagation_to_output={true}
+
+FileNames
+1 "<frozen runpy>"
+2 "/root/work/scale-your-amd/bench/gspmd_vs_shardmap.py"
+
+FunctionNames
+1 "_run_module_as_main"
+2 "_run_code"
+3 "<module>"
+4 "main"
+
+FileLocations
+1 {file_name_id=1 function_name_id=1 line=198 end_line=199 column=11 end_column=42}
+2 {file_name_id=1 function_name_id=2 line=88 end_line=88 column=4 end_column=27}
+3 {file_name_id=2 function_name_id=3 line=179 end_line=179 column=21 end_column=27}
+4 {file_name_id=2 function_name_id=4 line=122 end_line=122 column=27 end_column=50}
+
+StackFrames
+1 {file_location_id=1 parent_frame_id=1}
+2 {file_location_id=2 parent_frame_id=2}
+3 {file_location_id=3 parent_frame_id=3}
+4 {file_location_id=4 parent_frame_id=4}
+
+
+ENTRY %main.1 (args_0_.1: bf16[]) -> bf16[4096,4096] {
+  %args_0_.1 = bf16[] parameter(0), metadata={op_name="args[0]"}
+  ROOT %broadcast_in_dim.1 = bf16[4096,4096]{1,0} broadcast(%args_0_.1), dimensions={}, metadata={op_name="jit(broadcast_in_dim)/broadcast_in_dim" stack_frame_id=4}
+}
+

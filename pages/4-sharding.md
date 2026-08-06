@@ -21,18 +21,27 @@ toc:
   - name: The Four Collectives
   - name: RCCL in Practice
   - name: Measured Versus Spec Bandwidth
+    subsections:
+      - name: Achieved Bandwidth Against Message Size
+      - name: Does RCCL Use All Seven Links?
+      - name: The Number to Use
   - name: The Four Sharded-Matmul Cases
   - name: One Program, Many Processes
   - name: "Who Inserts the Collective: GSPMD or You?"
+    subsections:
+      - name: They Compile To The Same Thing
   - name: Is the Collective Overlapping?
+    subsections:
+      - name: The Measurement, And Why It Is A Two-By-Two
+      - name: Why Combining Beats Overlapping
   - name: Worked Problems
   - name: References
 ---
 
-> **Draft.** Two sections are waiting on measurements rather than on prose: our own
-> RCCL bandwidth sweep, and the overlap before-and-after. The cost model, the notation
-> and the program model are complete, and AMD's own published bandwidth figures stand
-> in for ours where they exist.
+> **Draft.** The measurements are in. What is still owed is figures: the trace-viewer
+> screenshots for [Is the Collective Overlapping?](#is-the-collective-overlapping) and
+> [RCCL in Practice](#rccl-in-practice), and the HLO diff in
+> [Who Inserts the Collective](#who-inserts-the-collective-gspmd-or-you).
 
 **Depends on:** [Chapter 1]({{ '/pages/1-rooflines' | relative_url }}) for rooflines,
 [Chapter 2]({{ '/pages/2-amd-gpus' | relative_url }}) for the xGMI mesh and its
@@ -183,6 +192,11 @@ channels so that more than one link is lit at once. How close it lands to the 2.
 bound is an empirical question about a library, which is exactly why the sweep in the
 next section matters more than this derivation does.
 
+**The answer, measured two sections from here, is 2.97 ms**: not the 2.0 ms the wiring
+permits, but nowhere near the 14.0 ms a single ring would cost. **[measured]** RCCL lights
+all seven links and loses about 26% to protocol overhead. If you want the short version of
+this chapter, that is it.
+
 **Second: the cost has two regimes with a cliff between them, not one smooth
 curve.** Every number above assumes `n <= 8`, all on one baseboard. The ninth GPU is
 over the NIC, at `β_net = 50 GB/s` per GPU against 448 GB/s intra-node, so a
@@ -255,71 +269,108 @@ did rather than what you asked for.
 
 ## Measured Versus Spec Bandwidth
 
-**This is the section that justifies the chapter, and right now it is half written,
-because the half that needs our hardware has not been run.** What follows is what AMD
-publishes, clearly attributed, and it is enough to calibrate the cost model to within
-about 30%.
-
 **Nobody sustains spec bandwidth, and the gap has two separate causes.** The first is
-protocol overhead: CRC, framing, and flow control on the wire. AMD's own xGMI
-measurements put realised per-link bandwidth at **45 to 48 GB/s against the 64 GB/s
-specification**, roughly 75%, and that ceiling applies no matter how large your
-messages are. The second is message size: below some threshold you are paying
-per-collective latency rather than bandwidth, and the achieved figure falls off a
-cliff.
+protocol overhead: CRC, framing, and flow control on the wire, a fixed derate that applies
+no matter how large your messages are. The second is message size: below some threshold you
+are paying per-collective latency rather than bandwidth, and the achieved figure falls off
+a cliff.
 
-Putting AMD's numbers into the model above:
+**So we measured both.** **[measured]**
 
-| Quantity | Specification | AMD-published realised |
-|---|---|---|
-| Per link, unidirectional | 64 GB/s | 45-48 GB/s |
-| Per-GPU aggregate egress, 7 links | 448 GB/s | 315-336 GB/s |
-| RCCL effective, 8-GPU collective | — | 310-330 GB/s |
+```bash
+python -m bench.rccl_sweep --devices 2 4 8
+```
 
-> **Source:** AMD's [MI300X RCCL and xGMI](https://rocm.blogs.amd.com/software-tools-optimization/mi300x-rccl-xgmi/README.html)
-> blog post. These are **AMD's measurements, not ours**, and they are quoted here
-> because they are the best public figures available and because they are consistent
-> with the specification in a way that lets us calibrate. Our own sweep is pending.
+Four collectives, message sizes from 1 KiB to 1 GiB in powers of two, at 2, 4 and 8
+devices, bf16. Bandwidth conventions follow `nccl-tests` so the numbers are comparable with
+anything published: `algbw = size / time`, and `busbw = algbw * 2(n-1)/n` for all-reduce or
+`algbw * (n-1)/n` for the other three. **busbw is the per-GPU egress rate**, which is the
+`β_g` in the cost model above.
 
-**Two conclusions worth drawing from AMD's numbers before we have our own.**
+**One methodological note, because it changes the numbers by an order of magnitude.**
+Dispatching a collective to eight devices from Python costs about a millisecond, which is
+longer than most of these collectives take. Timing the loop measures the loop. Every figure
+here is the RCCL kernel's own duration, read out of an XPlane capture, and specifically the
+*shortest* per-device kernel in each iteration: the device that arrives last does not wait
+for anyone, so its kernel is the transfer and nothing else.
 
-**RCCL is lighting most of the links, not one.** 310-330 GB/s per GPU is around 70% of
-the 448 GB/s seven-link aggregate, and it is five times more than any single link can
-carry. A single-ring schedule would cap at 64 GB/s, so whatever RCCL is doing, it is
-using the mesh. That resolves the derivation in
-[The Four Collectives](#the-four-collectives) in the optimistic direction, and it is
-the load-bearing assumption behind
-[Chapter 7]({{ '/pages/7-moe' | relative_url }})'s claim that intra-node expert dispatch
-is cheap.
+### Achieved Bandwidth Against Message Size
 
-**Use `β_g = 320 GB/s` for predictions you intend to compare against a
-measurement**, and 448 GB/s only when you want the hard lower bound on time. The
-derate is about 0.7, it is consistent across message sizes above the latency regime,
-and quoting a spec-bandwidth prediction against a measured step time will make your
-code look 30% worse than it is.
+**Eight devices, per-GPU egress in GB/s:** **[measured]**
 
-<!-- BLOCKED: our own RCCL sweep, which is the most novel measurement in the book and
-     the reason Chapter 4 is in Wave 1.
+| Message | All-reduce | All-gather | Reduce-scatter | All-to-all |
+|---|---|---|---|---|
+| 64 KiB | 4.2 | 3.3 | 3.1 | 5.0 |
+| 1 MiB | 30.5 | 30.5 | 36.6 | 56.0 |
+| 4 MiB | 117.8 | 95.2 | 99.9 | 170.2 |
+| 16 MiB | 212.0 | 206.1 | 196.9 | 247.9 |
+| 64 MiB | 288.7 | 277.9 | 270.0 | 293.6 |
+| 256 MiB | 317.1 | 309.0 | 298.8 | 298.1 |
+| 1 GiB | **319.6** | **316.0** | **308.0** | **297.2** |
 
-     What it has to produce:
-     1. Achieved bandwidth against message size, from 1 KB to 1 GB, for AllReduce,
-        AllGather, ReduceScatter and AllToAll, on 8x MI300X. State the message size
-        at which each stops being latency-bound. The source book does exactly this
-        for NCCL (370 GB/s achieved against 450 claimed, and 150 GB/s at realistic LLM
-        message sizes) and nobody has published the AMD equivalent.
-     2. The same sweep at 2, 4 and 8 devices, to confirm AMD's claim that a partial
-        node can only use a fraction of the fabric, and to find out whether the
-        fall-off is the (n-1) factor the topology predicts.
-     3. Specifically: does RCCL schedule an 8-way AllToAll across all seven links
-        concurrently? The full-mesh argument says it should, which would make
-        intra-node MoE dispatch cheap and is one of the better findings available to
-        us. This is a question about a schedule RCCL chooses, not about wiring, so it
-        has to be measured. Chapter 7 currently cites the prediction and flags it as
-        unconfirmed.
+{% include figure.liquid path="assets/img/rccl-bandwidth-curve.png" class="img-fluid" caption="Per-GPU egress against message size, 8x MI300X, bf16, timed from the RCCL kernel in an XPlane capture. All four collectives converge on roughly 320 GB/s, and none of them is close to it below 16 MiB." %}
 
-     Needs: an RCCL bandwidth sweep script (listed in docs/structure.md as the first
-     script that blocks a chapter; does not exist yet). One 8-GPU node, no MaxText,
-     no cluster. -->
+**All four converge on roughly 300 to 320 GB/s**, and they get there slowly. Half of peak
+arrives at about 16 MiB; 90% of peak needs 64 to 128 MiB. **A collective smaller than a
+megabyte is a latency measurement wearing a bandwidth costume.**
+
+**The latency floor is 9 to 23 microseconds** depending on the collective, and it is flat
+all the way from 4 KiB to about 256 KiB, which is what a flat region on this table means:
+the wire is idle and you are paying for the round trip. All-to-all has the lowest floor at
+9.5 microseconds and all-reduce the highest at 22.9, which is the expected ordering, since
+all-reduce is the only one of the four that has to make two passes over the data.
+
+### Does RCCL Use All Seven Links?
+
+**Yes. This was the open question in
+[The Four Collectives](#the-four-collectives) and the answer is unambiguous.**
+
+The trick is to calibrate against the two-device case rather than against the data sheet. At
+two devices a GPU has exactly one peer, so it has exactly one link, and whatever bandwidth
+it achieves *is* the per-link rate on real hardware:
+
+| Devices | Peers | All-reduce peak | Implied per-link | Links in use |
+|---|---|---|---|---|
+| 2 | 1 | 47.5 GB/s | 47.5 GB/s | 1.00 |
+| 4 | 3 | 141.2 GB/s | 47.1 GB/s | 2.97 |
+| 8 | 7 | 319.6 GB/s | 45.7 GB/s | 6.73 |
+
+{% include figure.liquid path="assets/img/rccl-links-lit.png" class="img-fluid" caption="Peak per-GPU egress against participant count. The dashed line is the prediction if a GPU transmits on every link it has, at the per-link rate measured in the two-device case. All four collectives sit on it." %}
+
+**The per-link rate barely moves: 45.7 to 47.5 GB/s, or about 74% of the 64 GB/s
+specification.** And the number of links in use tracks the number of peers exactly. **A GPU
+in an 8-way collective is transmitting on all seven of its xGMI links at once**, at the same
+per-link efficiency it achieves talking to a single neighbour.
+
+**A single-ring schedule would have capped at 47.5 GB/s.** It did not, by a factor of
+6.7, so that hypothesis is dead. Every collective behaves the same way, including
+**all-to-all at 8 devices, which reaches 297 GB/s, 6.3 links' worth**. That is the specific
+question [Chapter 7]({{ '/pages/7-moe' | relative_url }}) flagged as unconfirmed, and it is
+now confirmed: intra-node expert dispatch really is cheap.
+
+**This also means the `(n-1)/n` factor in the cost model is doing double duty and you
+should not double-count it.** The factor is already in the busbw definition; the topology
+does not impose a *second* penalty for partial nodes. A 4-GPU collective gets 3/7 of the
+fabric because it has 3 peers, not because RCCL is scheduling it badly.
+
+### The Number to Use
+
+**Use `β_g = 320 GB/s` for any 8-GPU intra-node prediction you intend to compare against a
+measurement**, and 448 GB/s only when you want a hard lower bound on time. The derate is
+about 0.71, it is consistent across all four collectives, and it holds only above about
+64 MiB.
+
+**Below that, use the table.** Quoting 320 GB/s for a 4 MiB all-reduce overstates the
+bandwidth by 2.7x, and a per-layer gradient all-reduce in an 8B model is exactly in that
+awkward region unless XLA combines it with its neighbours, which is what
+`--xla_gpu_all_gather_combine_threshold_bytes` exists to make happen.
+
+> **Corroboration:** AMD's
+> [MI300X RCCL and xGMI](https://rocm.blogs.amd.com/software-tools-optimization/mi300x-rccl-xgmi/README.html)
+> blog post publishes 45 to 48 GB/s realised per link and 310 to 330 GB/s for an 8-GPU
+> collective. **Our independent measurement lands inside both ranges**, which is reassuring
+> for us and for them. Where this book previously quoted AMD's figures because it had none
+> of its own, it now quotes its own and cites AMD's as agreement.
 
 ## The Four Sharded-Matmul Cases
 
@@ -491,12 +542,60 @@ is why this distinction is taught here rather than in
 [Chapter 7]({{ '/pages/7-moe' | relative_url }}), where it would arrive as an
 interruption.
 
-<!-- BLOCKED: the HLO diff. The roadmap asks for the same sharded matmul written both
-     ways with the two optimised HLO dumps side by side, because that comparison
-     teaches more about what GSPMD is doing than any amount of explanation. Needs both
-     variants run and dumped on the pinned stack; scripts/devlab-llm-scaling-talk-2025.py
-     already has shard_map stages that can be cut down to a minimal pair.
-     The conceptual distinction above does not depend on it. -->
+### They Compile To The Same Thing
+
+**The claim above is that these are two spellings of one program. That is checkable, so we
+checked it.** Same matmul, `x[4096, 4096] @ w[4096, 14336]` with the contracting dimension
+split eight ways, written both ways and dumped:
+
+```bash
+python -m bench.gspmd_vs_shardmap --diff
+```
+
+**Both compile to the same four instructions:** a `custom-call` into hipBLASLt for the local
+partial product, a `get-tuple-element` to pull the result out, then an
+`all-reduce-start` and `all-reduce-done` pair. **[measured]** Same entry layout, same
+`channel_id`, same `use_global_device_ids`, same asynchronous split of the collective.
+And they run at the same speed: 1.166 ms against 1.172 ms, which is half a percent apart
+and therefore the same number.
+
+**The diff is 40 lines and every one of them is cosmetic.** The two worth looking at:
+
+{% raw %}
+```
+# GSPMD
+%all-reduce-start = bf16[4096,14336]{1,0} all-reduce-start(%get-tuple-element),
+    channel_id=1, replica_groups=mesh['axis_0'=1,'axis_1'=8] {'axis_1'},
+    use_global_device_ids=true, to_apply=%add.clone
+
+# shard_map
+%all-reduce-start = bf16[4096,14336]{1,0} all-reduce-start(%get-tuple-element),
+    channel_id=1, replica_groups={{0,1,2,3,4,5,6,7}},
+    use_global_device_ids=true, to_apply=%region_0
+```
+{% endraw %}
+
+**`replica_groups` says the same thing twice.** GSPMD keeps the symbolic mesh form, naming
+the axis it is reducing over; `shard_map` has already resolved it to an explicit list of
+device ids. One group of eight either way.
+
+**And the reduction function differs only in what its arguments are called**: GSPMD emits
+`%add.clone` taking `x` and `y`, `shard_map` emits `%region_0` taking two parameters both
+named `psum_invariant`. Both are a two-argument `add`.
+
+**So the choice between them is not a performance decision.** It is about who has to know
+the four cases in [The Four Sharded-Matmul Cases](#the-four-sharded-matmul-cases): with
+GSPMD the compiler works out that a contracting-dimension split owes an all-reduce, and
+with `shard_map` you write `jax.lax.psum` because you worked it out. Pick on the basis of
+whether you want to be able to express something the partitioner would not infer, which is
+the MoE case above, and not on the basis of expected speed.
+
+**One caveat before you generalise from a four-instruction module.** This is the easy case,
+where both spellings describe the same schedule. The interesting divergences show up when
+GSPMD has a choice, for example when it can reorder a collective past other work or fold
+it into a neighbouring op, and `shard_map` has pinned it in place. **Diff your own HLO
+rather than trusting this result to transfer**; the command above is three lines and the
+comparison takes a minute.
 
 ## Is the Collective Overlapping?
 
@@ -524,12 +623,83 @@ why it is worth checking first: find the RCCL kernel on the device rows and look
 what is above it. Compute kernels running concurrently means the overlap is working.
 A gap on the compute rows exactly as wide as the collective means it is not.
 
-<!-- BLOCKED on the before-and-after measurement. Run scripts/transformer_block.py,
-     which already sets both flags, with and without them, and give the measured
-     step-time difference plus the two trace-viewer screenshots. That number is the
-     whole point of the section: right now it argues that overlap matters without
-     saying how much, which is exactly the vague-qualifier failure the style guide
-     names. One 8-GPU node, nothing else needed. -->
+**You can also compute it rather than eyeball it**, which is what we did here: merge every
+compute kernel on a device into a set of busy intervals, then ask what fraction of each
+collective falls inside one. `tools/parse_xplane.py` does this, and the answer for a real
+FSDP step turned out to be more interesting than the flag documentation suggests.
+
+### The Measurement, And Why It Is A Two-By-Two
+
+**We set out to measure one flag and found it does nothing, for a reason that is more
+useful than the flag.** Four FSDP transformer blocks, 2048 tokens per device, eight GPUs,
+toggling the latency-hiding scheduler:
+
+| Latency hiding | Step time | Collective time hidden |
+|---|---|---|
+| On (as shipped) | 42.30 ms | 0.9% |
+| Off | 42.52 ms | 0.2% |
+
+**[measured]** Half a percent apart, which is noise. **Almost none of the communication is
+overlapped either way**, and turning off the scheduler that exists to overlap it changes
+nothing.
+
+**The scheduler is not broken. It has nothing to work with.** The container ships with
+
+```
+--xla_gpu_all_gather_combine_threshold_bytes=8589934592
+--xla_gpu_reduce_scatter_combine_threshold_bytes=8589934592
+```
+
+which is 8 GiB, comfortably more than this model's 1.75 GB of weights. **So XLA merges every
+layer's all-gather into one collective at the top of the step.** A single collective with
+nothing scheduled before it has nothing to hide behind, and no scheduler can fix that.
+
+**Drop the threshold to 1 MiB so the collectives stay separate, and the flag springs to
+life:**
+
+| Combine threshold | Latency hiding | Step time | Collective time hidden | MFU |
+|---|---|---|---|---|
+| 8 GiB (as shipped) | On | **42.30 ms** | 0.9% | 20.1% |
+| 8 GiB (as shipped) | Off | 42.52 ms | 0.2% | 20.0% |
+| 1 MiB | On | 53.89 ms | **36.6%** | 15.8% |
+| 1 MiB | Off | 55.85 ms | 0.1% | 15.2% |
+
+**[measured]**
+
+**Read the bottom two rows first, because that is the experiment the flag documentation
+describes.** With many small collectives, the latency-hiding scheduler takes overlap from
+0.1% to 36.6% and buys 3.5% of step time. It works exactly as advertised.
+
+**Then read the first column, because that is the result that matters.** The configuration
+with essentially no overlap is **27% faster** than the one with 36.6% overlap. Combining
+the collectives wins by more than overlapping them does, and it wins by enough that giving
+up all the overlap is still the right trade.
+
+### Why Combining Beats Overlapping
+
+**Because of the bandwidth curve in
+[Measured Versus Spec Bandwidth](#measured-versus-spec-bandwidth).** A collective smaller
+than a megabyte runs at under 10% of peak bandwidth and pays a 9 to 23 microsecond latency
+floor. Split this model's communication into per-layer, per-tensor pieces and you issue
+many of them, each in the worst part of that curve; the total collective time rises from
+28.8% to 61.2% of device kernel time. **Overlapping 36.6% of a much larger number is a
+losing trade.**
+
+**The general rule, and it is the opposite of the folklore.** Overlap is the second thing
+to reach for, not the first. **First get your collectives into the bandwidth-efficient part
+of the curve, then overlap whatever is left.** A step with one big all-gather that does not
+overlap can easily beat a step with twenty small ones that do.
+
+**Two caveats on the numbers above, both of which cut the same way.** This is a four-layer
+model, so there are only four all-gathers to combine and only three layers of compute to
+hide them behind; a 32-layer model has more of both, and the balance may move. And the
+1 MiB runs were noticeably jittery, with the mean running 30% above the median, which
+[Appendix B]({{ '/pages/b-appendix-protocol' | relative_url }}) says to report rather than
+smooth over. Many small collectives are less predictable as well as slower.
+
+**What to actually do:** leave the combine thresholds where the container puts them, leave
+latency hiding on since it costs nothing and starts mattering as soon as anything does not
+combine, and check the overlap fraction rather than assuming the flag did something.
 
 ## Worked Problems
 

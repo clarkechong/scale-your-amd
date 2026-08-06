@@ -1,0 +1,59 @@
+{
+  "workload": "maxtext",
+  "tag": "disp-mixtral-megablox",
+  "finished_at": "2026-08-05T15:06:42.957510+00:00",
+  "wall_seconds": 34.45153331756592,
+  "protocol": {
+    "warmup": 3,
+    "repeats": 10,
+    "statistic": "median"
+  },
+  "constants": {
+    "cus": 304,
+    "clock_ghz": 2.1,
+    "bf16_flops": 1307400000000000.0,
+    "fp16_flops": 1307400000000000.0,
+    "fp8_flops": 2614900000000000.0,
+    "fp32_flops": 163400000000000.0,
+    "hbm_bytes_per_s": 5300000000000.0,
+    "hbm_bytes": 206158430208,
+    "xgmi_links": 7,
+    "xgmi_link_unidir_bytes_per_s": 64000000000.0,
+    "xgmi_egress_unidir_bytes_per_s": 448000000000.0,
+    "rccl_realised_bytes_per_s": 320000000000.0
+  },
+  "notes": {
+    "config": "/workspace/maxtext/src/maxtext/configs/base.yml",
+    "command": "/opt/venv/bin/python -m maxtext.trainers.pre_train.train /workspace/maxtext/src/maxtext/configs/base.yml model_name=mixtral-8x7b hardware=gpu dataset_type=synthetic enable_checkpointing=false steps=16 per_device_batch_size=4.0 max_target_length=4096 remat_policy=save_dot_with_context_except_mlp run_name=disp-mixtral-megablox base_output_directory=/root/work/scale-your-amd/runs/20260805-maxtext-disp-mixtral-megablox/maxtext ici_expert_parallelism=-1 ici_fsdp_parallelism=1 ici_data_parallelism=1 attention=cudnn_flash_te max_segments_per_seq=1 sparse_matmul=true megablox=true",
+    "model": "mixtral-8x7b",
+    "ici": "expert=-1,fsdp=1,data=1",
+    "overrides": [
+      "model_name=mixtral-8x7b",
+      "hardware=gpu",
+      "dataset_type=synthetic",
+      "enable_checkpointing=false",
+      "steps=16",
+      "per_device_batch_size=4.0",
+      "max_target_length=4096",
+      "remat_policy=save_dot_with_context_except_mlp",
+      "run_name=disp-mixtral-megablox",
+      "base_output_directory=/root/work/scale-your-amd/runs/20260805-maxtext-disp-mixtral-megablox/maxtext",
+      "ici_expert_parallelism=-1",
+      "ici_fsdp_parallelism=1",
+      "ici_data_parallelism=1",
+      "attention=cudnn_flash_te",
+      "max_segments_per_seq=1",
+      "sparse_matmul=true",
+      "megablox=true"
+    ],
+    "returncode": 1,
+    "wall_seconds": 31.54542827606201,
+    "steps": [],
+    "summary": {
+      "error": "no steps past 6",
+      "steps_seen": 0
+    },
+    "failure_tail": "  File \"/opt/venv/lib/python3.12/site-packages/absl/app.py\", line 367, in run\n    _run_main(main, args)\n  File \"/opt/venv/lib/python3.12/site-packages/absl/app.py\", line 312, in _run_main\n    sys.exit(main(argv))\n             ^^^^^^^^^^\n  File \"/workspace/maxtext/src/maxtext/trainers/pre_train/train.py\", line 842, in main\n    train_func()\n  File \"/workspace/maxtext/src/maxtext/trainers/pre_train/train.py\", line 832, in train_func\n    run(config, recorder)\n  File \"/workspace/maxtext/src/maxtext/trainers/pre_train/train.py\", line 802, in run\n    train_loop(config, recorder)\n  File \"/workspace/maxtext/src/maxtext/trainers/pre_train/train.py\", line 659, in train_loop\n    compiled = p_train_step.lower(*lower_args).compile(compiler_options=compiler_options)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/venv/lib/python3.12/site-packages/jax/_src/pallas/pallas_call.py\", line 1201, in _pallas_call_lowering\n    return mlir.lower_per_platform(\n           ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/venv/lib/python3.12/site-packages/jax/_src/pallas/pallas_call.py\", line 1168, in gpu_lowering\n    rule = pallas_core.get_lowering_rule(type(compiler_params), \"gpu\")\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/venv/lib/python3.12/site-packages/jax/_src/pallas/core.py\", line 161, in get_lowering_rule\n    raise ValueError(\nValueError: Compiler params for platform tpu cannot be used for gpu lowering.\n--------------------\nFor simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these."
+  },
+  "measurements": []
+}

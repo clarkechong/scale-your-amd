@@ -1,0 +1,85 @@
+{
+  "workload": "maxtext",
+  "tag": "export-src",
+  "finished_at": "2026-08-05T16:52:42.560198+00:00",
+  "wall_seconds": 91.93266081809998,
+  "protocol": {
+    "warmup": 3,
+    "repeats": 10,
+    "statistic": "median"
+  },
+  "constants": {
+    "cus": 304,
+    "clock_ghz": 2.1,
+    "bf16_flops": 1307400000000000.0,
+    "fp16_flops": 1307400000000000.0,
+    "fp8_flops": 2614900000000000.0,
+    "fp32_flops": 163400000000000.0,
+    "hbm_bytes_per_s": 5300000000000.0,
+    "hbm_bytes": 206158430208,
+    "xgmi_links": 7,
+    "xgmi_link_unidir_bytes_per_s": 64000000000.0,
+    "xgmi_egress_unidir_bytes_per_s": 448000000000.0,
+    "rccl_realised_bytes_per_s": 320000000000.0
+  },
+  "notes": {
+    "config": "/workspace/maxtext/src/maxtext/configs/base.yml",
+    "command": "/opt/venv/bin/python -m maxtext.trainers.pre_train.train /workspace/maxtext/src/maxtext/configs/base.yml model_name=qwen3-0.6b hardware=gpu dataset_type=synthetic enable_checkpointing=false steps=3 per_device_batch_size=1.0 max_target_length=2048 remat_policy=minimal_flash run_name=export-src base_output_directory=/root/work/scale-your-amd/runs/20260805-maxtext-export-src/maxtext ici_fsdp_parallelism=8 attention=cudnn_flash_te max_segments_per_seq=1 enable_checkpointing=true checkpoint_period=2 async_checkpointing=false",
+    "model": "qwen3-0.6b",
+    "ici": "fsdp=8",
+    "overrides": [
+      "model_name=qwen3-0.6b",
+      "hardware=gpu",
+      "dataset_type=synthetic",
+      "enable_checkpointing=false",
+      "steps=3",
+      "per_device_batch_size=1.0",
+      "max_target_length=2048",
+      "remat_policy=minimal_flash",
+      "run_name=export-src",
+      "base_output_directory=/root/work/scale-your-amd/runs/20260805-maxtext-export-src/maxtext",
+      "ici_fsdp_parallelism=8",
+      "attention=cudnn_flash_te",
+      "max_segments_per_seq=1",
+      "enable_checkpointing=true",
+      "checkpoint_period=2",
+      "async_checkpointing=false"
+    ],
+    "returncode": 0,
+    "wall_seconds": 89.55117201805115,
+    "steps": [
+      {
+        "step": 0,
+        "seconds": 29.859,
+        "tflops_per_device": 0.294,
+        "tokens_per_second_per_device": 68.59
+      },
+      {
+        "step": 1,
+        "seconds": 0.495,
+        "tflops_per_device": 17.706,
+        "tokens_per_second_per_device": 4136.296
+      },
+      {
+        "step": 2,
+        "seconds": 0.107,
+        "tflops_per_device": 81.97,
+        "tokens_per_second_per_device": 19149.314
+      }
+    ],
+    "summary": {
+      "steps_measured": 2,
+      "first_measured_step": 1,
+      "step_s_median": 0.301,
+      "step_s_mean": 0.301,
+      "step_s_min": 0.107,
+      "step_s_max": 0.495,
+      "median_mean_gap_pct": 0.0,
+      "tflops_per_device_median": 49.838,
+      "mfu_vs_boost_clock": 0.03811993269083677,
+      "mfu_vs_sustained_clock": 0.05034141414141414,
+      "devices": 8
+    }
+  },
+  "measurements": []
+}

@@ -1,0 +1,140 @@
+{
+  "workload": "maxtext",
+  "tag": "disp-qwen3-onehot-capacity",
+  "finished_at": "2026-08-05T15:11:14.647200+00:00",
+  "wall_seconds": 101.45514917373657,
+  "protocol": {
+    "warmup": 3,
+    "repeats": 10,
+    "statistic": "median"
+  },
+  "constants": {
+    "cus": 304,
+    "clock_ghz": 2.1,
+    "bf16_flops": 1307400000000000.0,
+    "fp16_flops": 1307400000000000.0,
+    "fp8_flops": 2614900000000000.0,
+    "fp32_flops": 163400000000000.0,
+    "hbm_bytes_per_s": 5300000000000.0,
+    "hbm_bytes": 206158430208,
+    "xgmi_links": 7,
+    "xgmi_link_unidir_bytes_per_s": 64000000000.0,
+    "xgmi_egress_unidir_bytes_per_s": 448000000000.0,
+    "rccl_realised_bytes_per_s": 320000000000.0
+  },
+  "notes": {
+    "config": "/workspace/maxtext/src/maxtext/configs/base.yml",
+    "command": "/opt/venv/bin/python -m maxtext.trainers.pre_train.train /workspace/maxtext/src/maxtext/configs/base.yml model_name=qwen3-30b-a3b hardware=gpu dataset_type=synthetic enable_checkpointing=false steps=12 per_device_batch_size=2.0 max_target_length=2048 remat_policy=save_dot_with_context_except_mlp run_name=disp-qwen3-onehot-capacity base_output_directory=/root/work/scale-your-amd/runs/20260805-maxtext-disp-qwen3-onehot-capacity/maxtext ici_expert_parallelism=-1 ici_fsdp_parallelism=1 ici_data_parallelism=1 attention=cudnn_flash_te max_segments_per_seq=1 sparse_matmul=false capacity_factor=1.25",
+    "model": "qwen3-30b-a3b",
+    "ici": "expert=-1,fsdp=1,data=1",
+    "overrides": [
+      "model_name=qwen3-30b-a3b",
+      "hardware=gpu",
+      "dataset_type=synthetic",
+      "enable_checkpointing=false",
+      "steps=12",
+      "per_device_batch_size=2.0",
+      "max_target_length=2048",
+      "remat_policy=save_dot_with_context_except_mlp",
+      "run_name=disp-qwen3-onehot-capacity",
+      "base_output_directory=/root/work/scale-your-amd/runs/20260805-maxtext-disp-qwen3-onehot-capacity/maxtext",
+      "ici_expert_parallelism=-1",
+      "ici_fsdp_parallelism=1",
+      "ici_data_parallelism=1",
+      "attention=cudnn_flash_te",
+      "max_segments_per_seq=1",
+      "sparse_matmul=false",
+      "capacity_factor=1.25"
+    ],
+    "returncode": 0,
+    "wall_seconds": 98.5399763584137,
+    "steps": [
+      {
+        "step": 0,
+        "seconds": 35.914,
+        "tflops_per_device": 2.357,
+        "tokens_per_second_per_device": 114.051
+      },
+      {
+        "step": 1,
+        "seconds": 1.75,
+        "tflops_per_device": 48.36,
+        "tokens_per_second_per_device": 2340.114
+      },
+      {
+        "step": 2,
+        "seconds": 1.262,
+        "tflops_per_device": 67.06,
+        "tokens_per_second_per_device": 3244.958
+      },
+      {
+        "step": 3,
+        "seconds": 1.259,
+        "tflops_per_device": 67.238,
+        "tokens_per_second_per_device": 3253.58
+      },
+      {
+        "step": 4,
+        "seconds": 1.262,
+        "tflops_per_device": 67.096,
+        "tokens_per_second_per_device": 3246.717
+      },
+      {
+        "step": 5,
+        "seconds": 1.263,
+        "tflops_per_device": 67.042,
+        "tokens_per_second_per_device": 3244.112
+      },
+      {
+        "step": 6,
+        "seconds": 1.266,
+        "tflops_per_device": 66.836,
+        "tokens_per_second_per_device": 3234.143
+      },
+      {
+        "step": 7,
+        "seconds": 1.265,
+        "tflops_per_device": 66.931,
+        "tokens_per_second_per_device": 3238.723
+      },
+      {
+        "step": 8,
+        "seconds": 1.269,
+        "tflops_per_device": 66.729,
+        "tokens_per_second_per_device": 3228.96
+      },
+      {
+        "step": 9,
+        "seconds": 1.266,
+        "tflops_per_device": 66.866,
+        "tokens_per_second_per_device": 3235.566
+      },
+      {
+        "step": 10,
+        "seconds": 1.269,
+        "tflops_per_device": 66.712,
+        "tokens_per_second_per_device": 3228.128
+      },
+      {
+        "step": 11,
+        "seconds": 1.268,
+        "tflops_per_device": 66.741,
+        "tokens_per_second_per_device": 3229.527
+      }
+    ],
+    "summary": {
+      "steps_measured": 8,
+      "first_measured_step": 4,
+      "step_s_median": 1.266,
+      "step_s_mean": 1.266,
+      "step_s_min": 1.262,
+      "step_s_max": 1.269,
+      "median_mean_gap_pct": 0.0,
+      "tflops_per_device_median": 66.851,
+      "mfu_vs_boost_clock": 0.05113278262199786,
+      "mfu_vs_sustained_clock": 0.06752626262626263,
+      "devices": 8
+    }
+  },
+  "measurements": []
+}

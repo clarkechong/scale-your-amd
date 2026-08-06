@@ -1,0 +1,47 @@
+gpu_device_info {
+  threads_per_block_limit: 1024
+  threads_per_warp: 64
+  shared_memory_per_block: 65536
+  shared_memory_per_core: 65536
+  threads_per_core_limit: 2048
+  core_count: 304
+  fpus_per_core: 128
+  block_dim_limit_x: 2147483647
+  block_dim_limit_y: 65535
+  block_dim_limit_z: 65535
+  memory_bandwidth: 2662400000000
+  l2_cache_size: 4194304
+  clock_rate_ghz: 2.1
+  device_memory_size: 206141652992
+  shared_memory_per_block_optin: 65536
+  rocm_compute_capability {
+    gcn_arch_name: "gfx942:sramecc+:xnack-"
+  }
+  registers_per_core_limit: 131072
+  registers_per_block_limit: 131072
+  driver_version: "7.14.60850"
+  runtime_version: "7.14.60850"
+  compile_time_toolkit_version: "7.14.60850"
+  device_vendor: "Advanced Micro Devices, Inc"
+  platform_version: "AMDGPU ISA version: gfx942:sramecc+:xnack-"
+  pci_bus_id: "<undefined>"
+  name: "AMD Instinct MI300X"
+  model_str: "206141652992B RAM, 304 cores"
+  numa_node: -1
+  thread_dim_limit_x: 1024
+  thread_dim_limit_y: 1024
+  thread_dim_limit_z: 1024
+  device_address_bits: 64
+  pcie_bandwidth: 34359738368
+}
+platform_name: "ROCM"
+dnn_version_info {
+  major: 1
+  minor: 3
+}
+device_description_str: "AMD Instinct MI300X"
+runtime_version {
+  major: 7
+  minor: 14
+  patch: 60850
+}

@@ -1,0 +1,204 @@
+{
+  "workload": "transformer-block",
+  "tag": "fsdp-noannot",
+  "finished_at": "2026-08-05T12:38:43.257854+00:00",
+  "wall_seconds": 57.13993239402771,
+  "protocol": {
+    "warmup": 3,
+    "repeats": 10,
+    "statistic": "median"
+  },
+  "constants": {
+    "cus": 304,
+    "clock_ghz": 2.1,
+    "bf16_flops": 1307400000000000.0,
+    "fp16_flops": 1307400000000000.0,
+    "fp8_flops": 2614900000000000.0,
+    "fp32_flops": 163400000000000.0,
+    "hbm_bytes_per_s": 5300000000000.0,
+    "hbm_bytes": 206158430208,
+    "xgmi_links": 7,
+    "xgmi_link_unidir_bytes_per_s": 64000000000.0,
+    "xgmi_egress_unidir_bytes_per_s": 448000000000.0,
+    "rccl_realised_bytes_per_s": 320000000000.0
+  },
+  "notes": {
+    "strategy": "fsdp",
+    "devices": 8,
+    "config": {
+      "d_model": 4096,
+      "d_ff": 14336,
+      "n_heads": 32,
+      "n_kv_heads": 8,
+      "head_dim": 128
+    },
+    "params_per_layer": 218103808,
+    "layers": 4,
+    "seq_len": 2048,
+    "annotated": false,
+    "latency_hiding_override": null
+  },
+  "measurements": [
+    {
+      "name": "fsdp-2048tok",
+      "warmup": 3,
+      "repeats": 10,
+      "times_s": [
+        0.041992153972387314,
+        0.04251346457749605,
+        0.04379915166646242,
+        0.042017754167318344,
+        0.04240944981575012,
+        0.0421997494995594,
+        0.04235416930168867,
+        0.04195721633732319,
+        0.042887743562459946,
+        0.05061920080333948
+      ],
+      "median_s": 0.0423818095587194,
+      "mean_s": 0.0432750053703785,
+      "stdev_s": 0.0026385625061167077,
+      "min_s": 0.04195721633732319,
+      "max_s": 0.05061920080333948,
+      "median_mean_gap_pct": 2.107498053903504,
+      "flops": 89060441849856.0,
+      "bytes": null,
+      "achieved_flops_per_s": 2101383654382761.0,
+      "achieved_bytes_per_s": null,
+      "predicted_s": null,
+      "ratio_to_prediction": null,
+      "meta": {
+        "tokens_per_device": 2048,
+        "global_tokens": 16384,
+        "batch": 8,
+        "seq_len": 2048,
+        "trace_dir": "/root/work/scale-your-amd/runs/20260805-transformer-block-fsdp-noannot/trace/2048",
+        "mfu": 0.2009124650434795,
+        "collective_timing": {
+          "devices": 8,
+          "iterations": 30,
+          "events_per_device": {
+            "GPU:0": 30,
+            "GPU:1": 30,
+            "GPU:2": 30,
+            "GPU:3": 30,
+            "GPU:4": 30,
+            "GPU:5": 30,
+            "GPU:6": 30,
+            "GPU:7": 30
+          },
+          "span_s_median": 0.0054418865,
+          "span_s_min": 9.5647e-05,
+          "busy_s_median": 0.004799805,
+          "busy_s_min": 3.1427e-05,
+          "skew_fraction": 0.11798877098961913,
+          "kernel_name": "ncclDevKernel_Generic_2(ncclDevKernelArgsStorage<5120ul>) [clone .kd]"
+        },
+        "kernel_total_us": 3029944.926,
+        "collective_total_us": 865325.662,
+        "collective_share": 0.2855912180365486,
+        "collective_exposed_share": 0.11325153526892093,
+        "scopes": [
+          {
+            "scope": "<unnamed kernel>",
+            "total_duration_us": 729111.7010000002,
+            "kernels": 22,
+            "collective_us": 445036.497,
+            "share": 0.2406352982668043
+          },
+          {
+            "scope": "mlp",
+            "total_duration_us": 703557.036,
+            "kernels": 16,
+            "collective_us": 0.0,
+            "share": 0.23220126212947542
+          },
+          {
+            "scope": "qkv_proj",
+            "total_duration_us": 539541.0739999999,
+            "kernels": 19,
+            "collective_us": 414118.631,
+            "share": 0.1780695976914268
+          },
+          {
+            "scope": "attention",
+            "total_duration_us": 437512.3139999999,
+            "kernels": 19,
+            "collective_us": 0.0,
+            "share": 0.14439612754862327
+          },
+          {
+            "scope": "BTNH",
+            "total_duration_us": 107237.214,
+            "kernels": 12,
+            "collective_us": 0.0,
+            "share": 0.03539246310379966
+          },
+          {
+            "scope": "layer_3",
+            "total_duration_us": 106765.47200000001,
+            "kernels": 7,
+            "collective_us": 0.0,
+            "share": 0.03523676984483909
+          },
+          {
+            "scope": "layer_2",
+            "total_duration_us": 103320.496,
+            "kernels": 7,
+            "collective_us": 0.0,
+            "share": 0.03409979340330756
+          },
+          {
+            "scope": "layer_0",
+            "total_duration_us": 102544.767,
+            "kernels": 7,
+            "collective_us": 0.0,
+            "share": 0.03384377257819504
+          },
+          {
+            "scope": "layer_1",
+            "total_duration_us": 101690.123,
+            "kernels": 7,
+            "collective_us": 0.0,
+            "share": 0.033561706725226466
+          },
+          {
+            "scope": "out_proj",
+            "total_duration_us": 77458.29600000002,
+            "kernels": 9,
+            "collective_us": 0.0,
+            "share": 0.02556425872144714
+          },
+          {
+            "scope": "<unscoped>",
+            "total_duration_us": 7538.019,
+            "kernels": 4,
+            "collective_us": 6170.534,
+            "share": 0.002487840269080851
+          },
+          {
+            "scope": "mlp_norm",
+            "total_duration_us": 5204.599,
+            "kernels": 12,
+            "collective_us": 0.0,
+            "share": 0.0017177206606427936
+          },
+          {
+            "scope": "attention_norm",
+            "total_duration_us": 4935.642,
+            "kernels": 10,
+            "collective_us": 0.0,
+            "share": 0.0016289543607367865
+          },
+          {
+            "scope": "BNTS",
+            "total_duration_us": 3528.173,
+            "kernels": 3,
+            "collective_us": 0.0,
+            "share": 0.0011644346963948743
+          }
+        ]
+      }
+    }
+  ]
+}

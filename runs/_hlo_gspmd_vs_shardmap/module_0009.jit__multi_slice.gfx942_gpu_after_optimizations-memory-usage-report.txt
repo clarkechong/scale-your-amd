@@ -1,0 +1,43 @@
+Memory Space: default (color=0)
+Total bytes: 234881088 (224.00MiB)
+  cumulative_size;       size;       offset; used_by_n_values; shapes_list
+  ------------------------------------------------------------
+  112.00MiB(100%);  112.00MiB;            0;                1; bf16[4096,14336]
+
+  cumulative_size;       size;       offset; used_by_n_values; shapes_list
+  ------------------------------------------------------------
+   14.00MiB(100%);   14.00MiB;            0;                1; bf16[512,14336]
+
+  cumulative_size;       size;       offset; used_by_n_values; shapes_list
+  ------------------------------------------------------------
+   14.00MiB(100%);   14.00MiB;            0;                1; bf16[512,14336]
+
+  cumulative_size;       size;       offset; used_by_n_values; shapes_list
+  ------------------------------------------------------------
+   14.00MiB(100%);   14.00MiB;            0;                1; bf16[512,14336]
+
+  cumulative_size;       size;       offset; used_by_n_values; shapes_list
+  ------------------------------------------------------------
+   14.00MiB(100%);   14.00MiB;            0;                1; bf16[512,14336]
+
+  cumulative_size;       size;       offset; used_by_n_values; shapes_list
+  ------------------------------------------------------------
+   14.00MiB(100%);   14.00MiB;            0;                1; bf16[512,14336]
+
+  cumulative_size;       size;       offset; used_by_n_values; shapes_list
+  ------------------------------------------------------------
+   14.00MiB(100%);   14.00MiB;            0;                1; bf16[512,14336]
+
+  cumulative_size;       size;       offset; used_by_n_values; shapes_list
+  ------------------------------------------------------------
+   14.00MiB(100%);   14.00MiB;            0;                1; bf16[512,14336]
+
+  cumulative_size;       size;       offset; used_by_n_values; shapes_list
+  ------------------------------------------------------------
+   14.00MiB(100%);   14.00MiB;            0;                1; bf16[512,14336]
+
+  cumulative_size;       size;       offset; used_by_n_values; shapes_list
+  ------------------------------------------------------------
+        64B(100%);        64B;            0;                1; (bf16[512,14336], bf16[512,14336], bf16[512,14336], bf16[512,14336], bf16[512,14336], /*index=5*/bf16[512,14336], bf16[512,14336], bf16[512,14336])
+
+

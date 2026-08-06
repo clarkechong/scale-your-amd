@@ -1,0 +1,277 @@
+{
+  "workload": "transformer-block",
+  "tag": "ch6-cp2k",
+  "finished_at": "2026-08-05T13:40:29.478853+00:00",
+  "wall_seconds": 60.0480580329895,
+  "protocol": {
+    "warmup": 3,
+    "repeats": 10,
+    "statistic": "median"
+  },
+  "constants": {
+    "cus": 304,
+    "clock_ghz": 2.1,
+    "bf16_flops": 1307400000000000.0,
+    "fp16_flops": 1307400000000000.0,
+    "fp8_flops": 2614900000000000.0,
+    "fp32_flops": 163400000000000.0,
+    "hbm_bytes_per_s": 5300000000000.0,
+    "hbm_bytes": 206158430208,
+    "xgmi_links": 7,
+    "xgmi_link_unidir_bytes_per_s": 64000000000.0,
+    "xgmi_egress_unidir_bytes_per_s": 448000000000.0,
+    "rccl_realised_bytes_per_s": 320000000000.0
+  },
+  "notes": {
+    "strategy": "cp",
+    "devices": 8,
+    "config": {
+      "d_model": 4096,
+      "d_ff": 14336,
+      "n_heads": 32,
+      "n_kv_heads": 8,
+      "head_dim": 128
+    },
+    "params_per_layer": 218103808,
+    "layers": 4,
+    "seq_len": 2048,
+    "annotated": true,
+    "latency_hiding_override": null
+  },
+  "measurements": [
+    {
+      "name": "cp-2048tok",
+      "warmup": 3,
+      "repeats": 10,
+      "times_s": [
+        0.05210626311600208,
+        0.04970373120158911,
+        0.05228220857679844,
+        0.047833824530243874,
+        0.04501318372786045,
+        0.057564093731343746,
+        0.04556316416710615,
+        0.04378192964941263,
+        0.042143071070313454,
+        0.2870360855013132
+      ],
+      "median_s": 0.04876877786591649,
+      "mean_s": 0.07230275552719831,
+      "stdev_s": 0.07559289119590422,
+      "min_s": 0.042143071070313454,
+      "max_s": 0.2870360855013132,
+      "median_mean_gap_pct": 48.256238296529546,
+      "flops": 11132555231232.0,
+      "bytes": null,
+      "achieved_flops_per_s": 228272179832751.5,
+      "achieved_bytes_per_s": null,
+      "predicted_s": null,
+      "ratio_to_prediction": null,
+      "meta": {
+        "tokens_per_device": 2048,
+        "global_tokens": 2048,
+        "batch": 1,
+        "seq_len": 2048,
+        "trace_dir": "/root/work/scale-your-amd/runs/20260805-transformer-block-ch6-cp2k/trace/2048",
+        "mfu": 0.021825013369354395,
+        "collective_timing": {
+          "devices": 8,
+          "iterations": 360,
+          "events_per_device": {
+            "GPU:0": 360,
+            "GPU:1": 360,
+            "GPU:2": 360,
+            "GPU:3": 360,
+            "GPU:4": 360,
+            "GPU:5": 360,
+            "GPU:6": 360,
+            "GPU:7": 360
+          },
+          "span_s_median": 0.0007542725,
+          "span_s_min": 0.000103601,
+          "busy_s_median": 0.000409359,
+          "busy_s_min": 5.7965e-05,
+          "skew_fraction": 0.4572796966613525,
+          "kernel_name": "ncclDevKernel_Generic_2(ncclDevKernelArgsStorage<5120ul>) [clone .kd]"
+        },
+        "kernel_total_us": 5420348.916,
+        "collective_total_us": 4402520.6110000005,
+        "collective_share": 0.8122208882170788,
+        "collective_exposed_share": 0.00839387448103539,
+        "overlap": {
+          "per_device": {
+            "GPU:0": {
+              "comm_ns": 610601117.0,
+              "hidden_ns": 89158197.0,
+              "hidden_fraction": 0.14601708794450174
+            },
+            "GPU:1": {
+              "comm_ns": 564378118.0,
+              "hidden_ns": 86538521.0,
+              "hidden_fraction": 0.15333429528889
+            },
+            "GPU:2": {
+              "comm_ns": 609534346.0,
+              "hidden_ns": 88589696.0,
+              "hidden_fraction": 0.14533995759444868
+            },
+            "GPU:3": {
+              "comm_ns": 579439206.0,
+              "hidden_ns": 87350667.0,
+              "hidden_fraction": 0.15075035671645595
+            },
+            "GPU:4": {
+              "comm_ns": 593616198.0,
+              "hidden_ns": 87410320.0,
+              "hidden_fraction": 0.14725056407574647
+            },
+            "GPU:5": {
+              "comm_ns": 311502882.0,
+              "hidden_ns": 84560803.0,
+              "hidden_fraction": 0.271460740449907
+            },
+            "GPU:6": {
+              "comm_ns": 587887905.0,
+              "hidden_ns": 89340670.0,
+              "hidden_fraction": 0.1519688859732537
+            },
+            "GPU:7": {
+              "comm_ns": 545560839.0,
+              "hidden_ns": 85467096.0,
+              "hidden_fraction": 0.15665914759691907
+            }
+          },
+          "total_comm_s": 4.402520611,
+          "total_hidden_s": 0.69841597,
+          "hidden_fraction": 0.15864002277580705,
+          "exposed_s": 3.704104641
+        },
+        "phases": {
+          "total_us": 5420348.916,
+          "phases": {
+            "forward": 167614.34399999998,
+            "backward": 352288.64700000006,
+            "optimizer": 0.0,
+            "collective": 4402520.6110000005,
+            "unattributed": 497925.314
+          },
+          "shares": {
+            "forward": 0.03092316502084014,
+            "backward": 0.06499372133777227,
+            "optimizer": 0.0,
+            "collective": 0.8122208882170788,
+            "unattributed": 0.09186222542430883
+          },
+          "backward_over_forward": 2.1017810206028673
+        },
+        "scopes": [
+          {
+            "scope": "<unnamed kernel>",
+            "total_duration_us": 2844674.7599999993,
+            "kernels": 30,
+            "collective_us": 2346749.446,
+            "share": 0.5248139564600677
+          },
+          {
+            "scope": "layer_3",
+            "total_duration_us": 563189.779,
+            "kernels": 10,
+            "collective_us": 531804.7679999999,
+            "share": 0.10390286450703462
+          },
+          {
+            "scope": "BTNH",
+            "total_duration_us": 469166.378,
+            "kernels": 17,
+            "collective_us": 438943.512,
+            "share": 0.08655649023167054
+          },
+          {
+            "scope": "layer_0",
+            "total_duration_us": 438363.67299999995,
+            "kernels": 10,
+            "collective_us": 405070.42,
+            "share": 0.08087370016089199
+          },
+          {
+            "scope": "layer_1",
+            "total_duration_us": 386897.27499999997,
+            "kernels": 10,
+            "collective_us": 354276.996,
+            "share": 0.07137866602239226
+          },
+          {
+            "scope": "layer_2",
+            "total_duration_us": 349656.26399999997,
+            "kernels": 10,
+            "collective_us": 318111.66599999997,
+            "share": 0.06450807308139718
+          },
+          {
+            "scope": "mlp",
+            "total_duration_us": 192702.03899999993,
+            "kernels": 16,
+            "collective_us": 0.0,
+            "share": 0.03555159307755529
+          },
+          {
+            "scope": "attention",
+            "total_duration_us": 67789.04000000001,
+            "kernels": 16,
+            "collective_us": 0.0,
+            "share": 0.012506397844592189
+          },
+          {
+            "scope": "qkv_proj",
+            "total_duration_us": 43012.867,
+            "kernels": 14,
+            "collective_us": 0.0,
+            "share": 0.007935442471799725
+          },
+          {
+            "scope": "<unscoped>",
+            "total_duration_us": 29778.104000000003,
+            "kernels": 12,
+            "collective_us": 7563.803,
+            "share": 0.005493761464709369
+          },
+          {
+            "scope": "out_proj",
+            "total_duration_us": 26392.066,
+            "kernels": 8,
+            "collective_us": 0.0,
+            "share": 0.004869071421231732
+          },
+          {
+            "scope": "mlp_norm",
+            "total_duration_us": 3736.4719999999998,
+            "kernels": 11,
+            "collective_us": 0.0,
+            "share": 0.0006893416010490643
+          },
+          {
+            "scope": "BNTS",
+            "total_duration_us": 2571.929,
+            "kernels": 3,
+            "collective_us": 0.0,
+            "share": 0.0004744950998279979
+          },
+          {
+            "scope": "attention_norm",
+            "total_duration_us": 2293.968,
+            "kernels": 7,
+            "collective_us": 0.0,
+            "share": 0.00042321408373335054
+          },
+          {
+            "scope": "tril",
+            "total_duration_us": 124.302,
+            "kernels": 1,
+            "collective_us": 0.0,
+            "share": 2.293247204678659e-05
+          }
+        ]
+      }
+    }
+  ]
+}

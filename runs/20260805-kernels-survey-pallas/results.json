@@ -1,0 +1,42 @@
+{
+  "workload": "kernels-survey",
+  "tag": "pallas",
+  "finished_at": "2026-08-05T15:48:33.878517+00:00",
+  "wall_seconds": 6.44403600692749,
+  "protocol": {
+    "warmup": 3,
+    "repeats": 10,
+    "statistic": "median"
+  },
+  "constants": {
+    "cus": 304,
+    "clock_ghz": 2.1,
+    "bf16_flops": 1307400000000000.0,
+    "fp16_flops": 1307400000000000.0,
+    "fp8_flops": 2614900000000000.0,
+    "fp32_flops": 163400000000000.0,
+    "hbm_bytes_per_s": 5300000000000.0,
+    "hbm_bytes": 206158430208,
+    "xgmi_links": 7,
+    "xgmi_link_unidir_bytes_per_s": 64000000000.0,
+    "xgmi_egress_unidir_bytes_per_s": 448000000000.0,
+    "rccl_realised_bytes_per_s": 320000000000.0
+  },
+  "notes": {
+    "pallas": {
+      "ok": true,
+      "backends": {
+        "default": {
+          "ok": false,
+          "error": "ValueError: Mosaic GPU does not yet support AMD ROCm devices. Use ``compiler_params=pltriton.CompilerParams()`` for ROCm."
+        },
+        "triton": {
+          "ok": true,
+          "correct": true
+        }
+      },
+      "device": "rocm:0"
+    }
+  },
+  "measurements": []
+}

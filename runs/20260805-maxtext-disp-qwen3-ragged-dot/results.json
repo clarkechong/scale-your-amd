@@ -1,0 +1,140 @@
+{
+  "workload": "maxtext",
+  "tag": "disp-qwen3-ragged-dot",
+  "finished_at": "2026-08-05T15:14:45.379344+00:00",
+  "wall_seconds": 206.16123986244202,
+  "protocol": {
+    "warmup": 3,
+    "repeats": 10,
+    "statistic": "median"
+  },
+  "constants": {
+    "cus": 304,
+    "clock_ghz": 2.1,
+    "bf16_flops": 1307400000000000.0,
+    "fp16_flops": 1307400000000000.0,
+    "fp8_flops": 2614900000000000.0,
+    "fp32_flops": 163400000000000.0,
+    "hbm_bytes_per_s": 5300000000000.0,
+    "hbm_bytes": 206158430208,
+    "xgmi_links": 7,
+    "xgmi_link_unidir_bytes_per_s": 64000000000.0,
+    "xgmi_egress_unidir_bytes_per_s": 448000000000.0,
+    "rccl_realised_bytes_per_s": 320000000000.0
+  },
+  "notes": {
+    "config": "/workspace/maxtext/src/maxtext/configs/base.yml",
+    "command": "/opt/venv/bin/python -m maxtext.trainers.pre_train.train /workspace/maxtext/src/maxtext/configs/base.yml model_name=qwen3-30b-a3b hardware=gpu dataset_type=synthetic enable_checkpointing=false steps=12 per_device_batch_size=2.0 max_target_length=2048 remat_policy=save_dot_with_context_except_mlp run_name=disp-qwen3-ragged-dot base_output_directory=/root/work/scale-your-amd/runs/20260805-maxtext-disp-qwen3-ragged-dot/maxtext ici_expert_parallelism=-1 ici_fsdp_parallelism=1 ici_data_parallelism=1 attention=cudnn_flash_te max_segments_per_seq=1 sparse_matmul=true megablox=false",
+    "model": "qwen3-30b-a3b",
+    "ici": "expert=-1,fsdp=1,data=1",
+    "overrides": [
+      "model_name=qwen3-30b-a3b",
+      "hardware=gpu",
+      "dataset_type=synthetic",
+      "enable_checkpointing=false",
+      "steps=12",
+      "per_device_batch_size=2.0",
+      "max_target_length=2048",
+      "remat_policy=save_dot_with_context_except_mlp",
+      "run_name=disp-qwen3-ragged-dot",
+      "base_output_directory=/root/work/scale-your-amd/runs/20260805-maxtext-disp-qwen3-ragged-dot/maxtext",
+      "ici_expert_parallelism=-1",
+      "ici_fsdp_parallelism=1",
+      "ici_data_parallelism=1",
+      "attention=cudnn_flash_te",
+      "max_segments_per_seq=1",
+      "sparse_matmul=true",
+      "megablox=false"
+    ],
+    "returncode": 0,
+    "wall_seconds": 203.91994881629944,
+    "steps": [
+      {
+        "step": 0,
+        "seconds": 78.75,
+        "tflops_per_device": 1.075,
+        "tokens_per_second_per_device": 52.013
+      },
+      {
+        "step": 1,
+        "seconds": 7.472,
+        "tflops_per_device": 11.329,
+        "tokens_per_second_per_device": 548.207
+      },
+      {
+        "step": 2,
+        "seconds": 7.139,
+        "tflops_per_device": 11.856,
+        "tokens_per_second_per_device": 573.714
+      },
+      {
+        "step": 3,
+        "seconds": 7.141,
+        "tflops_per_device": 11.853,
+        "tokens_per_second_per_device": 573.571
+      },
+      {
+        "step": 4,
+        "seconds": 7.154,
+        "tflops_per_device": 11.832,
+        "tokens_per_second_per_device": 572.533
+      },
+      {
+        "step": 5,
+        "seconds": 7.143,
+        "tflops_per_device": 11.851,
+        "tokens_per_second_per_device": 573.463
+      },
+      {
+        "step": 6,
+        "seconds": 7.122,
+        "tflops_per_device": 11.885,
+        "tokens_per_second_per_device": 575.101
+      },
+      {
+        "step": 7,
+        "seconds": 7.116,
+        "tflops_per_device": 11.896,
+        "tokens_per_second_per_device": 575.64
+      },
+      {
+        "step": 8,
+        "seconds": 7.111,
+        "tflops_per_device": 11.903,
+        "tokens_per_second_per_device": 575.991
+      },
+      {
+        "step": 9,
+        "seconds": 7.098,
+        "tflops_per_device": 11.926,
+        "tokens_per_second_per_device": 577.073
+      },
+      {
+        "step": 10,
+        "seconds": 7.102,
+        "tflops_per_device": 11.919,
+        "tokens_per_second_per_device": 576.73
+      },
+      {
+        "step": 11,
+        "seconds": 7.106,
+        "tflops_per_device": 11.911,
+        "tokens_per_second_per_device": 576.383
+      }
+    ],
+    "summary": {
+      "steps_measured": 8,
+      "first_measured_step": 4,
+      "step_s_median": 7.1135,
+      "step_s_mean": 7.119,
+      "step_s_min": 7.098,
+      "step_s_max": 7.154,
+      "median_mean_gap_pct": 0.07731777605959958,
+      "tflops_per_device_median": 11.8995,
+      "mfu_vs_boost_clock": 0.009101652134006426,
+      "mfu_vs_sustained_clock": 0.01201969696969697,
+      "devices": 8
+    }
+  },
+  "measurements": []
+}

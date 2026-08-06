@@ -1,0 +1,269 @@
+{
+  "workload": "pipeline",
+  "tag": null,
+  "finished_at": "2026-08-05T13:45:22.919836+00:00",
+  "wall_seconds": 48.87237477302551,
+  "protocol": {
+    "warmup": 3,
+    "repeats": 10,
+    "statistic": "median"
+  },
+  "constants": {
+    "cus": 304,
+    "clock_ghz": 2.1,
+    "bf16_flops": 1307400000000000.0,
+    "fp16_flops": 1307400000000000.0,
+    "fp8_flops": 2614900000000000.0,
+    "fp32_flops": 163400000000000.0,
+    "hbm_bytes_per_s": 5300000000000.0,
+    "hbm_bytes": 206158430208,
+    "xgmi_links": 7,
+    "xgmi_link_unidir_bytes_per_s": 64000000000.0,
+    "xgmi_egress_unidir_bytes_per_s": 448000000000.0,
+    "rccl_realised_bytes_per_s": 320000000000.0
+  },
+  "notes": {
+    "stages": 8,
+    "layers_per_stage": 2,
+    "microbatch": {
+      "batch": 2,
+      "seq": 1024,
+      "tokens": 2048
+    },
+    "note": "forward only; this is a fill-and-drain demo, not a training schedule",
+    "stage_time_s": 0.0036453823558986187
+  },
+  "measurements": [
+    {
+      "name": "one-stage",
+      "warmup": 3,
+      "repeats": 10,
+      "times_s": [
+        0.0037512844428420067,
+        0.0035717543214559555,
+        0.003648648038506508,
+        0.0036562373861670494,
+        0.003640979528427124,
+        0.003629598766565323,
+        0.003592066466808319,
+        0.0036421166732907295,
+        0.003665028139948845,
+        0.003651474602520466
+      ],
+      "median_s": 0.0036453823558986187,
+      "mean_s": 0.0036449188366532324,
+      "stdev_s": 4.750147943098485e-05,
+      "min_s": 0.0035717543214559555,
+      "max_s": 0.0037512844428420067,
+      "median_mean_gap_pct": -0.012715243563854787,
+      "flops": null,
+      "bytes": null,
+      "achieved_flops_per_s": null,
+      "achieved_bytes_per_s": null,
+      "predicted_s": null,
+      "ratio_to_prediction": null,
+      "meta": {
+        "stages": 1,
+        "microbatches": 1
+      }
+    },
+    {
+      "name": "pipeline-m1",
+      "warmup": 1,
+      "repeats": 5,
+      "times_s": [
+        0.03377937059849501,
+        0.03224192187190056,
+        0.03222360648214817,
+        0.032130460254848,
+        0.03204847499728203
+      ],
+      "median_s": 0.03222360648214817,
+      "mean_s": 0.03248476684093475,
+      "stdev_s": 0.0007278497494088708,
+      "min_s": 0.03204847499728203,
+      "max_s": 0.03377937059849501,
+      "median_mean_gap_pct": 0.8104628478853311,
+      "flops": null,
+      "bytes": null,
+      "achieved_flops_per_s": null,
+      "achieved_bytes_per_s": null,
+      "predicted_s": null,
+      "ratio_to_prediction": null,
+      "meta": {
+        "stages": 8,
+        "microbatches": 1,
+        "ideal_s": 0.0036453823558986187,
+        "predicted_bubble": 0.875,
+        "measured_bubble": 0.8868723040694357,
+        "elapsed_in_stage_times": 8.839568345967036,
+        "predicted_stage_times": 8
+      }
+    },
+    {
+      "name": "pipeline-m2",
+      "warmup": 1,
+      "repeats": 5,
+      "times_s": [
+        0.039466346614062786,
+        0.040911389514803886,
+        0.03953803516924381,
+        0.0404082452878356,
+        0.039513031020760536
+      ],
+      "median_s": 0.03953803516924381,
+      "mean_s": 0.03996740952134133,
+      "stdev_s": 0.0006571378459192935,
+      "min_s": 0.039466346614062786,
+      "max_s": 0.040911389514803886,
+      "median_mean_gap_pct": 1.0859779709830384,
+      "flops": null,
+      "bytes": null,
+      "achieved_flops_per_s": null,
+      "achieved_bytes_per_s": null,
+      "predicted_s": null,
+      "ratio_to_prediction": null,
+      "meta": {
+        "stages": 8,
+        "microbatches": 2,
+        "ideal_s": 0.007290764711797237,
+        "predicted_bubble": 0.7777777777777778,
+        "measured_bubble": 0.8156012386404916,
+        "elapsed_in_stage_times": 10.846059839310694,
+        "predicted_stage_times": 9
+      }
+    },
+    {
+      "name": "pipeline-m4",
+      "warmup": 1,
+      "repeats": 5,
+      "times_s": [
+        0.04822730179876089,
+        0.04816424660384655,
+        0.04918981064110994,
+        0.0478602172806859,
+        0.04857286065816879
+      ],
+      "median_s": 0.04822730179876089,
+      "mean_s": 0.04840288739651442,
+      "stdev_s": 0.000507545487429236,
+      "min_s": 0.0478602172806859,
+      "max_s": 0.04918981064110994,
+      "median_mean_gap_pct": 0.3640792480703067,
+      "flops": null,
+      "bytes": null,
+      "achieved_flops_per_s": null,
+      "achieved_bytes_per_s": null,
+      "predicted_s": null,
+      "ratio_to_prediction": null,
+      "meta": {
+        "stages": 8,
+        "microbatches": 4,
+        "ideal_s": 0.014581529423594475,
+        "predicted_bubble": 0.6363636363636364,
+        "measured_bubble": 0.6976499020318587,
+        "elapsed_in_stage_times": 13.229696391305554,
+        "predicted_stage_times": 11
+      }
+    },
+    {
+      "name": "pipeline-m8",
+      "warmup": 1,
+      "repeats": 5,
+      "times_s": [
+        0.06533045414835215,
+        0.06516232062131166,
+        0.06511330511420965,
+        0.06567719951272011,
+        0.0645710676908493
+      ],
+      "median_s": 0.06516232062131166,
+      "mean_s": 0.06517086941748858,
+      "stdev_s": 0.00040155519355048955,
+      "min_s": 0.0645710676908493,
+      "max_s": 0.06567719951272011,
+      "median_mean_gap_pct": 0.013119232242501274,
+      "flops": null,
+      "bytes": null,
+      "achieved_flops_per_s": null,
+      "achieved_bytes_per_s": null,
+      "predicted_s": null,
+      "ratio_to_prediction": null,
+      "meta": {
+        "stages": 8,
+        "microbatches": 8,
+        "ideal_s": 0.02916305884718895,
+        "predicted_bubble": 0.4666666666666667,
+        "measured_bubble": 0.5524551831622304,
+        "elapsed_in_stage_times": 17.87530477176751,
+        "predicted_stage_times": 15
+      }
+    },
+    {
+      "name": "pipeline-m16",
+      "warmup": 1,
+      "repeats": 5,
+      "times_s": [
+        0.09892962034791708,
+        0.09919501096010208,
+        0.09903628937900066,
+        0.09873192850500345,
+        0.09965057857334614
+      ],
+      "median_s": 0.09903628937900066,
+      "mean_s": 0.09910868555307388,
+      "stdev_s": 0.0003465369923642364,
+      "min_s": 0.09873192850500345,
+      "max_s": 0.09965057857334614,
+      "median_mean_gap_pct": 0.07310065282854507,
+      "flops": null,
+      "bytes": null,
+      "achieved_flops_per_s": null,
+      "achieved_bytes_per_s": null,
+      "predicted_s": null,
+      "ratio_to_prediction": null,
+      "meta": {
+        "stages": 8,
+        "microbatches": 16,
+        "ideal_s": 0.0583261176943779,
+        "predicted_bubble": 0.30434782608695654,
+        "measured_bubble": 0.411063176335591,
+        "elapsed_in_stage_times": 27.167599914107598,
+        "predicted_stage_times": 23
+      }
+    },
+    {
+      "name": "pipeline-m32",
+      "warmup": 1,
+      "repeats": 5,
+      "times_s": [
+        0.1662669200450182,
+        0.16804406605660915,
+        0.16687700990587473,
+        0.16737861093133688,
+        0.1654462069272995
+      ],
+      "median_s": 0.16687700990587473,
+      "mean_s": 0.1668025627732277,
+      "stdev_s": 0.0010006646006198328,
+      "min_s": 0.1654462069272995,
+      "max_s": 0.16804406605660915,
+      "median_mean_gap_pct": -0.04461197662220138,
+      "flops": null,
+      "bytes": null,
+      "achieved_flops_per_s": null,
+      "achieved_bytes_per_s": null,
+      "predicted_s": null,
+      "ratio_to_prediction": null,
+      "meta": {
+        "stages": 8,
+        "microbatches": 32,
+        "ideal_s": 0.1166522353887558,
+        "predicted_bubble": 0.1794871794871795,
+        "measured_bubble": 0.30096880658065306,
+        "elapsed_in_stage_times": 45.77764240172224,
+        "predicted_stage_times": 39
+      }
+    }
+  ]
+}

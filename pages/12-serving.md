@@ -19,6 +19,9 @@ authors:
 toc:
   - name: Why This Chapter Is Not a JAX Serving Guide
   - name: The Handoff, Concretely
+    subsections:
+      - name: What The Checkpoint Costs To Read
+      - name: The Rest Of The Handoff Is Not Reachable Here
   - name: What the Serving Engine Is Doing With Your Weights
   - name: Disaggregated Prefill and Decode
   - name: What This Costs and How It Is Operated
@@ -78,39 +81,91 @@ useful chapter and a much less risky one.
 
 ## The Handoff, Concretely
 
-<!-- BLOCKED, and this is the chapter's spine. It has to be run before it is written.
+**Step one works, and here it is having been run.** **[measured]**
 
-     What it has to deliver: Orbax checkpoint to a HuggingFace-format checkpoint, what
-     MaxText's conversion scripts do and where they break, quantization on the way out
-     (AMD's Quark toolkit, and the fp8 FNUZ-versus-OCP format question from Chapter 2
-     showing up again as a checkpoint compatibility problem), then loading it under vLLM
-     on ROCm and confirming the outputs match.
+```bash
+python -m maxtext.checkpoint_conversion.to_huggingface \
+    src/maxtext/configs/base.yml \
+    model_name=qwen3-0.6b hardware=gpu scan_layers=true \
+    load_parameters_path=<run>/checkpoints/2/items \
+    base_output_directory=/tmp/hfexport
+```
 
-     Why it cannot be written from documentation: this is the one section in the book
-     whose failure mode is silent. A conversion script that runs to completion and
-     produces a checkpoint that generates plausible-but-wrong text is exactly what will
-     happen if the fp8 format or the attention-head permutation is mishandled, and only
-     an output comparison catches it. Writing "run this script" without having run it
-     would be the single most likely thing in this book to waste a reader's week.
+**Twenty-four seconds later there is a loadable HuggingFace checkpoint**: `config.json`
+with `model_type: qwen3` and the right shapes, `model.safetensors` holding 310 tensors
+under HuggingFace's naming (`model.layers.0.mlp.gate_proj.weight` and friends), plus the
+tokenizer files. **No PyTorch was involved**, which matters because this container does
+not have it.
 
-     The verification, which docs/structure.md calls the chapter's only hard dependency
-     and estimates at a day of work:
-       1. Take a checkpoint from Chapter 9 or Chapter 10 (so the loop closes on the
-          capstones rather than on an arbitrary model).
-       2. Convert to HuggingFace format with MaxText's conversion script.
-       3. Quantize with Quark, targeting fp8. Check which fp8 variant it emits and
-          whether it matches the serving GPU's architecture (gfx942 wants FNUZ, gfx950
-          wants OCP). This is where Chapter 2's format split becomes a correctness bug.
-       4. Load under vLLM on ROCm.
-       5. Compare outputs against the JAX model on the same prompts at temperature 0.
-          Not "looks reasonable": token-for-token, or at minimum matching logprobs to a
-          stated tolerance.
-     If the conversion scripts are broken for a model we care about, that is worth
-     knowing early and is itself publishable.
+**Three things break on the way, and all three are worth knowing before you start.**
 
-     Also to verify while in there: whether Quark is the right recommendation versus
-     llm-compressor or vLLM's own quantization path, and whether the MaxText conversion
-     scripts cover the specific model the capstones train. -->
+**The model name is not the model name.** `llama3-8b` is a valid MaxText `model_name` and
+is not a valid conversion target; the converter's table has `llama3.1-8b` and the error
+lists all 44 supported keys, which is helpful but arrives after the checkpoint has been
+read.
+
+**The converter fetches the reference config from HuggingFace, so it needs the network and
+sometimes a token.** Converting a Llama 3 checkpoint stops here:
+
+```
+OSError: You are trying to access a gated repo.
+Cannot access gated repo for url
+https://huggingface.co/meta-llama/Llama-3.1-8B/resolve/main/config.json
+```
+
+**Llama is gated; Qwen and DeepSeek are not.** This is a licensing wall rather than a
+technical one, and the fix is `huggingface-cli login` with an account that has accepted
+Meta's terms. **Plan for it**, because it will stop an automated pipeline at the last step.
+
+**The output is fp32 even though the config says otherwise.** `config.json` carries
+`dtype: bfloat16` and the safetensors are `F32`, so a 0.6B model exports as 2.38 GB rather
+than 1.2 GB. Not wrong, and worth budgeting for at 8B and above.
+
+### What The Checkpoint Costs To Read
+
+**Reading 89.7 GiB of Llama 3 8B checkpoint back took 32.7 seconds at 2.744 GiB/s.**
+**[measured]** That is **2.1x faster than writing the same bytes**, which
+[Chapter 9]({{ '/pages/9-llama' | relative_url }}) measures at 70.3 seconds. Useful for
+sizing the gap between a training run finishing and a serving artifact existing: the
+conversion itself is fast, and the checkpoint read dominates it.
+
+### The Rest Of The Handoff Is Not Reachable Here
+
+**Steps three through five need a container this book is not written in**, and the honest
+thing is to say exactly which pieces are missing rather than describe them from
+documentation:
+
+- **Quark**, AMD's quantization toolkit, is a PyTorch tool and there is no PyTorch here.
+- **vLLM** is not installed, and installing it into a JAX training image is not something
+  to recommend to anyone.
+- **The output comparison** therefore cannot be run, and it is the step that matters most.
+
+**That last point is the one to sit with.** This section's stated failure mode is silence:
+a conversion that completes and produces a checkpoint generating plausible-but-wrong text
+is exactly what a mishandled attention-head permutation or fp8 format produces. **We have
+demonstrated that the conversion completes. We have not demonstrated that it is correct**,
+and those are different claims.
+
+<!-- BLOCKED: steps 3 to 5, which need a rocm/vllm container rather than this one. The
+     export half is done and written above; what remains is scoped rather than open:
+
+       1. In a rocm/vllm image, load /tmp/hfexport-style output under vLLM on ROCm and
+          generate at temperature 0.
+       2. Generate the same prompts from the MaxText model in this container, also at
+          temperature 0.
+       3. Compare token-for-token, or logprobs to a stated tolerance. Not "looks
+          reasonable".
+       4. Then repeat with Quark fp8 quantization in the loop, checking that the fp8
+          variant emitted matches the serving GPU (gfx942 wants FNUZ, gfx950 wants OCP).
+          This is where Chapter 2's format split becomes a correctness bug.
+
+     Two things to settle while in there: whether Quark is the right recommendation
+     against llm-compressor or vLLM's own quantization path, and whether the exported
+     fp32 safetensors need down-casting before Quark will accept them.
+
+     Note the conversion table covers deepseek2-16b and mixtral-8x7b, so the loop can be
+     closed on Chapter 10's capstone without a gated-repo token. Chapter 9's Llama needs
+     one. -->
 
 ## What the Serving Engine Is Doing With Your Weights
 

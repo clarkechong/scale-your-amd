@@ -1,0 +1,110 @@
+{
+  "workload": "gspmd-vs-shardmap",
+  "tag": null,
+  "finished_at": "2026-08-05T13:21:58.200803+00:00",
+  "wall_seconds": 44.23395872116089,
+  "protocol": {
+    "warmup": 3,
+    "repeats": 10,
+    "statistic": "median"
+  },
+  "constants": {
+    "cus": 304,
+    "clock_ghz": 2.1,
+    "bf16_flops": 1307400000000000.0,
+    "fp16_flops": 1307400000000000.0,
+    "fp8_flops": 2614900000000000.0,
+    "fp32_flops": 163400000000000.0,
+    "hbm_bytes_per_s": 5300000000000.0,
+    "hbm_bytes": 206158430208,
+    "xgmi_links": 7,
+    "xgmi_link_unidir_bytes_per_s": 64000000000.0,
+    "xgmi_egress_unidir_bytes_per_s": 448000000000.0,
+    "rccl_realised_bytes_per_s": 320000000000.0
+  },
+  "notes": {
+    "shapes": {
+      "B": 4096,
+      "D": 4096,
+      "F": 14336,
+      "devices": 8
+    },
+    "sharded_dimension": "contracting (D), so both spellings owe an all-reduce",
+    "gspmd_module_file": "module_0011.jit_gspmd.gfx942_gpu_after_optimizations.txt",
+    "gspmd_collectives": [
+      "all-reduce-start",
+      "all-reduce-done"
+    ],
+    "shardmap_module_file": "module_0014.jit_shardmap.gfx942_gpu_after_optimizations.txt",
+    "shardmap_collectives": [
+      "all-reduce-start",
+      "all-reduce-done"
+    ],
+    "optimised_hlo_identical": false,
+    "diff_lines": 40,
+    "gspmd_instructions": 44,
+    "shardmap_instructions": 52
+  },
+  "measurements": [
+    {
+      "name": "gspmd",
+      "warmup": 3,
+      "repeats": 10,
+      "times_s": [
+        0.0012594135478138924,
+        0.001163223758339882,
+        0.0011647650972008705,
+        0.0011759037151932716,
+        0.001149832271039486,
+        0.001144416630268097,
+        0.0011762138456106186,
+        0.001167978160083294,
+        0.001315319910645485,
+        0.0011567380279302597
+      ],
+      "median_s": 0.0011663716286420822,
+      "mean_s": 0.0011873804964125157,
+      "stdev_s": 5.5256818215818545e-05,
+      "min_s": 0.001144416630268097,
+      "max_s": 0.001315319910645485,
+      "median_mean_gap_pct": 1.8012156035458904,
+      "flops": 481036337152.0,
+      "bytes": null,
+      "achieved_flops_per_s": 412421157493374.56,
+      "achieved_bytes_per_s": null,
+      "predicted_s": null,
+      "ratio_to_prediction": null,
+      "meta": {}
+    },
+    {
+      "name": "shardmap",
+      "warmup": 3,
+      "repeats": 10,
+      "times_s": [
+        0.0011753421276807785,
+        0.0011735828593373299,
+        0.0011597061529755592,
+        0.0011710263788700104,
+        0.001179012469947338,
+        0.001166272908449173,
+        0.001225183717906475,
+        0.0013013388961553574,
+        0.0011445572599768639,
+        0.001136639155447483
+      ],
+      "median_s": 0.0011723046191036701,
+      "mean_s": 0.0011832661926746368,
+      "stdev_s": 4.777146571489153e-05,
+      "min_s": 0.001136639155447483,
+      "max_s": 0.0013013388961553574,
+      "median_mean_gap_pct": 0.9350448161969813,
+      "flops": 481036337152.0,
+      "bytes": null,
+      "achieved_flops_per_s": 410333909218744.3,
+      "achieved_bytes_per_s": null,
+      "predicted_s": null,
+      "ratio_to_prediction": null,
+      "meta": {}
+    }
+  ]
+}

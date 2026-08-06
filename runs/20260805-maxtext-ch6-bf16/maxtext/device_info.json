@@ -1,0 +1,61 @@
+{
+    "hostname": "dell300x-ccs-aus-f06-01",
+    "devices": [
+        {
+            "id": 0,
+            "local_hardware_id": 0,
+            "process_index": 0,
+            "device_kind": "AMD Instinct MI300X",
+            "platform_version": "PJRT C API\nrocm 71400"
+        },
+        {
+            "id": 1,
+            "local_hardware_id": 1,
+            "process_index": 0,
+            "device_kind": "AMD Instinct MI300X",
+            "platform_version": "PJRT C API\nrocm 71400"
+        },
+        {
+            "id": 2,
+            "local_hardware_id": 2,
+            "process_index": 0,
+            "device_kind": "AMD Instinct MI300X",
+            "platform_version": "PJRT C API\nrocm 71400"
+        },
+        {
+            "id": 3,
+            "local_hardware_id": 3,
+            "process_index": 0,
+            "device_kind": "AMD Instinct MI300X",
+            "platform_version": "PJRT C API\nrocm 71400"
+        },
+        {
+            "id": 4,
+            "local_hardware_id": 4,
+            "process_index": 0,
+            "device_kind": "AMD Instinct MI300X",
+            "platform_version": "PJRT C API\nrocm 71400"
+        },
+        {
+            "id": 5,
+            "local_hardware_id": 5,
+            "process_index": 0,
+            "device_kind": "AMD Instinct MI300X",
+            "platform_version": "PJRT C API\nrocm 71400"
+        },
+        {
+            "id": 6,
+            "local_hardware_id": 6,
+            "process_index": 0,
+            "device_kind": "AMD Instinct MI300X",
+            "platform_version": "PJRT C API\nrocm 71400"
+        },
+        {
+            "id": 7,
+            "local_hardware_id": 7,
+            "process_index": 0,
+            "device_kind": "AMD Instinct MI300X",
+            "platform_version": "PJRT C API\nrocm 71400"
+        }
+    ]
+}

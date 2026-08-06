@@ -23,8 +23,16 @@ toc:
   - name: Capacity, Dropping, Padding, and Going Dropless
   - name: Three Ways to Implement an Expert Layer
   - name: Which of the Three You Can Get on AMD in JAX
+    subsections:
+      - name: The Missing Mesh Axis
+      - name: The Implementations, Measured
+      - name: Working the Win Condition
+      - name: What AMD Ships, And Why
+      - name: AITER Has No Grouped MoE GEMM
   - name: All-to-All Dispatch and Combine
   - name: Expert Parallelism
+    subsections:
+      - name: But The Lever Points The Other Way
   - name: Anatomy of Three Real Models
   - name: The Four Numbers to Log for Every MoE Run
   - name: Worked Problems
@@ -430,34 +438,210 @@ chapter.** If you are running MaxText MoE on ROCm:
    [the closing section](#the-four-numbers-to-log-for-every-moe-run), because none of
    this is visible otherwise.
 
-<!-- BLOCKED: the two measurements that turn this section from a source reading into a
-     result. These are the most valuable numbers in the chapter and nobody has published
-     them.
+### The Missing Mesh Axis
 
-     MEASUREMENT 1: the three implementations against each other, same model, same
-     tokens, only the implementation varying. Needs an MoE block that implements all
-     three behind one flag (docs/structure.md lists this as the script that decides
-     whether Chapter 7 has a result or an opinion). Report achieved TFLOP/s and step
-     time for: dense masked (capacity_factor -1, sparse_matmul false), one-hot capacity
-     (capacity_factor 1.25), ragged_dot (sparse_matmul true, megablox false). Then plug
-     the measured efficiencies into the win condition above and say which actually wins
-     at Mixtral's E/E_a = 4 and at Qwen3's 16. The prediction is that ragged_dot wins
-     easily for fine-grained models even at poor efficiency; that prediction is exactly
-     what should be tested.
+**Before the implementation comparison, a configuration bug, because it is larger than
+most of the differences the comparison finds and it is invisible in a profile.**
 
-     MEASUREMENT 2: XLA-generated expert GEMMs against AITER's published grouped-GEMM
-     figures, stated as a ratio. This quantifies the gap between AMD's best MoE kernels
-     and what a JAX user can reach.
+MaxText's `base.yml` maps logical axes onto physical mesh axes, and one of those lines
+governs where MoE activations live:
 
-     ALSO UNVERIFIED, and deliberately not asserted above: whether ROCm/jax-aiter
-     exposes any grouped or ragged MoE GEMM. Our understanding is that it bridges
-     attention and dense GEMM over XLA FFI and no grouped MoE GEMM, which if true is
-     the central performance fact of this chapter and should lead it. It needs checking
-     against current wheels before being written, and pinning to a version when it is,
-     because this is the fastest-moving area in the book. Also worth confirming: whether
-     megablox interpret mode on GPU is as catastrophic as it sounds, or whether XLA
-     manages to optimise the interpreted form into something reasonable. Nobody should
-     assume either answer. -->
+```yaml
+['activation_batch_moe', ['data', 'fsdp', 'fsdp_transpose', 'expert']],
+```
+
+**Two upstream refactors dropped `'expert'` from that list.** Nothing breaks: on a
+multi-axis mesh the activations still shard over `data` or `fsdp`. But on a single node
+running expert parallelism alone, which is exactly the AMD recipe with
+`ici_expert_parallelism: -1` and everything else at 1, `expert` is the *only* active axis.
+**Remove it and the MoE activations are replicated on every device.**
+
+We put the line back the way it was and measured both, on Mixtral 8x7B, eight MI300X,
+4096-token sequences: **[measured]**
+
+| Per-device batch | With `'expert'` | Without | |
+|---|---|---|---|
+| 1 | 174.7 TFLOP/s | 224.0 TFLOP/s | unsharded wins |
+| 2 | — | 239.0 TFLOP/s | |
+| 4 | 291.0 TFLOP/s | 255.2 TFLOP/s | sharded wins |
+| 12 | **344.0 TFLOP/s** | **out of memory** | |
+
+**The headline is the last row, and it is a memory result before it is a throughput
+result.** Unsharded MoE activations are eight times larger per device, so the recipe's
+batch of 12 does not fit, and the largest batch that does fit reaches 255 TFLOP/s. The
+sharded configuration runs the intended batch and reaches 344. **Best against best, the
+line is worth 1.35x.**
+
+**At a batch where both fit, the gap is smaller and at batch 1 it inverts.** Sharding the
+MoE activation over eight experts when there is one sequence per device leaves too little
+work per expert to pay for the dispatch, and the replicated version is 1.28x faster. This
+is the same tokens-per-device story as
+[Chapter 6]({{ '/pages/6-training' | relative_url }}), arriving in an unexpected place.
+
+**Two things to take from this.** The upstream commit that restores the line describes a
+2.5x regression; we measure 1.14x at matched batch and 1.35x best-against-best on this
+hardware, so **check the number on your own configuration rather than inheriting ours or
+theirs**. And more usefully: **a logical-to-physical axis mapping that silently degrades
+when a mesh axis is inactive is a failure mode you will not find by reading a profile**,
+because the profile of the slow configuration looks entirely reasonable. It is only
+obvious when you have the fast one to compare against.
+
+> **Verified against:** the container this book pins, whose MaxText already carries the
+> restored line at `src/maxtext/configs/base.yml:541`. **You are unlikely to hit this on
+> `rocm/jax-training:maxtext-v26.5`**; we reproduced it by removing the line deliberately.
+> Check yours before assuming, because the fix is recent and the refactors that caused it
+> are upstream.
+
+### The Implementations, Measured
+
+**We ran all five paths on two models, eight MI300X, expert parallelism only, same tokens,
+same everything except the dispatch.** Mixtral 8x7B has coarse experts
+(`E / E_a = 4`, `F_moe = 14336`); Qwen3 30B-A3B has fine ones
+(`E / E_a = 16`, `F_moe = 768`). **[measured]**
+
+| Implementation | Config | Mixtral | Qwen3 |
+|---|---|---|---|
+| One-hot capacity | `sparse_matmul: false`, `capacity_factor: 1.25` | **254.4 TFLOP/s** | **66.9 TFLOP/s** |
+| Dense masked | `sparse_matmul: false`, `capacity_factor: -1` | 88.1, 2.9x slower | 27.0, 2.5x slower |
+| `ragged_dot` | `sparse_matmul: true`, `megablox: false` | 21.5, 11.8x slower | 11.9, 5.6x slower |
+| megablox | `sparse_matmul: true`, `megablox: true` | **fails to compile** | **fails to compile** |
+| tokamax | `use_tokamax_gmm: true` | **refuses to run** | **refuses to run** |
+
+**One-hot capacity dispatch wins on both models, and it is not close.** The three-way
+comparison this chapter set up turns out to have a fourth answer that beats all three of
+them, and it is the one AMD's own recipes already use.
+
+**Three of the four things this section predicted are wrong, and the fourth is more wrong
+than predicted.**
+
+**megablox does not silently interpret. It fails, loudly, at compile time.**
+
+```
+File "jax/_src/pallas/core.py", line 161, in get_lowering_rule
+ValueError: Compiler params for platform tpu cannot be used for gpu lowering.
+```
+
+**This is much better news than the interpret-mode reading above suggested**, and the
+section's warning needs softening rather than strengthening: a GPU user who accepts
+`megablox: true` does not get a silently interpreted kernel producing correct answers
+slowly. They get a stack trace before the first step. **The failure is loud, immediate and
+unambiguous**, which is the failure mode you want.
+
+**tokamax refuses too, and just as clearly:**
+
+```
+File "tokamax/_src/ops/op.py", line 197
+NotImplementedError: Not supported on AMD Instinct MI300X.
+```
+
+**So `jax.lax.ragged_dot` really is the only grouped-GEMM path that runs**, exactly as this
+section argued. **And it is unusable.** 60.7 seconds against 5.1 for the one-hot path is
+not a tuning gap, it is a different order of magnitude, and no amount of `E / E_a` saved
+recovers a factor of twelve.
+
+### Working the Win Condition
+
+**Substituting the measured numbers into the inequality from
+[Three Ways to Implement an Expert Layer](#three-ways-to-implement-an-expert-layer).**
+MaxText reports *useful* model FLOP/s, so dense masked's figure already has its
+`E / E_a` waste divided out; the step-time ratio and the throughput ratio agree at 2.89,
+which is how you can tell. Recovering the kernel efficiencies against the 990 TFLOP/s
+roofline [Chapter 3]({{ '/pages/3-profiling' | relative_url }}) measures:
+
+```
+eta_dense  = 88.1 * (E / E_a) / 990 = 88.1 * 4 / 990 = 35.6%
+eta_ragged = 21.5 / 990                              =  2.2%
+```
+
+**For Mixtral, `E / E_a = 4`, and the condition fails by a factor of four:**
+
+```
+eta_ragged > eta_dense * E_a / E
+      2.2% > 35.6% * 0.25 = 8.9%     FALSE
+```
+
+**For Qwen3, `E / E_a = 16`, which should be `ragged_dot`'s best case. It still fails:**
+
+```
+eta_dense  = 27.0 * 16 / 990 = 43.6%
+eta_ragged = 11.9 / 990      =  1.2%
+      1.2% > 43.6% / 16 = 2.7%       FALSE
+```
+
+**The prediction this section made was that `ragged_dot` wins easily for fine-grained
+models even at poor efficiency. It does not win at all.** Sixteen-way sparsity closes the
+gap from 4x to 2.3x and no further, because `jax.lax.ragged_dot` gets worse as the experts
+get narrower at almost the same rate the sparsity argument helps. **The derivation assumed
+6% efficiency for the ragged path; the measurement is 1.2% to 2.2%.**
+
+**And notice what dense masked does on the fine-grained model, because it is the
+counterintuitive part.** Qwen3 runs sixteen times the expert FLOPs in only 2.5 times the
+step time, which means its kernel efficiency is **higher** than Mixtral's: 43.6% against
+35.6%. **Making the experts narrow makes every per-expert GEMM worse, and the dense path is
+the one that does not have per-expert GEMMs.** Fine-grained MoE punishes exactly the
+implementations that try to exploit the sparsity.
+
+### What AMD Ships, And Why
+
+**The Primus MI300X recipes for both Mixtral and DeepSeek-V2-Lite set
+`sparse_matmul: false` with a finite `capacity_factor`**, which contradicts upstream
+MaxText's defaults and, before this measurement, looked like a conservative choice. It is
+not conservative. **It is the only configuration of the five that is both fast and
+runnable**, and it beats the nearest alternative by 2.9x.
+
+**So the advice earlier in this section needs reordering, and here it is corrected:**
+
+1. **Set `sparse_matmul: false` and a finite `capacity_factor`.** This is the fast path on
+   ROCm today, and it is what AMD's own recipes use.
+2. **Do not set `megablox: true`.** It will not run. If you inherited a config that sets
+   it, you already know, because nothing started.
+3. **Do not reach for `ragged_dot` on the strength of its `E / E_a` argument.** The
+   argument is sound and the implementation is twelve times too slow for it to matter.
+4. **Re-check all of this when you upgrade.** Every row of that table is a statement about
+   one container, and the grouped-GEMM situation is the fastest-moving thing in this
+   chapter.
+
+### AITER Has No Grouped MoE GEMM
+
+**The comparison this section wanted to make against AMD's own kernels cannot be made,
+and the reason is the most important fact in the chapter.**
+
+[`ROCm/jax-aiter`](https://github.com/ROCm/jax-aiter) bridges AITER into JAX over XLA FFI,
+needs no PyTorch at runtime, and requires Python 3.12 with ROCm 7.2 or newer, so it would
+install against this book's container. Its published operator list, read on
+**5 August 2026**, is:
+
+> FP4 GEMM (training and low-level), MXFP4 quantizer and cast, **BF16 GEMM**, **flash
+> attention** and its variable-length form, RMSNorm, fused add-and-RMSNorm, and
+> SiLU-and-multiply.
+
+**There is no grouped GEMM, no ragged GEMM, and no MoE dispatch operator in that list.**
+AITER's fast kernels cover attention and dense matmul, which are the parts of a transformer
+that were never the MoE problem. **So a JAX user on ROCm has no vendor-optimised expert
+GEMM to fall back to**, and the 254 TFLOP/s the one-hot path reaches is not a floor with a
+better kernel above it; it is the ceiling.
+
+**That reframes the whole chapter.** The question is not "which grouped-GEMM implementation
+should I pick", because the good ones are TPU kernels and the portable one is twelve times
+too slow. **The question is how to make dense, batched matmuls do MoE work**, and one-hot
+capacity dispatch is the answer that is actually available: it turns routing into a
+gather, a dense GEMM per expert slot, and a scatter, all of which hipBLASLt is good at.
+
+> **Verified against:** `rocm/jax-training:maxtext-v26.5`, MaxText `release/v26.5` at
+> `a7c6c7e5`, `tokamax` 0.0.12, on 8x MI300X, **5 August 2026**. `jax-aiter` is not
+> published on PyPI and was read from its repository rather than installed. **Pin the date
+> on all of this**; it is the fastest-moving material in the book.
+
+<!-- BLOCKED: MEASUREMENT 2 as originally scoped is not possible and the section above
+     says why: AITER exposes no grouped MoE GEMM through jax-aiter, so there is no
+     published AMD grouped-GEMM figure to state a ratio against. What could still be
+     done, and would be worth doing:
+       - Compare our one-hot capacity TFLOP/s against jax-aiter's published dense BF16
+         GEMM figures, to bound how much of the gap is dispatch rather than GEMM. That
+         needs jax-aiter built from source, which we have not done because it is a
+         source build that would perturb the pinned container.
+       - Revisit if AITER ever ships a grouped GEMM. Check the operator table linked
+         above rather than assuming. -->
 
 ## All-to-All Dispatch and Combine
 
@@ -599,12 +783,70 @@ expert parallelism with FSDP so that fewer devices participate in the all-to-all
 
 **5. Predict, then measure.**
 
-<!-- BLOCKED (part 5). Needs an instrumented MoE block on 8x MI300X. Measure the
-     all-to-all share of step time at |Ex| = 2, 4, 8 for a fine-grained and a
-     coarse-grained configuration, and check the F_moe > 1589 threshold, which predicts
-     that Qwen3-shaped experts are dispatch-bound at 8-way and Mixtral-shaped ones are
-     not. This is the cleanest testable prediction in the chapter and it needs one node
-     and no cluster. -->
+**Eight MI300X, one-hot capacity dispatch, `|Ex|` moved from 2 to 8 with FSDP taking up
+whatever slack is left, so the device count is fixed at 8 throughout.** That is the real
+decision: not "how much expert parallelism", but "how much of the node do I spend on it
+instead of on FSDP". **[measured]**
+
+**Mixtral 8x7B, `F_moe = 14336`, nine times the threshold:**
+
+| `\|Ex\|` | FSDP | Step time | TFLOP/s per device | Collectives, share of device time |
+|---|---|---|---|---|
+| 2 | 4 | 7.66 s | 170.6 | 45.0% |
+| 4 | 2 | 6.25 s | 209.0 | 35.8% |
+| 8 | 1 | **5.14 s** | **253.9** | **19.0%** |
+
+**Qwen3 30B-A3B, `F_moe = 768`, half the threshold:**
+
+| `\|Ex\|` | FSDP | Step time | TFLOP/s per device | Collectives, share of device time |
+|---|---|---|---|---|
+| 2 | 4 | 3.10 s | 27.3 | 71.5% |
+| 4 | 2 | 2.17 s | 39.1 | 65.7% |
+| 8 | 1 | **1.31 s** | **64.6** | **45.8%** |
+
+**The threshold predicts the right thing.** At 8-way expert parallelism the coarse-grained
+model spends 19% of its device time in collectives and the fine-grained one spends 46%,
+which is the difference between comfortable and dispatch-bound. A nineteen-fold difference
+in `F_moe` produces a 2.4-fold difference in communication share, and the model that is
+below the threshold is the one that is communication-dominated. **`F_moe > 1589` is a
+usable rule.**
+
+**The 36% prediction lands in the right place too, for the model it was derived for.** The
+worked example above computes dispatch and combine at 36% of expert compute for a
+DeepSeek-V2-Lite-shaped layer with `F_moe = 1408`. Qwen3, at `F_moe = 768`, is about half
+that width and measures 46% of *total* device time in collectives, which is the same
+statement seen through a wider denominator. **Nothing here contradicts the arithmetic.**
+
+### But The Lever Points The Other Way
+
+**One piece of the advice above is wrong and the table says so plainly.** The levers
+listed at the end of part 4 include "reduce `|Ex|` by combining expert parallelism with
+FSDP so that fewer devices participate in the all-to-all". **Do not do that.** Every row
+of both tables gets worse as `|Ex|` falls: Mixtral loses 1.49x going from 8-way to 2-way,
+Qwen3 loses 2.37x, and the collective share *rises* in both cases rather than falling.
+
+**The reason is that the all-to-all is not the expensive collective.** On a fixed
+eight-device node, the devices you take away from the expert axis go to FSDP, and FSDP's
+job is to all-gather the expert weights, which for an MoE model are almost all of the
+parameters. **Trading a dispatch of activations for a gather of experts is a bad trade,
+and it gets worse the more of the model lives in the experts.**
+
+**So the corrected lever list, in order:**
+
+1. **Keep `Ex` intra-node**, which is the one piece of the original advice that holds
+   and is the most important of the three.
+2. **Then make `|Ex|` as large as the node allows**, rather than as small as you can get
+   away with. On eight devices with an MoE model, `ici_expert_parallelism: -1` and nothing
+   else is the configuration to beat, which is exactly what AMD's recipes ship.
+3. **Overlap what remains.** Both models leave most of their collective time exposed:
+   only 11.5% of Mixtral's and 10.2% of Qwen3's has compute running underneath it at
+   8-way. That is the largest remaining gap in both, and
+   [Chapter 4]({{ '/pages/4-sharding' | relative_url }})'s combine-threshold finding is
+   the first thing to check.
+
+**What this does not tell you is what happens across hosts**, which is where the 360%
+figure above comes from and where pipelining the dispatch actually matters. That remains
+**[analytical]**: we have one node.
 
 **How expert parallelism composes with everything else**, which is where most real MoE
 performance is won or lost:

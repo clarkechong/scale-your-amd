@@ -1,0 +1,14 @@
+thunk_metadata {
+  thunk_info {
+    profile_annotation: "custom-call.1"
+    thunk_id: 1
+  }
+  thunk_kind: "kCublasLtMatmul"
+}
+thunk_metadata {
+  thunk_info {
+    profile_annotation: "all-reduce-start"
+    thunk_id: 2
+  }
+  thunk_kind: "kAllReduce"
+}

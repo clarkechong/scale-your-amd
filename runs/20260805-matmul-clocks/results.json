@@ -1,0 +1,184 @@
+{
+  "workload": "matmul",
+  "tag": "clocks",
+  "finished_at": "2026-08-05T11:47:43.833127+00:00",
+  "wall_seconds": 66.17006659507751,
+  "protocol": {
+    "warmup": 3,
+    "repeats": 10,
+    "statistic": "median"
+  },
+  "constants": {
+    "cus": 304,
+    "clock_ghz": 2.1,
+    "bf16_flops": 1307400000000000.0,
+    "fp16_flops": 1307400000000000.0,
+    "fp8_flops": 2614900000000000.0,
+    "fp32_flops": 163400000000000.0,
+    "hbm_bytes_per_s": 5300000000000.0,
+    "hbm_bytes": 206158430208,
+    "xgmi_links": 7,
+    "xgmi_link_unidir_bytes_per_s": 64000000000.0,
+    "xgmi_egress_unidir_bytes_per_s": 448000000000.0,
+    "rccl_realised_bytes_per_s": 320000000000.0
+  },
+  "notes": {
+    "device": "rocm:0",
+    "device_kind": "AMD Instinct MI300X",
+    "dtype": "bfloat16",
+    "peak_flops": 1307400000000000.0,
+    "autotune_level_override": 0
+  },
+  "measurements": [
+    {
+      "name": "matmul-4096",
+      "warmup": 3,
+      "repeats": 10,
+      "times_s": [
+        0.0003766557201743126,
+        0.0002708369866013527,
+        0.00025291647762060165,
+        0.00024785660207271576,
+        0.00024681631475687027,
+        0.0002469373866915703,
+        0.00023140199482440948,
+        0.00022952258586883545,
+        0.0002261688932776451,
+        0.0002292841672897339
+      ],
+      "median_s": 0.0002468768507242203,
+      "mean_s": 0.0002558397129178047,
+      "stdev_s": 4.463397074571979e-05,
+      "min_s": 0.0002261688932776451,
+      "max_s": 0.0003766557201743126,
+      "median_mean_gap_pct": 3.63049924174406,
+      "flops": 137438953472.0,
+      "bytes": 100663296.0,
+      "achieved_flops_per_s": 556710574802047.7,
+      "achieved_bytes_per_s": 407747003028.84357,
+      "predicted_s": 0.00010512387446229158,
+      "ratio_to_prediction": 2.3484375170435348,
+      "meta": {
+        "n": 4096,
+        "arithmetic_intensity": 1365.3333333333333,
+        "trace_dir": "/root/work/scale-your-amd/runs/20260805-matmul-clocks/trace/n4096",
+        "kernel": {
+          "kernel_name": "Cijk_Ailk_Bljk_BBS_BH_UserArgs_MT256x224x64_MI16x16x1_SN_LDSB1_AFC0_AG0_AGGSUA0_AGNTAB0_AFEM8_AFEM8_ASEM32_CD1_1_CLR1_CLS0_CADS0_DTLA0_DTLB0_DTLM0_DTVA0_DTVB0_DTVMXSA0_DTVMXSB0_DTVSM0_DPLB0_EPS0_ELFLR0_EMLLn1_FDSI0_GRPM1_GRVWA8_GRVWB4_GSUAMB_GLS0_HPLR0_ISA942_ICIW0_IU1_K1_LDSTI0_LBSPPA2048_LBSPPB128_LBSPPMXSA0_LBSPPMXSB0_LBSPPM0_LPA16_LPB4_LPMXSA0_LPMXSB0_LPM0_LRVW4_LWPMn1_MIAV0_MIWT4_14_MXLIBL_MXSFNS_MO40_MGRIPM1_NTn1_NTA0_NTB0_NTC0_NTD0_NTE0_NTMXSA0_NTMXSB0_NTM0_NTWS0_NVn1_NVA0_NVB0_NVC0_NVD0_NVE0_NVMXSA0_NVMXSB0_NVM0_NVWS0_NEPBS0_NLCA1_NLCB1_ONLL1_PAP0_PGL0_PGR2_PLR1_PKA1_SGROB0_SIA3_SS1_SPO0_SRVW0_SSO0_SVW4_SK0_SKFTR0_SKFDPO0_SKXCCM0_SNLL0_SIP1_SGRO0_TDMI0_TDMIM0_TDMS0_TIN0_THn1_THA0_THB0_THC0_THD0_THE0_THMXSA0_THMXSB0_THM0_THWS0_TLDS1_TLDSM1_ULSGRO0_USL1_USLMX0_UIOFGRO0_UPLRP0_USFGROn1_USI0_VSn1_VWA4_VWB1_WSGRA1_WSGRB2_WS64_WG64_4_1.kd",
+          "op_name": "jit(<lambda>)/dot_general:",
+          "occurrences": 10.0,
+          "avg_duration_us": 156.952,
+          "min_duration_us": 146.915,
+          "max_duration_us": 163.11,
+          "total_duration_us": 1569.529,
+          "grid": "304,1,1",
+          "block": "256,1,1",
+          "selected_by": "op_name contains dot",
+          "distinct_kernels": 1,
+          "all_kernels": [
+            {
+              "name": "Cijk_Ailk_Bljk_BBS_BH_UserArgs_MT256x224x64_MI16x16x1_SN_LDSB1_AFC0_AG0_AGGSUA0_AGNTAB0_AFEM8_AFEM8_ASEM32_CD1_1_CLR1_CLS0_CADS0_DTLA0_DTLB0_DTLM0_DTVA0_DTVB0_DTVMXSA0_DTVMXSB0_DTVSM0_DPLB0_EPS0_ELFLR0_EMLLn1_FDSI0_GRPM1_GRVWA8_GRVWB4_GSUAMB_GLS0_HPLR0_ISA942_ICIW0_IU1_K1_LDSTI0_LBSPPA2048_LBSPPB128_LBSPPMXSA0_LBSPPMXSB0_LBSPPM0_LPA16_LPB4_LPMXSA0_LPMXSB0_LPM0_LRVW4_LWPMn1_MIAV0_MIWT4_14_MXLIBL_MXSFNS_MO40_MGRIPM1_NTn1_NTA0_NTB0_NTC0_NTD0_NTE0_NTMXSA0_NTMXSB0_NTM0_NTWS0_NVn1_NVA0_NVB0_NVC0_NVD0_NVE0_NVMXSA0_NVMXSB0_NVM0_NVWS0_NEPBS0_NLCA1_NLCB1_ONLL1_PAP0_PGL0_PGR2_PLR1_PKA1_SGROB0_SIA3_SS1_SPO0_SRVW0_SSO0_SVW4_SK0_SKFTR0_SKFDPO0_SKXCCM0_SNLL0_SIP1_SGRO0_TDMI0_TDMIM0_TDMS0_TIN0_THn1_THA0_THB0_THC0_THD0_THE0_THMXSA0_THMXSB0_THM0_THWS0_TLDS1_TLDSM1_ULSGRO0_USL1_USLMX0_UIOFGRO0_UPLRP0_USFGROn1_USI0_VSn1_VWA4_VWB1_WSGRA1_WSGRB2_WS64_WG64_4_1.kd",
+              "op_name": "jit(<lambda>)/dot_general:",
+              "occurrences": 10.0,
+              "avg_us": 156.952
+            }
+          ]
+        },
+        "kernel_time_s": 0.00014691499999999999,
+        "kernel_tflops": 935.4998024163632,
+        "kernel_fraction_of_peak": 0.7155421465629213,
+        "kernel_vs_prediction": 1.3975417168694546,
+        "dispatch_overhead_s": 9.996185072422029e-05,
+        "sustained_clocks": {
+          "samples": 9,
+          "gpu": 0,
+          "sclk_mhz_median": 1599.0,
+          "sclk_mhz_min": 1514.0,
+          "sclk_mhz_max": 1634.0,
+          "sclk_fraction_of_boost": 0.7614285714285715,
+          "power_w_median": 672.0,
+          "power_w_max": 684.0,
+          "seconds": 30.000598354265094,
+          "iterations": 103026,
+          "achievable_bf16_flops": 995524608000000.0
+        },
+        "achievable_flops_at_measured_clock": 995524608000000.0,
+        "kernel_fraction_of_achievable": 0.9397053522320999
+      }
+    },
+    {
+      "name": "matmul-8192",
+      "warmup": 3,
+      "repeats": 10,
+      "times_s": [
+        0.001602480188012123,
+        0.0014732815325260162,
+        0.0015298286452889442,
+        0.0015185307711362839,
+        0.0014519747346639633,
+        0.0014762133359909058,
+        0.0014494312927126884,
+        0.0014908341690897942,
+        0.0014461986720561981,
+        0.001474296674132347
+      ],
+      "median_s": 0.0014752550050616264,
+      "mean_s": 0.0014913070015609264,
+      "stdev_s": 4.803031766690919e-05,
+      "min_s": 0.0014461986720561981,
+      "max_s": 0.001602480188012123,
+      "median_mean_gap_pct": 1.0880828361351271,
+      "flops": 1099511627776.0,
+      "bytes": 402653184.0,
+      "achieved_flops_per_s": 745302760542113.6,
+      "achieved_bytes_per_s": 272938022659.46545,
+      "predicted_s": 0.0008409909956983326,
+      "ratio_to_prediction": 1.7541864450482265,
+      "meta": {
+        "n": 8192,
+        "arithmetic_intensity": 2730.6666666666665,
+        "trace_dir": "/root/work/scale-your-amd/runs/20260805-matmul-clocks/trace/n8192",
+        "kernel": {
+          "kernel_name": "Cijk_Ailk_Bljk_BBS_BH_UserArgs_MT256x224x64_MI16x16x1_SN_LDSB1_AFC0_AG0_AGGSUA0_AGNTAB0_AFEM8_AFEM8_ASEM32_CD1_1_CLR1_CLS0_CADS0_DTLA0_DTLB0_DTLM0_DTVA0_DTVB0_DTVMXSA0_DTVMXSB0_DTVSM0_DPLB0_EPS0_ELFLR0_EMLLn1_FDSI0_GRPM1_GRVWA8_GRVWB4_GSUAMB_GLS0_HPLR0_ISA942_ICIW0_IU1_K1_LDSTI0_LBSPPA2048_LBSPPB128_LBSPPMXSA0_LBSPPMXSB0_LBSPPM0_LPA16_LPB4_LPMXSA0_LPMXSB0_LPM0_LRVW4_LWPMn1_MIAV0_MIWT4_14_MXLIBL_MXSFNS_MO40_MGRIPM1_NTn1_NTA0_NTB0_NTC0_NTD0_NTE0_NTMXSA0_NTMXSB0_NTM0_NTWS0_NVn1_NVA0_NVB0_NVC0_NVD0_NVE0_NVMXSA0_NVMXSB0_NVM0_NVWS0_NEPBS0_NLCA1_NLCB1_ONLL1_PAP0_PGL0_PGR2_PLR1_PKA1_SGROB0_SIA3_SS1_SPO0_SRVW0_SSO0_SVW4_SK0_SKFTR0_SKFDPO0_SKXCCM0_SNLL0_SIP1_SGRO0_TDMI0_TDMIM0_TDMS0_TIN0_THn1_THA0_THB0_THC0_THD0_THE0_THMXSA0_THMXSB0_THM0_THWS0_TLDS1_TLDSM1_ULSGRO0_USL1_USLMX0_UIOFGRO0_UPLRP0_USFGROn1_USI0_VSn1_VWA4_VWB1_WSGRA1_WSGRB2_WS64_WG64_4_1.kd",
+          "op_name": "jit(<lambda>)/dot_general:",
+          "occurrences": 10.0,
+          "avg_duration_us": 1283.078,
+          "min_duration_us": 1231.083,
+          "max_duration_us": 1324.283,
+          "total_duration_us": 12830.788,
+          "grid": "1184,1,1",
+          "block": "256,1,1",
+          "selected_by": "op_name contains dot",
+          "distinct_kernels": 1,
+          "all_kernels": [
+            {
+              "name": "Cijk_Ailk_Bljk_BBS_BH_UserArgs_MT256x224x64_MI16x16x1_SN_LDSB1_AFC0_AG0_AGGSUA0_AGNTAB0_AFEM8_AFEM8_ASEM32_CD1_1_CLR1_CLS0_CADS0_DTLA0_DTLB0_DTLM0_DTVA0_DTVB0_DTVMXSA0_DTVMXSB0_DTVSM0_DPLB0_EPS0_ELFLR0_EMLLn1_FDSI0_GRPM1_GRVWA8_GRVWB4_GSUAMB_GLS0_HPLR0_ISA942_ICIW0_IU1_K1_LDSTI0_LBSPPA2048_LBSPPB128_LBSPPMXSA0_LBSPPMXSB0_LBSPPM0_LPA16_LPB4_LPMXSA0_LPMXSB0_LPM0_LRVW4_LWPMn1_MIAV0_MIWT4_14_MXLIBL_MXSFNS_MO40_MGRIPM1_NTn1_NTA0_NTB0_NTC0_NTD0_NTE0_NTMXSA0_NTMXSB0_NTM0_NTWS0_NVn1_NVA0_NVB0_NVC0_NVD0_NVE0_NVMXSA0_NVMXSB0_NVM0_NVWS0_NEPBS0_NLCA1_NLCB1_ONLL1_PAP0_PGL0_PGR2_PLR1_PKA1_SGROB0_SIA3_SS1_SPO0_SRVW0_SSO0_SVW4_SK0_SKFTR0_SKFDPO0_SKXCCM0_SNLL0_SIP1_SGRO0_TDMI0_TDMIM0_TDMS0_TIN0_THn1_THA0_THB0_THC0_THD0_THE0_THMXSA0_THMXSB0_THM0_THWS0_TLDS1_TLDSM1_ULSGRO0_USL1_USLMX0_UIOFGRO0_UPLRP0_USFGROn1_USI0_VSn1_VWA4_VWB1_WSGRA1_WSGRB2_WS64_WG64_4_1.kd",
+              "op_name": "jit(<lambda>)/dot_general:",
+              "occurrences": 10.0,
+              "avg_us": 1283.078
+            }
+          ]
+        },
+        "kernel_time_s": 0.001231083,
+        "kernel_tflops": 893.1255063842161,
+        "kernel_fraction_of_peak": 0.6831310282883709,
+        "kernel_vs_prediction": 1.4638480153735145,
+        "dispatch_overhead_s": 0.00024417200506162643,
+        "sustained_clocks": {
+          "samples": 9,
+          "gpu": 0,
+          "sclk_mhz_median": 1569.0,
+          "sclk_mhz_min": 1502.0,
+          "sclk_mhz_max": 1811.0,
+          "sclk_fraction_of_boost": 0.7471428571428571,
+          "power_w_median": 714.0,
+          "power_w_max": 727.0,
+          "seconds": 30.000341271050274,
+          "iterations": 20231,
+          "achievable_bf16_flops": 976846848000000.0
+        },
+        "achievable_flops_at_measured_clock": 976846848000000.0,
+        "kernel_fraction_of_achievable": 0.9142943013153031
+      }
+    }
+  ]
+}

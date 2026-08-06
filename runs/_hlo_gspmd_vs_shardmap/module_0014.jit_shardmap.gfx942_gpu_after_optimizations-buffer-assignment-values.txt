@@ -1,0 +1,58 @@
+
+Total bytes used: 216006678 (206.00MiB)
+
+Used values:
+<0 psum_invariant.0 @0>
+ positions:
+  psum_invariant.0
+ uses:
+  add.0.0, operand 0
+ from instruction: %psum_invariant.0 = bf16[] parameter(0), metadata={op_name="psum_invariant" scheduling_name="psum_invariant.0"}
+<1 psum_invariant.1 @0>
+ positions:
+  psum_invariant.1
+ uses:
+  add.0.0, operand 1
+ from instruction: %psum_invariant.1 = bf16[] parameter(1), metadata={op_name="psum_invariant" scheduling_name="psum_invariant.1"}
+<2 add.0.0 @0>
+ positions:
+  add.0.0
+ uses:
+ from instruction: %add.0.0 = bf16[] add(%psum_invariant.0, %psum_invariant.1), metadata={op_name="add" scheduling_name="add.0.0" stack_frame_id=12}
+<3 param.2 @0>
+ positions:
+  param.2
+ uses:
+  custom-call.1, operand 0
+ from instruction: %param.2 = bf16[4096,512]{1,0} parameter(0), sharding={devices=[1,8]<=[8]}, metadata={op_name="a" scheduling_name="param.2"}
+<4 param.3 @0>
+ positions:
+  param.3
+ uses:
+  custom-call.1, operand 1
+ from instruction: %param.3 = bf16[512,14336]{1,0} parameter(1), sharding={devices=[8,1]<=[8]}, metadata={op_name="b" scheduling_name="param.3"}
+<5 custom-call.1{} @0>
+ positions:
+  custom-call.1 {}
+ uses:
+  get-tuple-element.2, operand 0 {}
+ from instruction: %custom-call.1 = (bf16[4096,14336]{1,0}, s8[79691776]{0}) custom-call(%param.2, %param.3), custom_call_target="__cublas$lt$matmul", metadata={op_name="jit(shardmap)/shard_map/dot_general" scheduling_name="custom-call.1" stack_frame_id=13}, backend_config={"operation_queue_id":"0","gemm_backend_config":{"alpha_real":1,"beta":0,"dot_dimension_numbers":{"lhs_contracting_dimensions":["1"],"rhs_contracting_dimensions":["0"],"lhs_batch_dimensions":[],"rhs_batch_dimensions":[]},"alpha_imag":0,"precision_config":{"operand_precision":["DEFAULT","DEFAULT"],"algorithm":"ALG_UNSET"},"epilogue":"DEFAULT","lhs_stride":"2097152","rhs_stride":"7340032","grad_x":false,"grad_y":false,"damax_output":false,"autotune_workspace_size":"0","scale_mode":0},"force_earliest_schedule":false,"reification_cost":[],"device_type":"DEVICE_TYPE_INVALID"}
+<6 custom-call.1{0} @0>
+ positions:
+  custom-call.1 {0}
+  get-tuple-element.2
+ uses:
+  all-reduce-start, operand 0
+ from instruction: %custom-call.1 = (bf16[4096,14336]{1,0}, s8[79691776]{0}) custom-call(%param.2, %param.3), custom_call_target="__cublas$lt$matmul", metadata={op_name="jit(shardmap)/shard_map/dot_general" scheduling_name="custom-call.1" stack_frame_id=13}, backend_config={"operation_queue_id":"0","gemm_backend_config":{"alpha_real":1,"beta":0,"dot_dimension_numbers":{"lhs_contracting_dimensions":["1"],"rhs_contracting_dimensions":["0"],"lhs_batch_dimensions":[],"rhs_batch_dimensions":[]},"alpha_imag":0,"precision_config":{"operand_precision":["DEFAULT","DEFAULT"],"algorithm":"ALG_UNSET"},"epilogue":"DEFAULT","lhs_stride":"2097152","rhs_stride":"7340032","grad_x":false,"grad_y":false,"damax_output":false,"autotune_workspace_size":"0","scale_mode":0},"force_earliest_schedule":false,"reification_cost":[],"device_type":"DEVICE_TYPE_INVALID"}
+<7 custom-call.1{1} @0>
+ positions:
+  custom-call.1 {1}
+ uses:
+ from instruction: %custom-call.1 = (bf16[4096,14336]{1,0}, s8[79691776]{0}) custom-call(%param.2, %param.3), custom_call_target="__cublas$lt$matmul", metadata={op_name="jit(shardmap)/shard_map/dot_general" scheduling_name="custom-call.1" stack_frame_id=13}, backend_config={"operation_queue_id":"0","gemm_backend_config":{"alpha_real":1,"beta":0,"dot_dimension_numbers":{"lhs_contracting_dimensions":["1"],"rhs_contracting_dimensions":["0"],"lhs_batch_dimensions":[],"rhs_batch_dimensions":[]},"alpha_imag":0,"precision_config":{"operand_precision":["DEFAULT","DEFAULT"],"algorithm":"ALG_UNSET"},"epilogue":"DEFAULT","lhs_stride":"2097152","rhs_stride":"7340032","grad_x":false,"grad_y":false,"damax_output":false,"autotune_workspace_size":"0","scale_mode":0},"force_earliest_schedule":false,"reification_cost":[],"device_type":"DEVICE_TYPE_INVALID"}
+<8 all-reduce-start @0>
+ positions:
+  all-reduce-start
+  all-reduce-done
+ uses:
+  all-reduce-done, operand 0
+ from instruction: %all-reduce-start = bf16[4096,14336]{1,0} all-reduce-start(%get-tuple-element.2), channel_id=1, replica_groups={{0,1,2,3,4,5,6,7}}, use_global_device_ids=true, to_apply=%region_0.0, metadata={op_name="jit(shardmap)/shard_map/psum_invariant" scheduling_name="all-reduce-start" stack_frame_id=14}, backend_config={"operation_queue_id":"0","collective_backend_config":{"is_sync":true,"is_pipelined":false,"backend":"DEFAULT"},"force_earliest_schedule":false,"reification_cost":[],"device_type":"DEVICE_TYPE_INVALID"}

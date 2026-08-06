@@ -1,0 +1,204 @@
+{
+  "workload": "transformer-block",
+  "tag": "fsdp-lhs-on",
+  "finished_at": "2026-08-05T12:40:57.666049+00:00",
+  "wall_seconds": 57.3679895401001,
+  "protocol": {
+    "warmup": 3,
+    "repeats": 10,
+    "statistic": "median"
+  },
+  "constants": {
+    "cus": 304,
+    "clock_ghz": 2.1,
+    "bf16_flops": 1307400000000000.0,
+    "fp16_flops": 1307400000000000.0,
+    "fp8_flops": 2614900000000000.0,
+    "fp32_flops": 163400000000000.0,
+    "hbm_bytes_per_s": 5300000000000.0,
+    "hbm_bytes": 206158430208,
+    "xgmi_links": 7,
+    "xgmi_link_unidir_bytes_per_s": 64000000000.0,
+    "xgmi_egress_unidir_bytes_per_s": 448000000000.0,
+    "rccl_realised_bytes_per_s": 320000000000.0
+  },
+  "notes": {
+    "strategy": "fsdp",
+    "devices": 8,
+    "config": {
+      "d_model": 4096,
+      "d_ff": 14336,
+      "n_heads": 32,
+      "n_kv_heads": 8,
+      "head_dim": 128
+    },
+    "params_per_layer": 218103808,
+    "layers": 4,
+    "seq_len": 2048,
+    "annotated": true,
+    "latency_hiding_override": "true"
+  },
+  "measurements": [
+    {
+      "name": "fsdp-2048tok",
+      "warmup": 3,
+      "repeats": 10,
+      "times_s": [
+        0.04154806770384312,
+        0.04271929245442152,
+        0.04322858061641455,
+        0.04230155982077122,
+        0.04261153470724821,
+        0.041893347166478634,
+        0.04225783422589302,
+        0.042273472994565964,
+        0.042292503640055656,
+        0.043021950870752335
+      ],
+      "median_s": 0.04229703173041344,
+      "mean_s": 0.042414814420044425,
+      "stdev_s": 0.0005008681923094323,
+      "min_s": 0.04154806770384312,
+      "max_s": 0.04322858061641455,
+      "median_mean_gap_pct": 0.2784656152273141,
+      "flops": 89060441849856.0,
+      "bytes": null,
+      "achieved_flops_per_s": 2105595551420635.5,
+      "achieved_bytes_per_s": null,
+      "predicted_s": null,
+      "ratio_to_prediction": null,
+      "meta": {
+        "tokens_per_device": 2048,
+        "global_tokens": 16384,
+        "batch": 8,
+        "seq_len": 2048,
+        "trace_dir": "/root/work/scale-your-amd/runs/20260805-transformer-block-fsdp-lhs-on/trace/2048",
+        "mfu": 0.20131516286337728,
+        "collective_timing": {
+          "devices": 8,
+          "iterations": 30,
+          "events_per_device": {
+            "GPU:0": 30,
+            "GPU:1": 30,
+            "GPU:2": 30,
+            "GPU:3": 30,
+            "GPU:4": 30,
+            "GPU:5": 30,
+            "GPU:6": 30,
+            "GPU:7": 30
+          },
+          "span_s_median": 0.005467732,
+          "span_s_min": 4.0445e-05,
+          "busy_s_median": 0.0047847335,
+          "busy_s_min": 3.0866e-05,
+          "skew_fraction": 0.12491440692411404,
+          "kernel_name": "ncclDevKernel_Generic_2(ncclDevKernelArgsStorage<5120ul>) [clone .kd]"
+        },
+        "kernel_total_us": 3001091.292,
+        "collective_total_us": 840607.829,
+        "collective_share": 0.28010071910868084,
+        "collective_exposed_share": 0.11312220513477698,
+        "scopes": [
+          {
+            "scope": "<unnamed kernel>",
+            "total_duration_us": 708061.5469999994,
+            "kernels": 22,
+            "collective_us": 424121.469,
+            "share": 0.235934691119686
+          },
+          {
+            "scope": "mlp",
+            "total_duration_us": 702168.6260000002,
+            "kernels": 16,
+            "collective_us": 0.0,
+            "share": 0.23397109840402688
+          },
+          {
+            "scope": "qkv_proj",
+            "total_duration_us": 536353.4400000001,
+            "kernels": 19,
+            "collective_us": 411259.498,
+            "share": 0.1787194682913365
+          },
+          {
+            "scope": "attention",
+            "total_duration_us": 436692.33600000007,
+            "kernels": 19,
+            "collective_us": 0.0,
+            "share": 0.14551118027101992
+          },
+          {
+            "scope": "BTNH",
+            "total_duration_us": 107387.15599999997,
+            "kernels": 12,
+            "collective_us": 0.0,
+            "share": 0.03578270220778075
+          },
+          {
+            "scope": "layer_3",
+            "total_duration_us": 106462.392,
+            "kernels": 7,
+            "collective_us": 0.0,
+            "share": 0.035474559632289925
+          },
+          {
+            "scope": "layer_2",
+            "total_duration_us": 102666.57099999998,
+            "kernels": 7,
+            "collective_us": 0.0,
+            "share": 0.034209746059267826
+          },
+          {
+            "scope": "layer_0",
+            "total_duration_us": 102538.99299999999,
+            "kernels": 7,
+            "collective_us": 0.0,
+            "share": 0.034167235523070515
+          },
+          {
+            "scope": "layer_1",
+            "total_duration_us": 101301.56999999999,
+            "kernels": 7,
+            "collective_us": 0.0,
+            "share": 0.03375491117849007
+          },
+          {
+            "scope": "out_proj",
+            "total_duration_us": 77219.1,
+            "kernels": 9,
+            "collective_us": 0.0,
+            "share": 0.025730340228517116
+          },
+          {
+            "scope": "<unscoped>",
+            "total_duration_us": 6606.777,
+            "kernels": 4,
+            "collective_us": 5226.862,
+            "share": 0.0022014581887634227
+          },
+          {
+            "scope": "mlp_norm",
+            "total_duration_us": 5231.615999999999,
+            "kernels": 12,
+            "collective_us": 0.0,
+            "share": 0.0017432378728184318
+          },
+          {
+            "scope": "attention_norm",
+            "total_duration_us": 4900.808,
+            "kernels": 10,
+            "collective_us": 0.0,
+            "share": 0.0016330086369128688
+          },
+          {
+            "scope": "BNTS",
+            "total_duration_us": 3500.3599999999997,
+            "kernels": 3,
+            "collective_us": 0.0,
+            "share": 0.0011663623860196785
+          }
+        ]
+      }
+    }
+  ]
+}

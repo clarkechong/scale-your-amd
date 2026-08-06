@@ -27,15 +27,18 @@ toc:
   - name: The Optimal Split
   - name: Memory, Not Just Time
   - name: Low Precision as a Parallelism Decision
+    subsections:
+      - name: The Measurement
   - name: A Decision Procedure
   - name: Worked Problems
   - name: References
 ---
 
-> **Draft.** Every roofline in this chapter is derived and substituted; the fifth part
-> of each five-part treatment, the measured step time that confirms or refutes it, is
-> not in yet and is marked where it belongs. The decision procedure at the end stands
-> on the derivations alone.
+> **Draft.** Every roofline in this chapter is derived, substituted and now measured.
+> Three of the five predictions needed correcting and the corrections are in place: the
+> tensor-parallel threshold uses a bandwidth its messages never reach, FSDP's collective
+> does not overlap on this stack, and fp8 does not raise the FSDP threshold. The decision
+> procedure at the end has not yet been reworked around those.
 
 **Depends on:** [Chapter 4]({{ '/pages/4-sharding' | relative_url }}) for the collective
 cost model and the sharding notation, and
@@ -153,14 +156,47 @@ concerned; what limits it is memory and the convergence limit. And 2700 tokens i
 two sequences of 2048 per device clears it. **Data parallelism is almost always
 bandwidth-fine and almost always memory-blocked**, which is why the next section exists.
 
-<!-- BLOCKED (part 5): predict-then-measure for DP. Run a Transformer block at
-     per-device token batches spanning the 2700-token threshold, say 512 / 2048 / 8192,
-     on 8x MI300X, and give step time against the prediction plus the fraction of step
-     time in the all-reduce. scripts/transformer_block.py is already 8-way DP with the
-     latency-hiding flags set; it needs a batch sweep and a capture.
-     The interesting claim to test is not the threshold itself but whether the
-     all-reduce is actually hidden above it, which is a scheduler question, not an
-     arithmetic one. -->
+**5. The measurement.**
+
+```bash
+python -m bench.transformer_block --strategy dp --seq-len 1024 \
+    --tokens 1024 2048 3072 4096 5120 6144 8192 --trace
+```
+
+Four Llama-3-8B-shaped blocks on 8x MI300X, sweeping per-device tokens across the
+threshold. The column that matters is the last one: the share of the step spent inside a
+collective **with no compute running underneath it**, measured by merging the kernel
+intervals in the trace. **[measured]**
+
+| Tokens per device | Step time | MFU | All-reduce hidden | Step time exposed to it |
+|---|---|---|---|---|
+| 1024 | 45.0 ms | 9.3% | 37.5% | 34.2% |
+| 2048 | 47.0 ms | 17.8% | 57.1% | 19.9% |
+| 3072 | 50.5 ms | 24.8% | 70.5% | 11.9% |
+| **4096** | 59.2 ms | 28.2% | **88.0%** | **3.9%** |
+| 5120 | 68.7 ms | 30.4% | 89.9% | 3.0% |
+| 6144 | 79.5 ms | 31.5% | 90.2% | 2.8% |
+| 8192 | 98.1 ms | 34.1% | 92.3% | 1.9% |
+
+**The claim holds: above the threshold the gradient all-reduce really does disappear behind
+the backward pass.** By 4096 tokens per device, 88% of the collective has compute running
+concurrently and the step pays under 4% for it. That is the scheduler question the
+arithmetic could not answer, and the answer is yes.
+
+**The threshold is in the right place and about 35% optimistic.** Predicted 2724 tokens;
+the measured crossover, taking "exposed" falling below 5% as the criterion, is between 3072
+and 4096. **The gap is arrival skew**, which the model does not include: the collective's
+wall time per device is about twice its transfer time, because devices do not enter the
+all-reduce together and the ones that arrive early wait inside it.
+
+**Two things worth noticing in the table beyond the threshold.** The all-reduce takes
+about the same 20 milliseconds per step at every batch size, exactly as the model says it
+should, since gradient volume depends on the parameter count and not on the batch. So the
+exposed fraction falls for the ordinary reason that the numerator is fixed and the
+denominator is growing. And MFU is still climbing at 8192 tokens, which means the
+communication stopped being the constraint well before the arithmetic started being
+efficient. **Clearing the communication threshold is necessary and nowhere near
+sufficient.**
 
 ## Fully Sharded Data Parallelism
 
@@ -224,12 +260,53 @@ in principle, and in practice it means FSDP needs about a layer's worth of spare
 memory and a scheduler that cooperates. When FSDP underperforms this roofline, failed
 prefetch is the first thing to check.
 
-<!-- BLOCKED (part 5): predict-then-measure for FSDP. Needs an FSDP variant of the
-     transformer-block script (does not exist yet; docs/structure.md lists a TP and a
-     PP variant as needed, and FSDP belongs on that list). Measure the same batch
-     sweep as DP and confirm the 1.5x, then check whether weight prefetch is actually
-     happening by looking for all-gather-start / all-gather-done pairs that span the
-     preceding layer's compute in the trace. -->
+**5. The measurement.**
+
+```bash
+python -m bench.transformer_block --strategy fsdp --seq-len 1024 \
+    --tokens 1024 2048 3072 4096 5120 6144 8192 --trace
+```
+
+The same sweep, the same four blocks, the same eight devices, with the weights sharded.
+**[measured]**
+
+| Tokens per device | Step time | MFU | All-gather hidden | Step time exposed to it |
+|---|---|---|---|---|
+| 1024 | 48.9 ms | 8.5% | 11.9% | 57.1% |
+| 2048 | 40.5 ms | 20.6% | 1.1% | 29.6% |
+| 3072 | 48.6 ms | 25.8% | 1.4% | 21.8% |
+| 4096 | 59.3 ms | 28.2% | 1.3% | 20.2% |
+| 5120 | 69.3 ms | 30.1% | 1.5% | 15.6% |
+| 6144 | 80.2 ms | 31.3% | 1.3% | 13.8% |
+| 8192 | 99.0 ms | 33.8% | 1.5% | 12.5% |
+
+**Compare the "hidden" column against data parallelism's and the difference is the whole
+result. FSDP's communication is not overlapped at all, at any batch size.** Data
+parallelism reached 92% hidden; this reaches 1.5% and stays there.
+
+**The prefetch we told you to look for is not happening, and the reason is not FSDP's
+fault.** The check was to find `all-gather-start` and `all-gather-done` pairs spanning the
+previous layer's compute. There are no such pairs, because there is only one all-gather:
+the container's `--xla_gpu_all_gather_combine_threshold_bytes=8589934592` merges all four
+layers' weight gathers into a single collective at the top of the step, and a collective
+with nothing scheduled before it cannot overlap anything.
+[Chapter 4]({{ '/pages/4-sharding' | relative_url }})'s overlap section takes that apart,
+including the awkward finding that **combining is still the faster choice**: splitting the
+collectives back up buys 36% overlap and costs 27% of step time, because the pieces land in
+the latency-bound part of the bandwidth curve.
+
+**So the exposed fraction falls in this table for a different and much weaker reason than
+in the DP table.** It is not that the collective got hidden; it is that the step got
+longer around a collective of constant size. At 8192 tokens per device FSDP is still paying
+12.5% of its step in exposed communication where DP pays 1.9%.
+
+**Which makes the 1.5x ratio between the two thresholds the wrong thing to take away.**
+The arithmetic that produces 4086 against 2724 is correct as arithmetic, and if the
+all-gather overlapped the way the model assumes, the crossover would land there. On this
+stack it does not overlap, so **the honest statement is that FSDP costs about 12% of step
+time at a batch where DP costs about 2%, and you should budget for that rather than for a
+threshold.** The trade is still usually worth taking, because the alternative to FSDP is
+not DP, it is not fitting the model at all.
 
 ## Tensor Parallelism
 
@@ -316,13 +393,61 @@ idea.** [Chapter 4]({{ '/pages/4-sharding' | relative_url }})'s pending bandwidt
 what settles it; until then, treat the table above as the optimistic case and check the
 all-reduce share of step time in your own trace before committing to a high degree.
 
-<!-- BLOCKED (part 5): predict-then-measure for TP, and this is the most valuable of
-     the five because the roofline above swings by 7x depending on RCCL's schedule.
-     Needs a TP variant of the transformer-block script (listed as needed in
-     docs/structure.md). Measure at |Y| = 2, 4, 8 on one node, at fixed global batch,
-     and report the all-reduce fraction of step time at each. The specific question to
-     answer: does per-GPU egress during the activation all-reduce match 320 GB/s or
-     64 GB/s? -->
+**5. The measurement.**
+
+```bash
+for N in 2 4 8; do
+  python -m bench.transformer_block --strategy tp --devices $N \
+      --seq-len 2048 --tokens 2048 --trace
+done
+```
+
+Fixed global batch of 2048 tokens, so the only thing changing is how many ways the
+feed-forward dimension is split. **[measured]**
+
+| Tensor-parallel degree | Step time | Collective time per step | Step time exposed to it | MFU |
+|---|---|---|---|---|
+| 2 | 22.8 ms | 1.55 ms | 4.2% | 18.7% |
+| 4 | 17.8 ms | 3.40 ms | 14.1% | 11.9% |
+| 8 | **28.5 ms** | 13.37 ms | **43.1%** | 3.7% |
+
+**Eight-way tensor parallelism is slower in wall clock than four-way, on a model whose `F`
+the threshold says should clear eight-way.** `F = 14336` against a requirement of
+`1816 * 7 = 12712`. It clears by 13%, the table above calls that marginal, and the
+measurement says marginal was optimistic.
+
+**First, the good news, because it settles the 7x question.** The activation all-reduce is
+not running at single-link speed. Each layer's collective is `2048 * 4096 * 2 = 16.8 MB`,
+there are 15 of them per step, and
+[Chapter 4]({{ '/pages/4-sharding' | relative_url }})'s sweep measures **212 GB/s of
+per-GPU egress at that message size**, which is 4.5 links' worth rather than one. **The
+optimistic branch of the roofline was the correct one**: `F > 12712` is the right form of
+the requirement, not `F > 63553`.
+
+**Now the bad news, which is that 212 GB/s is not 320 GB/s.** The threshold was derived
+with the asymptotic figure, and tensor parallelism never sends asymptotic-sized messages:
+its collectives are activation-sized, and activations are megabytes where gradients are
+gigabytes. Substituting the bandwidth that a 16.8 MB message actually gets:
+
+```
+F > 2 * 2 * 1307.4e12 * (|Y|-1) / (9 * 212e9) = 2741 * (|Y|-1)
+  =>  8-way needs F > 19191, not 12712
+```
+
+**`F = 14336` fails that, and the measurement agrees.** This is the correction to make:
+
+| `\|Y\|` | Requirement at 320 GB/s | Requirement at the bandwidth these messages get | Llama 3 8B, `F` = 14336 |
+|---|---|---|---|
+| 2 | 1816 | 2741 | fine |
+| 4 | 5448 | 8223 | fine |
+| 8 | 12712 | 19191 | **breaks** |
+
+**The general lesson is worth more than the specific number.** A threshold derived from
+peak bandwidth is only valid if the collective is big enough to reach peak bandwidth, and
+whether it is depends on which strategy you are using. Data parallelism's gradient
+all-reduce is gigabytes and gets the asymptotic figure. Tensor parallelism's activation
+all-reduce is megabytes and gets about two thirds of it. **Check your message size against
+the curve before you trust a threshold.**
 
 ## Pipeline Parallelism
 
@@ -392,15 +517,52 @@ of baseboard. Note that the ratio improves with more layers and larger `F`, so i
 better on bigger models, and degrades with more stages, which is the same bubble
 pressure arriving in a different form.
 
-<!-- BLOCKED (part 5): predict-then-measure for PP, and it needs a PP variant script
-     (listed as needed in docs/structure.md). Two things to measure: the bubble
-     fraction against the (|Z|-1)/(m+|Z|-1) prediction at a few microbatch counts,
-     which is measurable on a single node by splitting layers across 8 GPUs, and the
-     stage-boundary transfer time, which should be invisible.
-     Genuinely blocked, not just unmeasured: the interesting version of this section is
-     multi-node, where PP is the strategy that spans hosts, and we have no cluster.
-     Single-node PP is a correctness and bubble demo, and the chapter should say so
-     rather than implying the multi-node case was validated. -->
+**5. The measurement.**
+
+**Read this one knowing what it is not.** Pipelining exists to cross host boundaries, and
+we have one host, so what follows is a bubble demo on eight GPUs that happen to be in the
+same box. **The multi-node case, which is the only reason anyone reaches for pipelining,
+is not validated here and this chapter does not claim otherwise.**
+
+```bash
+python -m bench.pipeline --stages 8 --layers-per-stage 2 --microbatches 1 2 4 8 16 32
+```
+
+Eight stages of two layers each, one stage per device, microbatches dispatched without
+blocking so that JAX's asynchronous dispatch does the pipelining. One stage in isolation
+takes 3.645 ms, which is the unit everything below is quoted in. **[measured]**
+
+| Microbatches | Elapsed | Predicted bubble | Measured bubble | Stage-times elapsed, measured against `m + \|Z\| - 1` |
+|---|---|---|---|---|
+| 1 | 32.2 ms | 87.5% | 88.7% | 8.8 against 8 |
+| 2 | 39.5 ms | 77.8% | 81.6% | 10.8 against 9 |
+| 4 | 48.2 ms | 63.6% | 69.8% | 13.2 against 11 |
+| 8 | 65.2 ms | 46.7% | 55.2% | 17.9 against 15 |
+| 16 | 99.0 ms | 30.4% | 41.1% | 27.2 against 23 |
+| 32 | 166.9 ms | 17.9% | 30.1% | 45.8 against 39 |
+
+**The pipeline pipelines.** That was not guaranteed: a naive implementation that blocked
+between stages would have taken `m * |Z|` stage-times, which at `m = 32` would be 256
+rather than the 45.8 measured. Asynchronous dispatch is doing the overlapping with no
+scheduling code at all.
+
+**The bubble follows the formula, with a consistent and growing overhead.** The measured
+fraction runs above the prediction everywhere, by 1 point at `m = 1` and 12 points at
+`m = 32`, and the last column shows where that comes from: the elapsed time is always
+about `m + |Z| - 1` stage-times **plus roughly 0.2 stage-times per microbatch**.
+
+**That per-microbatch overhead is the stage-boundary transfer, and it is not invisible.**
+0.2 stage-times is 0.69 ms, against a 16.8 MB activation crossing one xGMI link, which at
+the 47.5 GB/s [Chapter 4]({{ '/pages/4-sharding' | relative_url }}) measures per link is
+353 microseconds of transfer plus dispatch. **Budget about 20% of a stage-time per
+microbatch for handing activations along**, and note that this is the intra-node case where
+the hop is xGMI. Over a NIC it is the dominant term rather than a correction, which is the
+part we cannot measure.
+
+**The practical reading:** the formula is good enough to plan with, `m` needs to be several
+times `|Z|` before the bubble stops dominating, and even at `m = 32` against `|Z| = 8` you
+are giving up 30% of the machine. **Pipelining is what you do when the alternative is not
+fitting, not when you want throughput.**
 
 ## Context Parallelism
 
@@ -456,10 +618,42 @@ Concretely, Llama 3 70B, one sequence at 128k context, 8-way:
 and at 2k it is over 50%, which is the crossover: **context parallelism is free above
 roughly 32k tokens and expensive below 4k.**
 
-<!-- BLOCKED (part 5): predict-then-measure for CP. Needs a ring-attention variant and
-     a long-context workload; neither exists in the repo. Lower priority than TP and
-     FSDP because no capstone in Part III runs long context, but the section should not
-     claim a measurement it does not have. -->
+**5. The measurement.**
+
+```bash
+for S in 2048 8192 32768; do
+  python -m bench.transformer_block --strategy cp --devices 8 --seq-len $S --tokens $S --trace
+done
+```
+
+One sequence split eight ways, at three context lengths. **[measured]**
+
+| Sequence length | Tokens per device | Step time | Collective time hidden | Step time exposed to it |
+|---|---|---|---|---|
+| 2048 | 256 | 48.8 ms | 15.9% | 94.9% |
+| 8192 | 1024 | 53.0 ms | 40.8% | 45.1% |
+| 32768 | 4096 | 76.2 ms | 59.5% | 8.4% |
+
+**Context parallelism is unusable at 2k and reasonable at 32k, and the crossover is not
+really about context length.** Look at the second column: what changes across these rows
+is tokens per device, and the exposed fraction falls the same way it does for data
+parallelism over the same range. **Splitting a sequence eight ways is splitting a batch
+eight ways as far as the arithmetic is concerned**; the difference is that attention's
+communication is quadratic in the sequence while everything else is linear, which is why
+the hidden fraction improves rather than staying flat.
+
+**A 2048-token sequence over eight devices leaves 256 tokens per device and 95% of the
+step exposed to communication.** That is the number to remember, because it is the mistake
+people make: reaching for context parallelism at a context length that does not need it.
+**Below about 8k, shard the batch instead.**
+
+**Two caveats.** The 32768 row is a single layer rather than four, because four did not
+fit, so its MFU is not comparable with the rows above it; only the exposed fraction is.
+And this is XLA's attention rather than a ring-attention implementation, so the
+communication pattern is whatever GSPMD infers from a sequence-sharded input, not the
+overlapped ring the section describes. **A real ring attention would do better than this,
+and the crossover is therefore an upper bound.** Nothing in Part III runs long context, so
+we have left it there.
 
 ## How They Compose
 
@@ -610,6 +804,12 @@ all-reduces in fp8 lose too much. So the bytes do not halve while the FLOPs doub
 | FSDP tokens per device | 4086 | **8172** |
 | TP requirement on `F`, 8-way | 12712 | **25424** |
 
+**The FSDP row of that table turns out not to hold, and
+[The Measurement](#the-measurement) below has the correction:** MaxText gathers fp8
+weights when the matmuls are fp8, so the bytes halve along with the FLOPs and the FSDP
+threshold stays roughly where it was. The DP and TP rows stand, because their collectives
+carry gradients and activations rather than weights.
+
 **Every threshold doubles, and the tensor-parallel one is the painful entry.** 8-way
 tensor parallelism on Llama 3 70B is comfortable in bf16 (`F = 28672` against a
 requirement of 12712) and marginal in fp8 (against 25424). **Training faster makes
@@ -629,15 +829,62 @@ gfx950 value on a gfx942 part is not a portability warning, it is wrong numerics
 [Chapter 11]({{ '/pages/11-inference' | relative_url }}) handles the inference side:
 weight-only quantization, KV cache quantization, fp4 and fp6.
 
-<!-- BLOCKED: the measured half of this section, and it is the most measurable thing in
-     the chapter, because AMD documents fp8 MaxText configurations for both
-     generations. What to produce: bf16 against nanoo_fp8 step time and MFU for the
-     same model and batch on 8x MI300X, plus the all-reduce share of step time in
-     each, which is what tests the "every threshold doubles" claim.
-     Deliberately not claiming a speedup figure here: the honest prediction is
-     somewhere between 1.0x and 2.0x depending on how much of the step is matmul, and
-     guessing which would be exactly the unmeasured performance claim the style guide
-     forbids. -->
+### The Measurement
+
+**Llama 3 8B under MaxText on 8x MI300X, same batch, same everything, one config value
+changed.** **[measured]**
+
+```bash
+python -m bench.maxtext_run --model llama3-8b --trace --tag bf16
+python -m bench.maxtext_run --model llama3-8b --trace --tag fp8 --set quantization=nanoo_fp8
+```
+
+| | bf16 | `nanoo_fp8` | Ratio |
+|---|---|---|---|
+| Step time | 3.896 s | 3.011 s | **0.77** |
+| TFLOP/s per device | 432.8 | 560.1 | 1.29 |
+| MFU against the data sheet | 33.1% | 42.8% | 1.29 |
+| MFU against the sustained clock | 43.7% | 56.6% | 1.29 |
+| Collective time per step per device | 0.273 s | 0.216 s | 0.79 |
+| Of which exposed | 0.213 s | 0.118 s | 0.55 |
+| Exposed as a share of the step | 5.5% | 3.9% | |
+
+**1.29x, which is the "1.3x, not 2x" this section predicted, arrived at for a different
+reason than the one it gave.**
+
+**The prediction above was that fp8 makes communication relatively more expensive. It does
+not, at least not here.** Exposed communication fell from 5.5% to 3.9% of the step, in
+absolute terms almost halving. **The "every threshold doubles" table is too pessimistic
+about FSDP**, and the trace says why: the collective kernels come in the same numbers in
+both runs, but two of the three largest families roughly halve their duration while the
+third does not move. That is the signature of **the weight all-gather carrying fp8 while
+the gradient all-reduce stays in higher precision**. FSDP gathers what the matmul will
+consume, and if the matmul consumes fp8, so does the wire.
+
+**So split the table's claim in two.** The DP threshold does double, because the gradient
+all-reduce is genuinely unchanged. **The FSDP threshold does not**, because the weight
+gather shrinks along with the compute. Tensor parallelism sits with DP: its collectives
+carry activations, and MaxText did not quantize those here.
+
+**Then where did the missing 0.7x go? Attention, which fp8 does not touch.** The fused
+attention kernel is 15.4% of device kernel time in the bf16 run and 19.4% in the fp8 run,
+and since the fp8 run's total is 23% smaller, that is the same absolute time in both.
+**Halving the cost of the matmuls cannot help the 15% of the step that is not matmuls**,
+and Amdahl's arithmetic on a 15% fixed remainder caps the speedup near 1.3x almost exactly
+where we landed.
+
+**The practical reading, which is more encouraging than the table suggested.** fp8 is worth
+taking: 1.29x for one config value, with the communication picture improving rather than
+degrading. What it will not do is approach 2x, and the thing to look at when it does not is
+**what fraction of your step is already not matmul**, not whether you have become
+communication-bound. The
+[Chapter 8]({{ '/pages/8-getting-to-roofline' | relative_url }}) triage order applies
+unchanged.
+
+**One confirmation worth recording, since Chapter 2 warns about the format trap.** The
+`nanoo_fp8` run's kernels appear in the trace as `NANOOFp8DotGeneralOp_0` through `_6`, so
+the FNUZ path really is the one that ran on gfx942, rather than a silent fall back to bf16.
+If you set this and see no such kernels, the config did not take.
 
 ## A Decision Procedure
 

@@ -1,0 +1,165 @@
+{
+  "workload": "maxtext",
+  "tag": "moe-b2-unsharded",
+  "finished_at": "2026-08-05T14:31:52.368075+00:00",
+  "wall_seconds": 130.57624125480652,
+  "protocol": {
+    "warmup": 3,
+    "repeats": 10,
+    "statistic": "median"
+  },
+  "constants": {
+    "cus": 304,
+    "clock_ghz": 2.1,
+    "bf16_flops": 1307400000000000.0,
+    "fp16_flops": 1307400000000000.0,
+    "fp8_flops": 2614900000000000.0,
+    "fp32_flops": 163400000000000.0,
+    "hbm_bytes_per_s": 5300000000000.0,
+    "hbm_bytes": 206158430208,
+    "xgmi_links": 7,
+    "xgmi_link_unidir_bytes_per_s": 64000000000.0,
+    "xgmi_egress_unidir_bytes_per_s": 448000000000.0,
+    "rccl_realised_bytes_per_s": 320000000000.0
+  },
+  "notes": {
+    "config": "/root/work/scale-your-amd/runs/_configs/base_moe_unsharded.yml",
+    "command": "/opt/venv/bin/python -m maxtext.trainers.pre_train.train /root/work/scale-your-amd/runs/_configs/base_moe_unsharded.yml model_name=mixtral-8x7b hardware=gpu dataset_type=synthetic enable_checkpointing=false steps=16 per_device_batch_size=2.0 max_target_length=4096 remat_policy=save_dot_with_context_except_mlp run_name=moe-b2-unsharded base_output_directory=/root/work/scale-your-amd/runs/20260805-maxtext-moe-b2-unsharded/maxtext ici_expert_parallelism=-1 ici_fsdp_parallelism=1 ici_data_parallelism=1 attention=cudnn_flash_te max_segments_per_seq=1 sparse_matmul=false megablox=false capacity_factor=1",
+    "model": "mixtral-8x7b",
+    "ici": "expert=-1,fsdp=1,data=1",
+    "overrides": [
+      "model_name=mixtral-8x7b",
+      "hardware=gpu",
+      "dataset_type=synthetic",
+      "enable_checkpointing=false",
+      "steps=16",
+      "per_device_batch_size=2.0",
+      "max_target_length=4096",
+      "remat_policy=save_dot_with_context_except_mlp",
+      "run_name=moe-b2-unsharded",
+      "base_output_directory=/root/work/scale-your-amd/runs/20260805-maxtext-moe-b2-unsharded/maxtext",
+      "ici_expert_parallelism=-1",
+      "ici_fsdp_parallelism=1",
+      "ici_data_parallelism=1",
+      "attention=cudnn_flash_te",
+      "max_segments_per_seq=1",
+      "sparse_matmul=false",
+      "megablox=false",
+      "capacity_factor=1"
+    ],
+    "returncode": 0,
+    "wall_seconds": 127.89072155952454,
+    "steps": [
+      {
+        "step": 0,
+        "seconds": 44.715,
+        "tflops_per_device": 14.604,
+        "tokens_per_second_per_device": 183.206
+      },
+      {
+        "step": 1,
+        "seconds": 3.177,
+        "tflops_per_device": 205.52,
+        "tokens_per_second_per_device": 2578.262
+      },
+      {
+        "step": 2,
+        "seconds": 2.697,
+        "tflops_per_device": 242.113,
+        "tokens_per_second_per_device": 3037.314
+      },
+      {
+        "step": 3,
+        "seconds": 2.698,
+        "tflops_per_device": 242.015,
+        "tokens_per_second_per_device": 3036.086
+      },
+      {
+        "step": 4,
+        "seconds": 2.7,
+        "tflops_per_device": 241.827,
+        "tokens_per_second_per_device": 3033.73
+      },
+      {
+        "step": 5,
+        "seconds": 2.703,
+        "tflops_per_device": 241.547,
+        "tokens_per_second_per_device": 3030.216
+      },
+      {
+        "step": 6,
+        "seconds": 2.711,
+        "tflops_per_device": 240.852,
+        "tokens_per_second_per_device": 3021.493
+      },
+      {
+        "step": 7,
+        "seconds": 2.715,
+        "tflops_per_device": 240.481,
+        "tokens_per_second_per_device": 3016.841
+      },
+      {
+        "step": 8,
+        "seconds": 2.722,
+        "tflops_per_device": 239.923,
+        "tokens_per_second_per_device": 3009.843
+      },
+      {
+        "step": 9,
+        "seconds": 2.724,
+        "tflops_per_device": 239.722,
+        "tokens_per_second_per_device": 3007.324
+      },
+      {
+        "step": 10,
+        "seconds": 2.729,
+        "tflops_per_device": 239.242,
+        "tokens_per_second_per_device": 3001.308
+      },
+      {
+        "step": 11,
+        "seconds": 2.735,
+        "tflops_per_device": 238.767,
+        "tokens_per_second_per_device": 2995.342
+      },
+      {
+        "step": 12,
+        "seconds": 2.737,
+        "tflops_per_device": 238.583,
+        "tokens_per_second_per_device": 2993.036
+      },
+      {
+        "step": 13,
+        "seconds": 2.739,
+        "tflops_per_device": 238.378,
+        "tokens_per_second_per_device": 2990.458
+      },
+      {
+        "step": 14,
+        "seconds": 2.741,
+        "tflops_per_device": 238.194,
+        "tokens_per_second_per_device": 2988.152
+      },
+      {
+        "step": 15,
+        "seconds": 2.747,
+        "tflops_per_device": 237.722,
+        "tokens_per_second_per_device": 2982.236
+      }
+    ],
+    "summary": {
+      "steps_measured": 10,
+      "first_measured_step": 6,
+      "step_s_median": 2.732,
+      "step_s_mean": 2.73,
+      "step_s_min": 2.711,
+      "step_s_max": 2.747,
+      "median_mean_gap_pct": -0.07320644216691888,
+      "tflops_per_device_median": 239.0045,
+      "mfu_vs_boost_clock": 0.18280901024934987,
+      "mfu_vs_sustained_clock": 0.24141868686868687,
+      "devices": 8
+    }
+  },
+  "measurements": []
+}

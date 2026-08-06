@@ -14,3 +14,13 @@ vendor
 *.swp
 .jj
 *.docx
+
+# Measurement artifacts. env.json and results.json are the record and stay
+# tracked; traces and HLO dumps are large and regenerable.
+runs/**/trace/
+runs/**/hlo/
+runs/**/*.xplane.pb
+runs/**/*.trace.json.gz
+runs/**/checkpoints/
+__pycache__/
+*.pyc

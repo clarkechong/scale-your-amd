@@ -1,0 +1,21 @@
+BufferAssignment:
+allocation 0: size 33554432, parameter 0, shape |bf16[4096,4096]| at ShapeIndex {}:
+ value: <16 self.1 @0> (size=33554432,offset=0): bf16[4096,4096]{1,0}
+allocation 1: size 4194304, maybe-live-out:
+ value: <17 wrapped_slice @0> (size=4194304,offset=0): bf16[4096,512]{1,0}
+allocation 2: size 4194304, maybe-live-out:
+ value: <18 wrapped_slice.1 @0> (size=4194304,offset=0): bf16[4096,512]{1,0}
+allocation 3: size 4194304, maybe-live-out:
+ value: <19 wrapped_slice.2 @0> (size=4194304,offset=0): bf16[4096,512]{1,0}
+allocation 4: size 4194304, maybe-live-out:
+ value: <20 wrapped_slice.3 @0> (size=4194304,offset=0): bf16[4096,512]{1,0}
+allocation 5: size 4194304, maybe-live-out:
+ value: <21 wrapped_slice.4 @0> (size=4194304,offset=0): bf16[4096,512]{1,0}
+allocation 6: size 4194304, maybe-live-out:
+ value: <22 wrapped_slice.5 @0> (size=4194304,offset=0): bf16[4096,512]{1,0}
+allocation 7: size 4194304, maybe-live-out:
+ value: <23 wrapped_slice.6 @0> (size=4194304,offset=0): bf16[4096,512]{1,0}
+allocation 8: size 4194304, maybe-live-out:
+ value: <24 wrapped_slice.7 @0> (size=4194304,offset=0): bf16[4096,512]{1,0}
+allocation 9: size 64, output shape is |(bf16[4096,512], bf16[4096,512], bf16[4096,512], bf16[4096,512], bf16[4096,512], /*index=5*/bf16[4096,512], bf16[4096,512], bf16[4096,512])|, maybe-live-out:
+ value: <25 tuple.1.0{} @0> (size=64,offset=0): (bf16[4096,512]{1,0}, bf16[4096,512]{1,0}, bf16[4096,512]{1,0}, bf16[4096,512]{1,0}, bf16[4096,512]{1,0}, /*index=5*/bf16[4096,512]{1,0}, bf16[4096,512]{1,0}, bf16[4096,512]{1,0})

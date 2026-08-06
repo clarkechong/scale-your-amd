@@ -1,0 +1,417 @@
+{
+  "workload": "maxtext",
+  "tag": "ds-ex4",
+  "finished_at": "2026-08-05T16:38:47.480681+00:00",
+  "wall_seconds": 220.30343413352966,
+  "protocol": {
+    "warmup": 3,
+    "repeats": 10,
+    "statistic": "median"
+  },
+  "constants": {
+    "cus": 304,
+    "clock_ghz": 2.1,
+    "bf16_flops": 1307400000000000.0,
+    "fp16_flops": 1307400000000000.0,
+    "fp8_flops": 2614900000000000.0,
+    "fp32_flops": 163400000000000.0,
+    "hbm_bytes_per_s": 5300000000000.0,
+    "hbm_bytes": 206158430208,
+    "xgmi_links": 7,
+    "xgmi_link_unidir_bytes_per_s": 64000000000.0,
+    "xgmi_egress_unidir_bytes_per_s": 448000000000.0,
+    "rccl_realised_bytes_per_s": 320000000000.0
+  },
+  "notes": {
+    "config": "/workspace/maxtext/src/maxtext/configs/base.yml",
+    "command": "/opt/venv/bin/python -m maxtext.trainers.pre_train.train /workspace/maxtext/src/maxtext/configs/base.yml model_name=deepseek2-16b hardware=gpu dataset_type=synthetic enable_checkpointing=false steps=18 per_device_batch_size=8.0 max_target_length=4096 remat_policy=minimal_flash run_name=ds-ex4 base_output_directory=/root/work/scale-your-amd/runs/20260805-maxtext-ds-ex4/maxtext ici_expert_parallelism=4 ici_fsdp_parallelism=2 ici_data_parallelism=1 attention=cudnn_flash_te max_segments_per_seq=1 profiler=xplane skip_first_n_steps_for_profiler=8 profiler_steps=5 sparse_matmul=false megablox=false capacity_factor=1.25 sharding_tolerance=0.05",
+    "model": "deepseek2-16b",
+    "ici": "expert=4,fsdp=2,data=1",
+    "overrides": [
+      "model_name=deepseek2-16b",
+      "hardware=gpu",
+      "dataset_type=synthetic",
+      "enable_checkpointing=false",
+      "steps=18",
+      "per_device_batch_size=8.0",
+      "max_target_length=4096",
+      "remat_policy=minimal_flash",
+      "run_name=ds-ex4",
+      "base_output_directory=/root/work/scale-your-amd/runs/20260805-maxtext-ds-ex4/maxtext",
+      "ici_expert_parallelism=4",
+      "ici_fsdp_parallelism=2",
+      "ici_data_parallelism=1",
+      "attention=cudnn_flash_te",
+      "max_segments_per_seq=1",
+      "profiler=xplane",
+      "skip_first_n_steps_for_profiler=8",
+      "profiler_steps=5",
+      "sparse_matmul=false",
+      "megablox=false",
+      "capacity_factor=1.25",
+      "sharding_tolerance=0.05"
+    ],
+    "returncode": 0,
+    "wall_seconds": 211.99810314178467,
+    "steps": [
+      {
+        "step": 0,
+        "seconds": 45.419,
+        "tflops_per_device": 11.837,
+        "tokens_per_second_per_device": 721.468
+      },
+      {
+        "step": 1,
+        "seconds": 4.254,
+        "tflops_per_device": 126.379,
+        "tokens_per_second_per_device": 7702.939
+      },
+      {
+        "step": 2,
+        "seconds": 3.761,
+        "tflops_per_device": 142.953,
+        "tokens_per_second_per_device": 8713.2
+      },
+      {
+        "step": 3,
+        "seconds": 3.769,
+        "tflops_per_device": 142.645,
+        "tokens_per_second_per_device": 8694.395
+      },
+      {
+        "step": 4,
+        "seconds": 3.774,
+        "tflops_per_device": 142.456,
+        "tokens_per_second_per_device": 8682.896
+      },
+      {
+        "step": 5,
+        "seconds": 3.783,
+        "tflops_per_device": 142.114,
+        "tokens_per_second_per_device": 8662.048
+      },
+      {
+        "step": 6,
+        "seconds": 3.792,
+        "tflops_per_device": 141.78,
+        "tokens_per_second_per_device": 8641.665
+      },
+      {
+        "step": 7,
+        "seconds": 3.8,
+        "tflops_per_device": 141.486,
+        "tokens_per_second_per_device": 8623.762
+      },
+      {
+        "step": 8,
+        "seconds": 3.815,
+        "tflops_per_device": 140.922,
+        "tokens_per_second_per_device": 8589.393
+      },
+      {
+        "step": 9,
+        "seconds": 3.831,
+        "tflops_per_device": 140.334,
+        "tokens_per_second_per_device": 8553.559
+      },
+      {
+        "step": 10,
+        "seconds": 3.834,
+        "tflops_per_device": 140.224,
+        "tokens_per_second_per_device": 8546.812
+      },
+      {
+        "step": 11,
+        "seconds": 3.843,
+        "tflops_per_device": 139.881,
+        "tokens_per_second_per_device": 8525.913
+      },
+      {
+        "step": 12,
+        "seconds": 3.844,
+        "tflops_per_device": 139.872,
+        "tokens_per_second_per_device": 8525.372
+      },
+      {
+        "step": 13,
+        "seconds": 3.807,
+        "tflops_per_device": 141.199,
+        "tokens_per_second_per_device": 8606.242
+      },
+      {
+        "step": 14,
+        "seconds": 3.824,
+        "tflops_per_device": 140.579,
+        "tokens_per_second_per_device": 8568.446
+      },
+      {
+        "step": 15,
+        "seconds": 3.825,
+        "tflops_per_device": 140.567,
+        "tokens_per_second_per_device": 8567.743
+      },
+      {
+        "step": 16,
+        "seconds": 3.829,
+        "tflops_per_device": 140.422,
+        "tokens_per_second_per_device": 8558.89
+      },
+      {
+        "step": 17,
+        "seconds": 3.837,
+        "tflops_per_device": 140.104,
+        "tokens_per_second_per_device": 8539.5
+      }
+    ],
+    "summary": {
+      "steps_measured": 10,
+      "first_measured_step": 8,
+      "step_s_median": 3.83,
+      "step_s_mean": 3.8289,
+      "step_s_min": 3.807,
+      "step_s_max": 3.844,
+      "median_mean_gap_pct": -0.028720626631856417,
+      "tflops_per_device_median": 140.378,
+      "mfu_vs_boost_clock": 0.10737188312681657,
+      "mfu_vs_sustained_clock": 0.1417959595959596,
+      "devices": 8
+    },
+    "overlap": {
+      "per_device": {
+        "GPU:0": {
+          "comm_ns": 4854684131.0,
+          "hidden_ns": 3611058298.0,
+          "hidden_fraction": 0.7438297117913973
+        },
+        "GPU:1": {
+          "comm_ns": 4863301561.0,
+          "hidden_ns": 3620256059.0,
+          "hidden_fraction": 0.7444029562204646
+        },
+        "GPU:2": {
+          "comm_ns": 4926239707.0,
+          "hidden_ns": 3621700188.0,
+          "hidden_fraction": 0.7351855377345323
+        },
+        "GPU:3": {
+          "comm_ns": 4477427029.0,
+          "hidden_ns": 3561591222.0,
+          "hidden_fraction": 0.795454889366551
+        },
+        "GPU:4": {
+          "comm_ns": 4466924815.0,
+          "hidden_ns": 3576847937.0,
+          "hidden_fraction": 0.8007405732437877
+        },
+        "GPU:5": {
+          "comm_ns": 5189234070.0,
+          "hidden_ns": 3675637503.0,
+          "hidden_fraction": 0.7083198509486391
+        },
+        "GPU:6": {
+          "comm_ns": 4487307266.0,
+          "hidden_ns": 3599449627.0,
+          "hidden_fraction": 0.8021402176474002
+        },
+        "GPU:7": {
+          "comm_ns": 4998848871.0,
+          "hidden_ns": 3655057029.0,
+          "hidden_fraction": 0.7311797422411013
+        }
+      },
+      "total_comm_s": 38.26396745,
+      "total_hidden_s": 28.921597863,
+      "hidden_fraction": 0.7558441999197342,
+      "exposed_s": 9.342369587
+    },
+    "phases": {
+      "total_us": 180596202.552,
+      "phases": {
+        "forward": 43811922.068000026,
+        "backward": 94291068.58199993,
+        "optimizer": 0.0,
+        "collective": 38263967.44999999,
+        "unattributed": 4229244.452000004
+      },
+      "shares": {
+        "forward": 0.24259603163795782,
+        "backward": 0.5221099184233966,
+        "optimizer": 0.0,
+        "collective": 0.21187581416050236,
+        "unattributed": 0.02341823577814299
+      },
+      "backward_over_forward": 2.152178314287416
+    },
+    "scopes": [
+      {
+        "scope": "moe_layers",
+        "total_duration_us": 30367904.166999996,
+        "kernels": 105,
+        "collective_us": 9687993.338,
+        "share": 0.16815361418386418
+      },
+      {
+        "scope": "EBCM",
+        "total_duration_us": 30146806.536,
+        "kernels": 7,
+        "collective_us": 6963311.865,
+        "share": 0.1669293490671249
+      },
+      {
+        "scope": "BSM",
+        "total_duration_us": 23910451.272,
+        "kernels": 3,
+        "collective_us": 0.0,
+        "share": 0.13239730921316212
+      },
+      {
+        "scope": "EBCH",
+        "total_duration_us": 20816092.317999996,
+        "kernels": 5,
+        "collective_us": 8117303.668,
+        "share": 0.11526317842705643
+      },
+      {
+        "scope": "_FusedDotProductAttention_0",
+        "total_duration_us": 20472057.854999997,
+        "kernels": 16,
+        "collective_us": 0.0,
+        "share": 0.11335818564128099
+      },
+      {
+        "scope": "<unnamed kernel>",
+        "total_duration_us": 17231619.558000002,
+        "kernels": 132,
+        "collective_us": 13002375.106,
+        "share": 0.09541518212731197
+      },
+      {
+        "scope": "dispatch",
+        "total_duration_us": 9720991.106000002,
+        "kernels": 4,
+        "collective_us": 0.0,
+        "share": 0.053827217674751425
+      },
+      {
+        "scope": "closed_call",
+        "total_duration_us": 4154036.5109999995,
+        "kernels": 7,
+        "collective_us": 70429.414,
+        "share": 0.023001793239832417
+      },
+      {
+        "scope": "wo",
+        "total_duration_us": 3298042.8279999997,
+        "kernels": 2,
+        "collective_us": 0.0,
+        "share": 0.018261972186543497
+      },
+      {
+        "scope": "body",
+        "total_duration_us": 3280975.403999999,
+        "kernels": 29,
+        "collective_us": 0.0,
+        "share": 0.018167466190521318
+      },
+      {
+        "scope": "wi_0",
+        "total_duration_us": 3189285.806,
+        "kernels": 1,
+        "collective_us": 0.0,
+        "share": 0.01765976117400194
+      },
+      {
+        "scope": "wi_1",
+        "total_duration_us": 3098662.747,
+        "kernels": 1,
+        "collective_us": 0.0,
+        "share": 0.01715796181322133
+      },
+      {
+        "scope": "<unscoped>",
+        "total_duration_us": 2763169.1320000007,
+        "kernels": 158,
+        "collective_us": 34075.425,
+        "share": 0.015300261539023155
+      },
+      {
+        "scope": "logits_dense",
+        "total_duration_us": 2735866.5730000003,
+        "kernels": 3,
+        "collective_us": 0.0,
+        "share": 0.015149081400049086
+      },
+      {
+        "scope": "k",
+        "total_duration_us": 1297401.5369999998,
+        "kernels": 16,
+        "collective_us": 0.0,
+        "share": 0.007183991239386289
+      },
+      {
+        "scope": "dense_layers",
+        "total_duration_us": 1180581.5530000005,
+        "kernels": 43,
+        "collective_us": 149457.196,
+        "share": 0.00653713387279043
+      },
+      {
+        "scope": "decoder.apply_output_head",
+        "total_duration_us": 1010542.034,
+        "kernels": 1,
+        "collective_us": 0.0,
+        "share": 0.005595588499204624
+      },
+      {
+        "scope": "decoder",
+        "total_duration_us": 714868.944,
+        "kernels": 2,
+        "collective_us": 0.0,
+        "share": 0.0039583830329664
+      },
+      {
+        "scope": "combine",
+        "total_duration_us": 567120.188,
+        "kernels": 1,
+        "collective_us": 0.0,
+        "share": 0.003140266406414089
+      },
+      {
+        "scope": "moe_layers.wrapped_fn",
+        "total_duration_us": 329965.23800000007,
+        "kernels": 8,
+        "collective_us": 0.0,
+        "share": 0.0018270884622005909
+      },
+      {
+        "scope": "token_embedder",
+        "total_duration_us": 302802.66800000006,
+        "kernels": 7,
+        "collective_us": 239021.438,
+        "share": 0.0016766834724158308
+      },
+      {
+        "scope": "decoder_norm",
+        "total_duration_us": 6220.518,
+        "kernels": 4,
+        "collective_us": 0.0,
+        "share": 3.4444345518333336e-05
+      },
+      {
+        "scope": "_one_hot",
+        "total_duration_us": 429.079,
+        "kernels": 2,
+        "collective_us": 0.0,
+        "share": 2.375902670912768e-06
+      },
+      {
+        "scope": "_where",
+        "total_duration_us": 308.98,
+        "kernels": 1,
+        "collective_us": 0.0,
+        "share": 1.7108886877675837e-06
+      }
+    ]
+  },
+  "measurements": []
+}

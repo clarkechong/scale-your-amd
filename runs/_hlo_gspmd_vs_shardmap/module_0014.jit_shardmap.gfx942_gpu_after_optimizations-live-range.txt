@@ -1,0 +1,26 @@
+HloLiveRange (max 6):
+  InstructionSequence:
+    0:param.3
+    1:param.2
+    2:custom-call.1
+    3:get-tuple-element.2
+    4:all-reduce-start
+    5:all-reduce-done
+  BufferLiveRange:
+    param.2{}:0-6
+    param.3{}:0-6
+    custom-call.1{}:2-3
+    custom-call.1{0}:2-4
+    custom-call.1{1}:2-2
+    all-reduce-start{}:4-6
+  Live ranges at 4 (peak):
+    all-reduce-start{}: 117440512 bytes (cumulative: 117440512 bytes)
+    custom-call.1{0}: 117440512 bytes (cumulative: 234881024 bytes)
+    param.3{}: 14680064 bytes (cumulative: 249561088 bytes)
+    param.2{}: 4194304 bytes (cumulative: 253755392 bytes)
+  Stack trace breakdown for peak usage: 253 755 392 bytes
+    main.0_spmd (100.0%, total: 253 755 392 bytes, current: 0 bytes, remaining: 253 755 392 bytes)
+      ├── jit(shardmap)/shard_map/dot_general{0} (46.3%, total: 117 440 512 bytes, current: 117 440 512 bytes, remaining: 136 314 880 bytes)
+      ├── jit(shardmap)/shard_map/psum_invariant (46.3%, total: 117 440 512 bytes, current: 117 440 512 bytes, remaining: 18 874 368 bytes)
+      ├── b (5.8%, total: 14 680 064 bytes, current: 14 680 064 bytes, remaining: 4 194 304 bytes)
+      └── a (1.7%, total: 4 194 304 bytes, current: 4 194 304 bytes, remaining: 0 bytes)

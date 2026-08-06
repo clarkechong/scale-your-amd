@@ -1,0 +1,15 @@
+
+Total bytes used: 117440514 (112.00MiB)
+
+Used values:
+<2 args_0_.1 @0>
+ positions:
+  args_0_.1
+ uses:
+  wrapped_broadcast, operand 0
+ from instruction: %args_0_.1 = bf16[] parameter(0), metadata={op_name="args[0]" scheduling_name="args_0_.1"}
+<3 wrapped_broadcast @0>
+ positions:
+  wrapped_broadcast
+ uses:
+ from instruction: %wrapped_broadcast = bf16[4096,14336]{1,0} fusion(%args_0_.1), kind=kLoop, calls=%wrapped_broadcast_computation, metadata={op_name="jit(broadcast_in_dim)/broadcast_in_dim" scheduling_name="wrapped_broadcast" stack_frame_id=4}

@@ -1,0 +1,78 @@
+HloModule jit__multi_slice, is_scheduled=true, entry_computation_layout={(bf16[4096,4096]{1,0})->(bf16[4096,512]{1,0}, bf16[4096,512]{1,0}, bf16[4096,512]{1,0}, bf16[4096,512]{1,0}, bf16[4096,512]{1,0}, /*index=5*/bf16[4096,512]{1,0}, bf16[4096,512]{1,0}, bf16[4096,512]{1,0})}, allow_spmd_sharding_propagation_to_parameters={true}, allow_spmd_sharding_propagation_to_output={true,true,true,true,true,true,true,true}, frontend_attributes={fingerprint_before_lhs="ce3f92b70591987267b19c64e3b21060"}
+
+FileNames
+1 "<frozen runpy>"
+2 "/root/work/scale-your-amd/bench/gspmd_vs_shardmap.py"
+
+FunctionNames
+1 "_run_module_as_main"
+2 "_run_code"
+3 "<module>"
+4 "main"
+
+FileLocations
+1 {file_name_id=1 function_name_id=1 line=198 end_line=199 column=11 end_column=42}
+2 {file_name_id=1 function_name_id=2 line=88 end_line=88 column=4 end_column=27}
+3 {file_name_id=2 function_name_id=3 line=179 end_line=179 column=21 end_column=27}
+4 {file_name_id=2 function_name_id=4 line=122 end_line=122 column=12 end_column=63}
+
+StackFrames
+1 {file_location_id=1 parent_frame_id=1}
+2 {file_location_id=2 parent_frame_id=2}
+3 {file_location_id=3 parent_frame_id=3}
+4 {file_location_id=4 parent_frame_id=4}
+
+
+%wrapped_slice_computation (param_0: bf16[4096,4096]) -> bf16[4096,512] {
+  %param_0 = bf16[4096,4096]{1,0} parameter(0), metadata={scheduling_name="param_0"}
+  ROOT %slice.8.1 = bf16[4096,512]{1,0} slice(%param_0), slice={[0:4096], [0:512]}, metadata={op_name="jit(_multi_slice)/slice" scheduling_name="slice.8.1" stack_frame_id=4}
+}
+
+%wrapped_slice_computation.1 (param_0.1: bf16[4096,4096]) -> bf16[4096,512] {
+  %param_0.1 = bf16[4096,4096]{1,0} parameter(0), metadata={scheduling_name="param_0.1"}
+  ROOT %slice.9.1 = bf16[4096,512]{1,0} slice(%param_0.1), slice={[0:4096], [512:1024]}, metadata={op_name="jit(_multi_slice)/slice" scheduling_name="slice.9.1" stack_frame_id=4}
+}
+
+%wrapped_slice_computation.2 (param_0.2: bf16[4096,4096]) -> bf16[4096,512] {
+  %param_0.2 = bf16[4096,4096]{1,0} parameter(0), metadata={scheduling_name="param_0.2"}
+  ROOT %slice.10.1 = bf16[4096,512]{1,0} slice(%param_0.2), slice={[0:4096], [1024:1536]}, metadata={op_name="jit(_multi_slice)/slice" scheduling_name="slice.10.1" stack_frame_id=4}
+}
+
+%wrapped_slice_computation.3 (param_0.3: bf16[4096,4096]) -> bf16[4096,512] {
+  %param_0.3 = bf16[4096,4096]{1,0} parameter(0), metadata={scheduling_name="param_0.3"}
+  ROOT %slice.11.1 = bf16[4096,512]{1,0} slice(%param_0.3), slice={[0:4096], [1536:2048]}, metadata={op_name="jit(_multi_slice)/slice" scheduling_name="slice.11.1" stack_frame_id=4}
+}
+
+%wrapped_slice_computation.4 (param_0.4: bf16[4096,4096]) -> bf16[4096,512] {
+  %param_0.4 = bf16[4096,4096]{1,0} parameter(0), metadata={scheduling_name="param_0.4"}
+  ROOT %slice.12.1 = bf16[4096,512]{1,0} slice(%param_0.4), slice={[0:4096], [2048:2560]}, metadata={op_name="jit(_multi_slice)/slice" scheduling_name="slice.12.1" stack_frame_id=4}
+}
+
+%wrapped_slice_computation.5 (param_0.5: bf16[4096,4096]) -> bf16[4096,512] {
+  %param_0.5 = bf16[4096,4096]{1,0} parameter(0), metadata={scheduling_name="param_0.5"}
+  ROOT %slice.13.1 = bf16[4096,512]{1,0} slice(%param_0.5), slice={[0:4096], [2560:3072]}, metadata={op_name="jit(_multi_slice)/slice" scheduling_name="slice.13.1" stack_frame_id=4}
+}
+
+%wrapped_slice_computation.6 (param_0.6: bf16[4096,4096]) -> bf16[4096,512] {
+  %param_0.6 = bf16[4096,4096]{1,0} parameter(0), metadata={scheduling_name="param_0.6"}
+  ROOT %slice.14.1 = bf16[4096,512]{1,0} slice(%param_0.6), slice={[0:4096], [3072:3584]}, metadata={op_name="jit(_multi_slice)/slice" scheduling_name="slice.14.1" stack_frame_id=4}
+}
+
+%wrapped_slice_computation.7 (param_0.7: bf16[4096,4096]) -> bf16[4096,512] {
+  %param_0.7 = bf16[4096,4096]{1,0} parameter(0), metadata={scheduling_name="param_0.7"}
+  ROOT %slice.15.1 = bf16[4096,512]{1,0} slice(%param_0.7), slice={[0:4096], [3584:4096]}, metadata={op_name="jit(_multi_slice)/slice" scheduling_name="slice.15.1" stack_frame_id=4}
+}
+
+ENTRY %main.1 (self.1: bf16[4096,4096]) -> (bf16[4096,512], bf16[4096,512], bf16[4096,512], bf16[4096,512], bf16[4096,512], /*index=5*/bf16[4096,512], bf16[4096,512], bf16[4096,512]) {
+  %self.1 = bf16[4096,4096]{1,0} parameter(0), metadata={op_name="self" scheduling_name="self.1"}
+  %wrapped_slice.7 = bf16[4096,512]{1,0} fusion(%self.1), kind=kLoop, calls=%wrapped_slice_computation.7, metadata={op_name="jit(_multi_slice)/slice" scheduling_name="wrapped_slice.7" stack_frame_id=4}
+  %wrapped_slice.6 = bf16[4096,512]{1,0} fusion(%self.1), kind=kLoop, calls=%wrapped_slice_computation.6, metadata={op_name="jit(_multi_slice)/slice" scheduling_name="wrapped_slice.6" stack_frame_id=4}
+  %wrapped_slice.5 = bf16[4096,512]{1,0} fusion(%self.1), kind=kLoop, calls=%wrapped_slice_computation.5, metadata={op_name="jit(_multi_slice)/slice" scheduling_name="wrapped_slice.5" stack_frame_id=4}
+  %wrapped_slice.4 = bf16[4096,512]{1,0} fusion(%self.1), kind=kLoop, calls=%wrapped_slice_computation.4, metadata={op_name="jit(_multi_slice)/slice" scheduling_name="wrapped_slice.4" stack_frame_id=4}
+  %wrapped_slice.3 = bf16[4096,512]{1,0} fusion(%self.1), kind=kLoop, calls=%wrapped_slice_computation.3, metadata={op_name="jit(_multi_slice)/slice" scheduling_name="wrapped_slice.3" stack_frame_id=4}
+  %wrapped_slice.2 = bf16[4096,512]{1,0} fusion(%self.1), kind=kLoop, calls=%wrapped_slice_computation.2, metadata={op_name="jit(_multi_slice)/slice" scheduling_name="wrapped_slice.2" stack_frame_id=4}
+  %wrapped_slice.1 = bf16[4096,512]{1,0} fusion(%self.1), kind=kLoop, calls=%wrapped_slice_computation.1, metadata={op_name="jit(_multi_slice)/slice" scheduling_name="wrapped_slice.1" stack_frame_id=4}
+  %wrapped_slice = bf16[4096,512]{1,0} fusion(%self.1), kind=kLoop, calls=%wrapped_slice_computation, metadata={op_name="jit(_multi_slice)/slice" scheduling_name="wrapped_slice" stack_frame_id=4}
+  ROOT %tuple.1.0 = (bf16[4096,512]{1,0}, bf16[4096,512]{1,0}, bf16[4096,512]{1,0}, bf16[4096,512]{1,0}, bf16[4096,512]{1,0}, /*index=5*/bf16[4096,512]{1,0}, bf16[4096,512]{1,0}, bf16[4096,512]{1,0}) tuple(%wrapped_slice, %wrapped_slice.1, %wrapped_slice.2, %wrapped_slice.3, %wrapped_slice.4, /*index=5*/%wrapped_slice.5, %wrapped_slice.6, %wrapped_slice.7), metadata={scheduling_name="tuple.1.0"}
+}
+

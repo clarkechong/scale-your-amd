@@ -1,0 +1,8 @@
+001: kKernel [source | sink] kernel=wrapped_slice_7, profile_annotation=wrapped_slice.7, launch dimensions=blocks: {2048, 1, 1}, threads/block: {256, 1, 1}, cluster_dim=nullopt
+002: kKernel [source | sink] kernel=wrapped_slice_6, profile_annotation=wrapped_slice.6, launch dimensions=blocks: {2048, 1, 1}, threads/block: {256, 1, 1}, cluster_dim=nullopt
+003: kKernel [source | sink] kernel=wrapped_slice_5, profile_annotation=wrapped_slice.5, launch dimensions=blocks: {2048, 1, 1}, threads/block: {256, 1, 1}, cluster_dim=nullopt
+004: kKernel [source | sink] kernel=wrapped_slice_4, profile_annotation=wrapped_slice.4, launch dimensions=blocks: {2048, 1, 1}, threads/block: {256, 1, 1}, cluster_dim=nullopt
+005: kKernel [source | sink] kernel=wrapped_slice_3, profile_annotation=wrapped_slice.3, launch dimensions=blocks: {2048, 1, 1}, threads/block: {256, 1, 1}, cluster_dim=nullopt
+006: kKernel [source | sink] kernel=wrapped_slice_2, profile_annotation=wrapped_slice.2, launch dimensions=blocks: {2048, 1, 1}, threads/block: {256, 1, 1}, cluster_dim=nullopt
+007: kKernel [source | sink] kernel=wrapped_slice_1, profile_annotation=wrapped_slice.1, launch dimensions=blocks: {2048, 1, 1}, threads/block: {256, 1, 1}, cluster_dim=nullopt
+008: kKernel [source | sink] kernel=wrapped_slice, profile_annotation=wrapped_slice, launch dimensions=blocks: {2048, 1, 1}, threads/block: {256, 1, 1}, cluster_dim=nullopt

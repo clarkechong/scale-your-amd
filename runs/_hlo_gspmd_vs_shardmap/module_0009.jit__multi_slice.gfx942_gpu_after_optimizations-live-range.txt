@@ -1,0 +1,39 @@
+HloLiveRange (max 10):
+  InstructionSequence:
+    0:self.1
+    1:wrapped_slice.7
+    2:wrapped_slice.6
+    3:wrapped_slice.5
+    4:wrapped_slice.4
+    5:wrapped_slice.3
+    6:wrapped_slice.2
+    7:wrapped_slice.1
+    8:wrapped_slice
+    9:tuple.1.0
+  BufferLiveRange:
+    self.1{}:0-10
+    wrapped_slice{}:8-10
+    wrapped_slice.1{}:7-10
+    wrapped_slice.2{}:6-10
+    wrapped_slice.3{}:5-10
+    wrapped_slice.4{}:4-10
+    wrapped_slice.5{}:3-10
+    wrapped_slice.6{}:2-10
+    wrapped_slice.7{}:1-10
+    tuple.1.0{}:9-10
+  Live ranges at 9 (peak):
+    self.1{}: 117440512 bytes (cumulative: 117440512 bytes)
+    wrapped_slice{}: 14680064 bytes (cumulative: 132120576 bytes)
+    wrapped_slice.1{}: 14680064 bytes (cumulative: 146800640 bytes)
+    wrapped_slice.2{}: 14680064 bytes (cumulative: 161480704 bytes)
+    wrapped_slice.3{}: 14680064 bytes (cumulative: 176160768 bytes)
+    wrapped_slice.4{}: 14680064 bytes (cumulative: 190840832 bytes)
+    wrapped_slice.5{}: 14680064 bytes (cumulative: 205520896 bytes)
+    wrapped_slice.6{}: 14680064 bytes (cumulative: 220200960 bytes)
+    wrapped_slice.7{}: 14680064 bytes (cumulative: 234881024 bytes)
+    tuple.1.0{}: 64 bytes (cumulative: 234881088 bytes)
+  Stack trace breakdown for peak usage: 234 881 088 bytes
+    main.1 (100.0%, total: 234 881 088 bytes, current: 0 bytes, remaining: 234 881 088 bytes)
+      ├── jit(_multi_slice)/slice (50.0%, total: 117 440 512 bytes, current: 117 440 512 bytes, remaining: 117 440 576 bytes)
+      ├── self (50.0%, total: 117 440 512 bytes, current: 117 440 512 bytes, remaining: 64 bytes)
+      └── tuple.1.0 (0.0%, total: 64 bytes, current: 64 bytes, remaining: 0 bytes)

@@ -31,6 +31,14 @@ toc:
   - name: References
 ---
 
+REWORK THE FLOW HERE TO BE MORE INTUITIVE:
+- UNDERSTANDING AMD GPU SYSTEMS
+- START WITH SINGLE AMD GPU ARCHITECTURE
+  - INCLUDING DATA TYPES, ALL ESSENTIAL GPU ARCHITECTURE
+- BUILD INTO 8X GPU NODE ARCHITECTURE
+  - INTERCONNETS, TOPOLOGY, COMMUNICATION KERNELS, ETC
+- SYSTEMS OF NODES (RDMA, 8+ GPU SYSTEMS, LARGE SCALE DEPLOYMENT OF GPU)
+
 **Depends on:** [Chapter 1]({{ '/pages/1-rooflines' | relative_url }}) for rooflines,
 arithmetic intensity and the ridge point. Nothing later.
 
@@ -391,14 +399,19 @@ arithmetic and `t_math` alone should predict it.
 **How long does it actually take?** We do not know yet, and that is deliberate. This
 chapter has no way to find out: we can predict the number but we cannot read a
 profile. [Chapter 3]({{ '/pages/3-profiling' | relative_url }}) is where we capture the
-trace, find the kernel, and see whether 105 microseconds was right. The script is
-`jax_matmul.py`, it runs exactly this shape, and the answer is one chapter away.
+trace, find the kernel, and see whether 105 microseconds was right. The command is
+`python -m bench.jax_matmul --trace --sizes 4096`, it runs exactly this shape, and the
+answer is one chapter away.
 
 **A prediction to hold onto while you wait**, since it is the interesting part: 105
 microseconds is short. A kernel that runs for a hundred microseconds is in a regime
 where launch overhead, autotuning on the first call, and clock ramp are all
 comparable to the work. Expect the first iteration to be much slower than the tenth,
 and expect to have to say which one you are quoting.
+
+**One number in the calculation above is going to turn out to be wrong, and it is not one
+of the ones we derived.** Chapter 3 measures 150 microseconds, and the entire discrepancy
+sits in the 2.10 GHz. Watch for it.
 
 ## What Changes Across the Family
 

@@ -1,0 +1,78 @@
+
+Total bytes used: 234881088 (224.00MiB)
+
+Used values:
+<16 self.1 @0>
+ positions:
+  self.1
+ uses:
+  wrapped_slice, operand 0
+  wrapped_slice.1, operand 0
+  wrapped_slice.2, operand 0
+  wrapped_slice.3, operand 0
+  wrapped_slice.4, operand 0
+  wrapped_slice.5, operand 0
+  wrapped_slice.6, operand 0
+  wrapped_slice.7, operand 0
+ from instruction: %self.1 = bf16[4096,14336]{1,0} parameter(0), metadata={op_name="self" scheduling_name="self.1"}
+<17 wrapped_slice @0>
+ positions:
+  wrapped_slice
+  tuple.1.0 {0}
+ uses:
+  tuple.1.0, operand 0
+ from instruction: %wrapped_slice = bf16[512,14336]{1,0} fusion(%self.1), kind=kLoop, calls=%wrapped_slice_computation, metadata={op_name="jit(_multi_slice)/slice" scheduling_name="wrapped_slice" stack_frame_id=4}
+<18 wrapped_slice.1 @0>
+ positions:
+  wrapped_slice.1
+  tuple.1.0 {1}
+ uses:
+  tuple.1.0, operand 1
+ from instruction: %wrapped_slice.1 = bf16[512,14336]{1,0} fusion(%self.1), kind=kLoop, calls=%wrapped_slice_computation.1, metadata={op_name="jit(_multi_slice)/slice" scheduling_name="wrapped_slice.1" stack_frame_id=4}
+<19 wrapped_slice.2 @0>
+ positions:
+  wrapped_slice.2
+  tuple.1.0 {2}
+ uses:
+  tuple.1.0, operand 2
+ from instruction: %wrapped_slice.2 = bf16[512,14336]{1,0} fusion(%self.1), kind=kLoop, calls=%wrapped_slice_computation.2, metadata={op_name="jit(_multi_slice)/slice" scheduling_name="wrapped_slice.2" stack_frame_id=4}
+<20 wrapped_slice.3 @0>
+ positions:
+  wrapped_slice.3
+  tuple.1.0 {3}
+ uses:
+  tuple.1.0, operand 3
+ from instruction: %wrapped_slice.3 = bf16[512,14336]{1,0} fusion(%self.1), kind=kLoop, calls=%wrapped_slice_computation.3, metadata={op_name="jit(_multi_slice)/slice" scheduling_name="wrapped_slice.3" stack_frame_id=4}
+<21 wrapped_slice.4 @0>
+ positions:
+  wrapped_slice.4
+  tuple.1.0 {4}
+ uses:
+  tuple.1.0, operand 4
+ from instruction: %wrapped_slice.4 = bf16[512,14336]{1,0} fusion(%self.1), kind=kLoop, calls=%wrapped_slice_computation.4, metadata={op_name="jit(_multi_slice)/slice" scheduling_name="wrapped_slice.4" stack_frame_id=4}
+<22 wrapped_slice.5 @0>
+ positions:
+  wrapped_slice.5
+  tuple.1.0 {5}
+ uses:
+  tuple.1.0, operand 5
+ from instruction: %wrapped_slice.5 = bf16[512,14336]{1,0} fusion(%self.1), kind=kLoop, calls=%wrapped_slice_computation.5, metadata={op_name="jit(_multi_slice)/slice" scheduling_name="wrapped_slice.5" stack_frame_id=4}
+<23 wrapped_slice.6 @0>
+ positions:
+  wrapped_slice.6
+  tuple.1.0 {6}
+ uses:
+  tuple.1.0, operand 6
+ from instruction: %wrapped_slice.6 = bf16[512,14336]{1,0} fusion(%self.1), kind=kLoop, calls=%wrapped_slice_computation.6, metadata={op_name="jit(_multi_slice)/slice" scheduling_name="wrapped_slice.6" stack_frame_id=4}
+<24 wrapped_slice.7 @0>
+ positions:
+  wrapped_slice.7
+  tuple.1.0 {7}
+ uses:
+  tuple.1.0, operand 7
+ from instruction: %wrapped_slice.7 = bf16[512,14336]{1,0} fusion(%self.1), kind=kLoop, calls=%wrapped_slice_computation.7, metadata={op_name="jit(_multi_slice)/slice" scheduling_name="wrapped_slice.7" stack_frame_id=4}
+<25 tuple.1.0{} @0>
+ positions:
+  tuple.1.0 {}
+ uses:
+ from instruction: %tuple.1.0 = (bf16[512,14336]{1,0}, bf16[512,14336]{1,0}, bf16[512,14336]{1,0}, bf16[512,14336]{1,0}, bf16[512,14336]{1,0}, /*index=5*/bf16[512,14336]{1,0}, bf16[512,14336]{1,0}, bf16[512,14336]{1,0}) tuple(%wrapped_slice, %wrapped_slice.1, %wrapped_slice.2, %wrapped_slice.3, %wrapped_slice.4, /*index=5*/%wrapped_slice.5, %wrapped_slice.6, %wrapped_slice.7), metadata={scheduling_name="tuple.1.0"}

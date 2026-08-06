@@ -19,19 +19,32 @@ authors:
 toc:
   - name: A Triage Order
   - name: Kernel Selection and Tuning
+    subsections:
+      - name: What Autotuning Buys, Measured
   - name: Fusion
+    subsections:
+      - name: Reading Fusion Decisions
   - name: Attention Kernels
+    subsections:
+      - name: How To Tell Which One You Got
   - name: When XProf Is Not Enough
+    subsections:
+      - name: The Handoff, Keyed To A Kernel Name
+      - name: What Comes Back
+      - name: Counters, For When The Static Fields Are Not Enough
   - name: What Occupancy Does and Does Not Tell You
+    subsections:
+      - name: The Same Argument, On Our Own Kernel
   - name: When to Write Your Own Kernel
+    subsections:
+      - name: Pallas Works, But Not By Default
   - name: Worked Problems
   - name: References
 ---
 
-> **Draft.** The triage order and the occupancy section are written; the four sections
-> that need before-and-after measurements or a verified library survey are not, and are
-> marked where they belong. The occupancy material is complete because AMD published the
-> measurements it rests on.
+> **Draft.** Every section is written and measured on the pinned stack. What is still
+> owed is the two worked problems at the end, which need a profile a reader can load
+> rather than a number we can quote.
 
 **Depends on:** [Chapter 3]({{ '/pages/3-profiling' | relative_url }}) for capturing and
 reading a trace, and [Chapter 6]({{ '/pages/6-training' | relative_url }}) for the
@@ -126,88 +139,293 @@ mostly are not yours to fix. Most of the gap, most of the time, is in the first 
 
 ## Kernel Selection and Tuning
 
-<!-- BLOCKED: needs a verified library survey plus real before-and-after numbers, and the
-     library situation is the fastest-rotting content in the book.
+**Your bf16 matmul goes to hipBLASLt, and the kernel name will not tell you that.**
+[Chapter 3]({{ '/pages/3-profiling' | relative_url }}) walks a GEMM from Kernel Stats back
+to source and finds a kernel called
+`Cijk_Ailk_Bljk_BBS_BH_UserArgs_MT256x224x64_MI16x16x1_...`. **`Cijk_` is a Tensile name,
+and Tensile generates kernels for both rocBLAS and hipBLASLt, so the prefix settles
+nothing.**
 
-     What it has to deliver, from the roadmap: hipBLASLt heuristics and offline tuning,
-     where rocBLAS still gets used, Triton on ROCm, and AITER. What to do when the
-     autotuner picks badly. Real before-and-after numbers.
+**The way to settle it is to look at which code object got loaded:**
 
-     Specific things to check and pin to a version before writing:
-     - Which library XLA:ROCm actually dispatches a bf16 matmul to at the shapes in this
-       book, and how that appears in Kernel Stats (Cijk_* names indicate rocBLAS/Tensile
-       kernels; hipBLASLt has its own naming).
-     - Whether offline GEMM tuning is reachable from JAX on ROCm and what it buys, with
-       a measured before-and-after on one shape.
-     - Composable Kernel should be named as the legacy path rather than the future, since
-       AMD is moving AITER off CK templates onto a Python DSL over MLIR. Check the state
-       of that before writing and do not present CK as the destination.
+```bash
+grep -iE "blas|tensile" /proc/<pid>/maps
+```
 
-     Everything here needs a "verified against" line with wheel and ROCm versions, the
-     same discipline as Chapter 3's limitations table. -->
+On this stack that returns, among others:
+
+```
+/opt/rocm/lib/hipblaslt/library/gfx942/TensileLibrary_BB_BB_UA_Type_BB_HPA_
+    Contraction_l_Ailk_Bljk_Cijk_Dijk_gfx942.co
+```
+
+**hipBLASLt.** `librocblas.so` is mapped too, because it is linked, but its kernel library
+is never loaded. The `Ailk_Bljk_Cijk` in that filename is the same contraction descriptor
+that appears in the kernel name, which is where the naming comes from and why the two
+libraries look alike from the outside. The container sets
+`--xla_gpu_enable_cublaslt=True`, which on ROCm means hipBLASLt rather than anything from
+NVIDIA.
+
+### What Autotuning Buys, Measured
+
+**The container ships `--xla_gpu_autotune_level=0`, so every GEMM in this book is
+untuned unless it says otherwise.** That is worth knowing before you compare any number
+here against your own. Running the same shapes at level 4, one process per shape, one
+MI300X: **[measured]**
+
+| Matmul | Autotuning off | Autotuning on | Gain |
+|---|---|---|---|
+| 1024 cubed | 15.0 us | 10.4 us | **1.45x** |
+| 2048 cubed | 31.3 us | 30.3 us | 1.03x |
+| 4096 cubed | 157.1 us | 151.3 us | 1.04x |
+| 8192 cubed | 1271.3 us | 1184.7 us | 1.07x |
+
+**Autotuning is worth 45% on the small awkward shape and 3 to 7% on the large clean
+ones**, which is the shape of result you should expect: the heuristic picks a reasonable
+tile when the problem is big enough for many tiles to be reasonable, and picks badly when
+it is not.
+
+**You can see it picking differently.** At 4096 the untuned choice is a `MT256x224x64`
+macro tile and the tuned one is `MT512x112x64`; at 1024 it moves from `MT128x128x64` to
+`MT64x96x128`, which is the change that buys the 45%. **The tuned kernels also come from a
+different Tensile family**, carrying `Bias_HA_S_SAV` in their names where the untuned ones
+do not.
+
+**Two caveats before you turn it on everywhere.** Autotuning is not free: it runs the
+candidate kernels at compile time, and in a profile that lands as
+`stream_executor::gpu::RedzoneAllocatorKernel` work that will pollute your capture if you
+trace the first iteration. And **it is not deterministic across runs**: we saw the same
+shape select different kernels on different days at the same autotune level. If you need
+reproducible numbers, pin the level and say which.
+
+**On Composable Kernel, briefly, because it is easy to aim at the wrong target.** CK is
+the template library underneath much of AITER today, and AMD is moving off CK templates
+towards a Python DSL over MLIR. **Treat CK as the current implementation detail rather
+than the thing to learn**, and see
+[Chapter 7]({{ '/pages/7-moe' | relative_url }})'s survey of what AITER exposes to JAX,
+which is less than you would hope.
+
+> **Verified against:** `rocm/jax-training:maxtext-v26.5`, ROCm 7.14.0, `jax` 0.10.0, on
+> MI300X (gfx942), **5 August 2026**.
 
 ## Fusion
 
-<!-- BLOCKED on artifacts. Needs real HLO before and after a fusion decision, plus the
-     measured effect, and the style guide requires the artifact on screen before the
-     explanation.
+**The cleanest way to see what XLA will and will not fuse is to write the same
+elementwise work twice, once with a matmul in the middle.** **[measured]**
 
-     What it has to deliver: what XLA fuses and what it does not, how to read fusion
-     decisions out of HLO (fusion kinds kLoop, kInput, kCustom, and the operand list),
-     and the cases worth forcing. Dump with
-     XLA_FLAGS="--xla_dump_to=/tmp/hlo --xla_dump_hlo_as_dot".
+```python
+def fusible(a):                       # tanh, multiply, add
+    return jnp.tanh(a) * 2.0 + 1.0
 
-     Depends on Chapter 3's "From an HLO Op Back to a Python Line" section, which is
-     itself blocked: that section teaches how to read an op, and this one assumes it.
-     Do not write this before that. -->
+def unfusible(a, b):                  # the same, around a GEMM
+    return jnp.tanh(a @ b) * 2.0 + 1.0
+```
+
+| | Kernels launched | Time |
+|---|---|---|
+| `fusible` | **1**, `loop_add_fusion` | 0.28 ms |
+| `unfusible` | **3**, `Cijk_...` plus `wrapped_convert` plus `loop_add_fusion` | 1.67 ms |
+
+**Three elementwise operations became one kernel.** No intermediate `tanh` result is
+written to HBM; the chain runs in registers in a single pass over the data. That is the
+whole value of fusion, and it is why an elementwise chain costs about what one pass over
+its input costs rather than three.
+
+**Putting a GEMM in the middle splits it into three.** The library call is opaque: XLA
+cannot see inside hipBLASLt's kernel, so it cannot fuse into it, and the elementwise work
+on either side becomes its own launch. **Library calls are fusion barriers**, and that is
+the general rule to carry around.
+
+**The exception is the epilogue, and it matters because it hides work.** The example in
+[Chapter 3]({{ '/pages/3-profiling' | relative_url }}) puts a GELU immediately after a
+matmul and it does not become a separate kernel at all:
+
+```
+%cublas-lt-matmul.2 = ... custom-call(%x.1, %w1.1),
+    custom_call_target="__cublas$lt$matmul",
+    backend_config={"gemm_backend_config":{ ... "epilogue":"GELU" ... }}
+```
+
+**hipBLASLt applied the activation while the output tiles were still in registers**, so
+the fusion happened inside the library rather than in XLA. Check the `epilogue` field
+before concluding an activation was not fused. A missing kernel is the evidence that it
+was.
+
+### Reading Fusion Decisions
+
+**Dump the optimised HLO and the fusions name themselves:**
+
+```bash
+XLA_FLAGS="--xla_dump_to=hlo --xla_dump_hlo_as_dot" python your_script.py
+```
+
+```
+ROOT %input_reduce_fusion = bf16[4096]{0} fusion(%get-tuple-element.1),
+    kind=kInput, calls=%fused_reduce, metadata={op_name="jit(f)/convert_element_type"}
+```
+
+**`kind` is the field to read first.** `kLoop` is elementwise work fused into one pass.
+`kInput` is a reduction with its producers pulled in, which is what this one is.
+`kCustom` wraps a library call. **The kind tells you the shape of the fusion before you
+read a line of it**, and `calls=` points at the computation holding the actual contents.
+
+**Do not trust a fusion's `metadata`.** It names one contributing operation and not
+necessarily the expensive one: the fusion above names a dtype conversion the compiler
+inserted, while the tanh, the multiply, the add and the reduction are all inside it.
 
 ## Attention Kernels
 
-<!-- BLOCKED: needs both a verified statement of what is available and a measured
-     before-and-after, and it is the section most likely to be out of date by
-     publication.
+**Three attention implementations, one that runs.** MaxText exposes the choice as a
+config value, so this is a clean A/B: same model, same batch, only `attention` changing.
+Llama 3 8B, 8x MI300X, 8192-token sequences, per-device batch 4. **[measured]**
 
-     What it has to deliver: flash-style attention on AMD, what the kernel looks like in
-     a trace, and how to tell which implementation you actually got. This surprises
-     people constantly, which is the reason the section exists.
+| `attention` | Outcome |
+|---|---|
+| `dot_product` | **Out of memory**, trying to allocate 181.97 GiB |
+| `flash` (Pallas) | **Fails to compile**: `Shared memory size limit exceeded: requested 98304, available: 65536` |
+| `cudnn_flash_te` | **Runs.** 3.90 s per step, 432.8 TFLOP/s per device |
 
-     The concrete JAX-on-ROCm answer to check is ROCm/jax-aiter, which bridges AITER's
-     flash attention into JAX over XLA FFI with a custom_vjp so gradients still flow.
-     That is the one place a JAX user on AMD reaches vendor kernels without going
-     through PyTorch, and it deserves a measured before-and-after against XLA's own
-     attention lowering. It is also alpha, so the claim must be dated and version-pinned.
+**Start with the first row, because it is the one that matters for
+[Chapter 5]({{ '/pages/5-transformers' | relative_url }}).** That chapter's
+activation-memory count assumes the score matrix is never materialised, and it flags the
+assumption as load-bearing. **It is load-bearing and it is correct**: ask for the
+implementation that materialises scores and the run does not start. A 182 GiB allocation
+request against a 192 GiB device is what `B * N * S * S` looks like at
+`4 * 32 * 8192 * 8192` in fp32. **You cannot accidentally train at 8k context with a
+materialised score matrix, because it does not fit.**
 
-     Cross-reference when written: Chapter 5's activation-memory count assumes the score
-     matrix is never materialised, which is only true if you got a flash-style kernel.
-     That assumption is load-bearing and this section is where it gets checked. -->
+**The second row is an AMD-specific trap and the error message is unusually good.** The
+`flash` path is a Pallas kernel whose tiling asks for 96 KB of LDS. **MI300X has 64 KB per
+workgroup**, so it fails at compile time with the numbers in the message. NVIDIA parts
+from Hopper onward have 228 KB, which is why the kernel was written that way and why it
+has not been a problem elsewhere. **This is the single most likely reason a working
+MaxText config from an NVIDIA cluster will not start on MI300X.**
+
+**The third row works and is what you should use.** `cudnn_flash_te` routes to
+`transformer_engine_rocm_jax`, which despite the config value's name has nothing to do
+with cuDNN on this platform; it is AMD's Transformer Engine port with a fused attention
+backend. **It needs one extra config key or it refuses to configure**, and the error names
+pydantic rather than the cause:
+
+```
+Value error, max_segments_per_seq must be set when using TransformerEngine attention
+```
+
+Set `max_segments_per_seq=1` if you are not packing sequences.
+
+### How To Tell Which One You Got
+
+**Look for the kernel in the trace, not the config in the log.** With
+`cudnn_flash_te` the scope breakdown from
+[Chapter 3]({{ '/pages/3-profiling' | relative_url }})'s tooling shows a single
+`_FusedDotProductAttention_0` scope taking **15.4% of device kernel time** in the bf16 run.
+If you instead see a chain of `dot_general`, `softmax` and `dot_general` under an
+`attention` scope, you got the unfused path and your activation memory is not what
+[Chapter 5]({{ '/pages/5-transformers' | relative_url }}) says it is.
+
+**One number worth carrying forward.** That 15.4% rises to 19.4% under fp8, not because
+attention got slower but because everything else got faster;
+[Chapter 6]({{ '/pages/6-training' | relative_url }})'s fp8 section works through why that
+caps the achievable speedup near 1.3x.
+
+> **Verified against:** `rocm/jax-training:maxtext-v26.5`, MaxText `release/v26.5` at
+> `a7c6c7e5`, `transformer_engine_rocm_jax` 2.15.0.dev0+rocm7.15.0, on 8x MI300X,
+> **5 August 2026**. `ROCm/jax-aiter` also exposes flash attention over XLA FFI and would
+> be the way to reach AITER's kernels directly; it is not on PyPI and we did not build it,
+> so we make no claim about its performance. See
+> [Chapter 7]({{ '/pages/7-moe' | relative_url }}) for what its operator list does and
+> does not contain.
 
 ## When XProf Is Not Enough
 
-<!-- BLOCKED: needs the escalation recipes verified end to end on the pinned stack.
+**XProf tells you a kernel took 165 microseconds and reports zero for its occupancy, its
+registers and its shared memory.** Per
+[Chapter 3]({{ '/pages/3-profiling' | relative_url }})'s limitations table, those zeros are
+the ROCm collector never writing the fields, so no amount of clicking recovers them.
+**`rocprofv3` talks to `rocprofiler-sdk` directly and has them all.**
 
-     What it has to deliver, from the roadmap: rocprofv3 and rocprof-compute for cache
-     hit rates, MFMA utilization, LDS bank conflicts and memory coalescing. TraceLens for
-     large multi-node timelines. Concrete handoff recipes: given a kernel name from
-     Kernel Stats, the exact invocation that profiles just it, and how to extract its ISA.
+### The Handoff, Keyed To A Kernel Name
 
-     Material that feeds it, all local:
-     - fw101 has working rocprofv3 invocations (--kernel-trace --stats, --pmc with
-       counter names) and rocprof-compute profile/analyze recipes, with committed
-       artifacts under fw101/gpu_kernel/prof/.
-     - fw101 also has the ISA dump route: GPU_DUMP_CODE_OBJECT=1 to get code objects,
-       then llvm-objdump --disassemble-symbols.
-     - gpu_profiling/docs/writeup/rocm-pm-sampler-wiring.md documents getting counters
-       into XProf itself via XLA_ROCM_PM_SAMPLE_COUNTERS, on a feature branch. That is
-       a fix in progress rather than something a reader can use, so it should be
-       mentioned as forthcoming rather than recommended.
+**Take the kernel name from Kernel Stats and filter on it.** The whole point is to profile
+that kernel and not the process:
 
-     Why this is blocked rather than transcribed: the roadmap asks for a recipe keyed to
-     a kernel name from Kernel Stats, and the existing invocations profile whole
-     processes. The specific handoff has not been done, and a recipe that has not been
-     run is exactly the kind of thing that wastes a reader's afternoon.
+```bash
+rocprofv3 --kernel-include-regex "Cijk_" --kernel-trace --stats \
+    -d prof -o mm -- python your_script.py
+```
 
-     Also unverified: whether TraceLens is publicly available and appropriate to
-     recommend. Check before naming it. -->
+**The output is a SQLite database**, which is more useful than it sounds because it means
+the follow-up is a query rather than a spreadsheet:
+
+```python
+import sqlite3
+db = sqlite3.connect("prof/mm_results.db")
+db.execute("""
+  select s.sgpr_count, s.arch_vgpr_count, s.accum_vgpr_count,
+         d.group_segment_size, d.private_segment_size,
+         d.workgroup_size_x, d.grid_size_x, count(*), avg(d.end - d.start) / 1000.0
+  from rocpd_kernel_dispatch_<guid> d
+  join rocpd_info_kernel_symbol_<guid> s on d.kernel_id = s.id
+  where s.display_name like 'Cijk%' group by s.id order by count(*) desc
+""").fetchone()
+```
+
+**Table names carry a per-session GUID suffix**, so list them from
+`sqlite_master` rather than hard-coding. And **join dispatches to symbols**: the symbol
+table holds every kernel in the loaded code object, which for a Tensile library is
+thousands, and only a handful were dispatched.
+
+### What Comes Back
+
+For the 4096-cubed bf16 matmul from
+[Chapter 3]({{ '/pages/3-profiling' | relative_url }}): **[measured]**
+
+| Field | Value | XProf shows |
+|---|---|---|
+| SGPRs | 112 | 0 |
+| Architected VGPRs | 128 | 0 |
+| Accumulation VGPRs | 352 | 0 |
+| LDS per workgroup | **63744 B of 65536** | 0 |
+| Scratch | 0 B | 0 |
+| Workgroup | 256 threads | correct already |
+| Grid | 77824 threads, so **304 workgroups on 304 CUs** | correct already |
+| Average duration | 165.2 us | correct already |
+
+**That LDS figure is the answer to a question Chapter 3 left open.** The 4096 matmul runs
+exactly one workgroup per compute unit, and the reason is right there: **the kernel uses
+97% of the LDS a workgroup can have**, so a second one cannot be resident no matter how
+many registers are free. The 480 total VGPRs per thread point the same way. **This kernel
+was designed to occupy a CU alone**, trading occupancy for a large tile, which is a
+deliberate choice rather than a defect, and the next section is about why that can be the
+right one.
+
+**It also explains the failure in [Attention Kernels](#attention-kernels) above.** The
+Pallas flash kernel asked for 98304 bytes of LDS. The limit is 65536. A GEMM at 63744 fits
+with 1792 bytes to spare, which is how close the working kernels run to the edge.
+
+### Counters, For When The Static Fields Are Not Enough
+
+**`rocprofv3` 1.3.2 on this stack exposes the counters the occupancy discussion needs**,
+confirmed present by `rocprofv3 --list-avail`: `OccupancyPercent`, `MfmaUtil`,
+`SQ_INSTS_MFMA`, `TCC_HIT_sum`, `TCC_MISS_sum`, `VALUBusy` and `MemUnitStalled`.
+**[measured]** Collect them with `--pmc`, and expect the run to be serialised and slow,
+because counter collection replays dispatches.
+
+**And the ISA, when you need to see the instruction mix:**
+
+```bash
+GPU_DUMP_CODE_OBJECT=1 python your_script.py
+llvm-objdump --disassemble-symbols=<kernel> <code-object>
+```
+
+**Do this last.** Reading MFMA instruction scheduling is a real skill and it is almost
+never where the answer is; the triage order at the top of this chapter exists so that you
+arrive here having already ruled out the six cheaper explanations.
+
+> **Verified against:** `rocprofv3` 1.3.2, ROCm 7.14.0, on MI300X (gfx942), **5 August
+> 2026**. The recipe above was run end to end and the numbers in the table are its output.
+> A separate route, getting counters into XProf itself via `XLA_ROCM_PM_SAMPLE_COUNTERS`,
+> exists on a feature branch and is not something a reader can use today.
 
 ## What Occupancy Does and Does Not Tell You
 
@@ -277,6 +495,36 @@ tell you whether the engines are being fed, which is the actual question. In the
 above, `MfmaUtil` reads 70% for one chain and 98% for eight at the same wave count: the
 mechanism, not just the outcome.
 
+### The Same Argument, On Our Own Kernel
+
+**AMD's sweep is a microbenchmark. Here is the effect on the plain 4096-cubed bf16 matmul
+from [Chapter 3]({{ '/pages/3-profiling' | relative_url }})**, with the resource figures
+pulled out of `rocprofv3` by the recipe in
+[The Handoff](#the-handoff-keyed-to-a-kernel-name). **[measured]**
+
+```
+arch VGPRs 128 + accum VGPRs 352 = 480 per lane
+  VGPR limit:      floor(512 / 480)     = 1 wave per SIMD
+  SGPR limit:      floor(~800 / 112)    = 7 waves per SIMD
+  LDS limit:       floor(65536 / 63744) = 1 workgroup per CU
+  workgroup is 256 threads = 4 waves    = 1 wave per SIMD
+
+occupancy = 1 of 8 waves per SIMD = 12.5%
+```
+
+**Two separate resources bind at exactly one**, the register file and the LDS, which is
+what a deliberately-tuned kernel looks like: hipBLASLt sized the tile so that one
+workgroup fills a CU and nothing is left over. The grid confirms it, at **304 workgroups
+for 304 compute units, precisely one wave of work**.
+
+**That kernel runs at 70% of the data sheet roofline and about 93% of the roofline at the
+clock the device actually sustains.** At 12.5% occupancy.
+
+**This is the section's whole thesis arriving unprompted in an ordinary measurement.** If
+you had profiled this matmul, read 12.5% occupancy, and gone looking for a way to raise
+it, you would have been optimising a kernel that was already at the roofline. **The number
+was low because the kernel was good.**
+
 **And here is the move this section deliberately does not make: it does not teach you to
 tune registers and tiles.** That is kernel authoring, and it is a stated non-goal of this
 book. **The whole job of this section is to stop a JAX user from chasing a number they
@@ -308,17 +556,52 @@ recovers memory traffic that the compiler is spending.
 **When you are AMD, or otherwise in the business of shipping the library.** This is the
 common case in practice and it is out of scope here.
 
-**If you do write one, the options on ROCm from JAX are Pallas, which routes through the
-Triton backend, or an XLA FFI custom call into HIP.** Pallas on ROCm is labelled
-experimental and Mosaic GPU is NVIDIA-only, so the Pallas route is less mature than the
-TPU equivalent you may have read about; the FFI route is more work and fewer surprises.
+### Pallas Works, But Not By Default
 
-<!-- BLOCKED: the version-pinned status of Pallas on ROCm and of the XLA FFI custom-call
-     path. Both statements above are correct as far as we know and neither has been
-     tested on the pinned stack in this book. Before publication: write a trivial Pallas
-     kernel and a trivial FFI custom call on ROCm 7.2.4 with jax 0.11.0, confirm both
-     run, and date the claim. If Pallas on ROCm does not work at all, that is a more
-     useful sentence than the hedge above. -->
+**Pallas runs on ROCm, and the default configuration does not.** A trivial kernel:
+
+```python
+from jax.experimental import pallas as pl
+from jax.experimental.pallas import triton as pltriton
+
+def add_one_kernel(x_ref, o_ref):
+    o_ref[...] = x_ref[...] + 1.0
+
+@jax.jit
+def add_one(x):
+    return pl.pallas_call(
+        add_one_kernel,
+        out_shape=jax.ShapeDtypeStruct(x.shape, x.dtype),
+        compiler_params=pltriton.CompilerParams(),   # required on ROCm
+    )(x)
+```
+
+**Without that `compiler_params` line it fails, and the error tells you exactly what to
+do:** **[measured]**
+
+```
+ValueError: Mosaic GPU does not yet support AMD ROCm devices.
+Use ``compiler_params=pltriton.CompilerParams()`` for ROCm.
+```
+
+**With it, the kernel compiles and produces correct results.** Two things follow that are
+easy to get wrong. **The Triton backend is bundled inside `jaxlib`**, so you do not need
+the standalone `triton` or `jax-triton` packages, and neither is installed in this
+container. And **Mosaic is the TPU-and-NVIDIA path**, which is the same wall
+[Chapter 7]({{ '/pages/7-moe' | relative_url }}) hits when MaxText's megablox kernels
+refuse to lower: those are Mosaic kernels, and no `compiler_params` rescues them because
+they are written against a different backend, not merely configured for one.
+
+**The XLA FFI route is present and is what the vendor path uses.** `jax.ffi` exposes
+`register_ffi_target` and `ffi_call` on this stack, and
+[`ROCm/jax-aiter`](https://github.com/ROCm/jax-aiter) is a working existence proof: it
+brings AITER's kernels into JAX over FFI, with `custom_vjp` so gradients flow, and no
+PyTorch at runtime. **If you are writing HIP anyway, this is the better-supported of the
+two routes**; Pallas is the one to reach for when you want to stay in Python.
+
+> **Verified against:** `jax` 0.10.0, `jaxlib` 0.10.0, ROCm 7.14.0 on MI300X (gfx942),
+> **5 August 2026**. `triton` and `jax-triton` are absent from the container and Pallas
+> works regardless. Both statements are the kind that rot fastest in this book.
 
 ## Worked Problems
 

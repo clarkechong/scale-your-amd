@@ -1,0 +1,396 @@
+{
+  "workload": "maxtext",
+  "tag": "ep-mixtral-ex8",
+  "finished_at": "2026-08-05T15:36:19.069645+00:00",
+  "wall_seconds": 181.86476302146912,
+  "protocol": {
+    "warmup": 3,
+    "repeats": 10,
+    "statistic": "median"
+  },
+  "constants": {
+    "cus": 304,
+    "clock_ghz": 2.1,
+    "bf16_flops": 1307400000000000.0,
+    "fp16_flops": 1307400000000000.0,
+    "fp8_flops": 2614900000000000.0,
+    "fp32_flops": 163400000000000.0,
+    "hbm_bytes_per_s": 5300000000000.0,
+    "hbm_bytes": 206158430208,
+    "xgmi_links": 7,
+    "xgmi_link_unidir_bytes_per_s": 64000000000.0,
+    "xgmi_egress_unidir_bytes_per_s": 448000000000.0,
+    "rccl_realised_bytes_per_s": 320000000000.0
+  },
+  "notes": {
+    "config": "/workspace/maxtext/src/maxtext/configs/base.yml",
+    "command": "/opt/venv/bin/python -m maxtext.trainers.pre_train.train /workspace/maxtext/src/maxtext/configs/base.yml model_name=mixtral-8x7b hardware=gpu dataset_type=synthetic enable_checkpointing=false steps=16 per_device_batch_size=4.0 max_target_length=4096 remat_policy=save_dot_with_context_except_mlp run_name=ep-mixtral-ex8 base_output_directory=/root/work/scale-your-amd/runs/20260805-maxtext-ep-mixtral-ex8/maxtext ici_expert_parallelism=8 ici_fsdp_parallelism=1 ici_data_parallelism=1 attention=cudnn_flash_te max_segments_per_seq=1 profiler=xplane skip_first_n_steps_for_profiler=6 profiler_steps=5 sparse_matmul=false capacity_factor=1.25",
+    "model": "mixtral-8x7b",
+    "ici": "expert=8,fsdp=1,data=1",
+    "overrides": [
+      "model_name=mixtral-8x7b",
+      "hardware=gpu",
+      "dataset_type=synthetic",
+      "enable_checkpointing=false",
+      "steps=16",
+      "per_device_batch_size=4.0",
+      "max_target_length=4096",
+      "remat_policy=save_dot_with_context_except_mlp",
+      "run_name=ep-mixtral-ex8",
+      "base_output_directory=/root/work/scale-your-amd/runs/20260805-maxtext-ep-mixtral-ex8/maxtext",
+      "ici_expert_parallelism=8",
+      "ici_fsdp_parallelism=1",
+      "ici_data_parallelism=1",
+      "attention=cudnn_flash_te",
+      "max_segments_per_seq=1",
+      "profiler=xplane",
+      "skip_first_n_steps_for_profiler=6",
+      "profiler_steps=5",
+      "sparse_matmul=false",
+      "capacity_factor=1.25"
+    ],
+    "returncode": 0,
+    "wall_seconds": 173.860369682312,
+    "steps": [
+      {
+        "step": 0,
+        "seconds": 44.698,
+        "tflops_per_device": 29.219,
+        "tokens_per_second_per_device": 366.552
+      },
+      {
+        "step": 1,
+        "seconds": 5.588,
+        "tflops_per_device": 233.699,
+        "tokens_per_second_per_device": 2931.768
+      },
+      {
+        "step": 2,
+        "seconds": 5.071,
+        "tflops_per_device": 257.563,
+        "tokens_per_second_per_device": 3231.144
+      },
+      {
+        "step": 3,
+        "seconds": 5.079,
+        "tflops_per_device": 257.14,
+        "tokens_per_second_per_device": 3225.831
+      },
+      {
+        "step": 4,
+        "seconds": 5.089,
+        "tflops_per_device": 256.621,
+        "tokens_per_second_per_device": 3219.322
+      },
+      {
+        "step": 5,
+        "seconds": 5.091,
+        "tflops_per_device": 256.523,
+        "tokens_per_second_per_device": 3218.087
+      },
+      {
+        "step": 6,
+        "seconds": 5.114,
+        "tflops_per_device": 255.397,
+        "tokens_per_second_per_device": 3203.964
+      },
+      {
+        "step": 7,
+        "seconds": 5.13,
+        "tflops_per_device": 254.581,
+        "tokens_per_second_per_device": 3193.731
+      },
+      {
+        "step": 8,
+        "seconds": 5.139,
+        "tflops_per_device": 254.125,
+        "tokens_per_second_per_device": 3188.006
+      },
+      {
+        "step": 9,
+        "seconds": 5.149,
+        "tflops_per_device": 253.648,
+        "tokens_per_second_per_device": 3182.02
+      },
+      {
+        "step": 10,
+        "seconds": 5.161,
+        "tflops_per_device": 253.068,
+        "tokens_per_second_per_device": 3174.755
+      },
+      {
+        "step": 11,
+        "seconds": 5.114,
+        "tflops_per_device": 255.373,
+        "tokens_per_second_per_device": 3203.665
+      },
+      {
+        "step": 12,
+        "seconds": 5.137,
+        "tflops_per_device": 254.223,
+        "tokens_per_second_per_device": 3189.237
+      },
+      {
+        "step": 13,
+        "seconds": 5.149,
+        "tflops_per_device": 253.632,
+        "tokens_per_second_per_device": 3181.827
+      },
+      {
+        "step": 14,
+        "seconds": 5.149,
+        "tflops_per_device": 253.645,
+        "tokens_per_second_per_device": 3181.982
+      },
+      {
+        "step": 15,
+        "seconds": 5.16,
+        "tflops_per_device": 253.102,
+        "tokens_per_second_per_device": 3175.182
+      }
+    ],
+    "summary": {
+      "steps_measured": 10,
+      "first_measured_step": 6,
+      "step_s_median": 5.144,
+      "step_s_mean": 5.1402,
+      "step_s_min": 5.114,
+      "step_s_max": 5.161,
+      "median_mean_gap_pct": -0.07387247278382632,
+      "tflops_per_device_median": 253.8865,
+      "mfu_vs_boost_clock": 0.19419190760287594,
+      "mfu_vs_sustained_clock": 0.2564510101010101,
+      "devices": 8
+    },
+    "overlap": {
+      "per_device": {
+        "GPU:0": {
+          "comm_ns": 5115379898.0,
+          "hidden_ns": 657772132.0,
+          "hidden_fraction": 0.12858715190579967
+        },
+        "GPU:1": {
+          "comm_ns": 5023777147.0,
+          "hidden_ns": 620563450.0,
+          "hidden_fraction": 0.12352527427905034
+        },
+        "GPU:2": {
+          "comm_ns": 5007075969.0,
+          "hidden_ns": 587077499.0,
+          "hidden_fraction": 0.11724956893698771
+        },
+        "GPU:3": {
+          "comm_ns": 4407508537.0,
+          "hidden_ns": 301077255.0,
+          "hidden_fraction": 0.06831007869242386
+        },
+        "GPU:4": {
+          "comm_ns": 4517913262.0,
+          "hidden_ns": 352515965.0,
+          "hidden_fraction": 0.07802627995650085
+        },
+        "GPU:5": {
+          "comm_ns": 5619203548.0,
+          "hidden_ns": 874770041.0,
+          "hidden_fraction": 0.15567509408185617
+        },
+        "GPU:6": {
+          "comm_ns": 4572648715.0,
+          "hidden_ns": 386825264.0,
+          "hidden_fraction": 0.08459544743314051
+        },
+        "GPU:7": {
+          "comm_ns": 5340602400.0,
+          "hidden_ns": 770614782.0,
+          "hidden_fraction": 0.1442936066538112
+        }
+      },
+      "total_comm_s": 39.604109476,
+      "total_hidden_s": 4.551216388,
+      "hidden_fraction": 0.11491778121555862,
+      "exposed_s": 35.052893088
+    },
+    "phases": {
+      "total_us": 208550687.357,
+      "phases": {
+        "forward": 45710445.68099993,
+        "backward": 117362091.21000001,
+        "optimizer": 0.0,
+        "collective": 39604109.475999996,
+        "unattributed": 5874040.990000001
+      },
+      "shares": {
+        "forward": 0.21918146739431332,
+        "backward": 0.5627509201592701,
+        "optimizer": 0.0,
+        "collective": 0.18990160127453873,
+        "unattributed": 0.028166011171877538
+      },
+      "backward_over_forward": 2.5675114180473395
+    },
+    "scopes": [
+      {
+        "scope": "EBCH",
+        "total_duration_us": 61899748.877000004,
+        "kernels": 6,
+        "collective_us": 0.0,
+        "share": 0.2968091338439904
+      },
+      {
+        "scope": "layers",
+        "total_duration_us": 49134356.29299999,
+        "kernels": 79,
+        "collective_us": 37169621.302999996,
+        "share": 0.2355991098168433
+      },
+      {
+        "scope": "EBCM",
+        "total_duration_us": 34427867.949,
+        "kernels": 6,
+        "collective_us": 0.0,
+        "share": 0.16508153670127154
+      },
+      {
+        "scope": "wi_0",
+        "total_duration_us": 10392859.801,
+        "kernels": 1,
+        "collective_us": 0.0,
+        "share": 0.04983373554271417
+      },
+      {
+        "scope": "wi_1",
+        "total_duration_us": 9909479.78,
+        "kernels": 1,
+        "collective_us": 0.0,
+        "share": 0.04751592960725568
+      },
+      {
+        "scope": "wo",
+        "total_duration_us": 9474349.62,
+        "kernels": 3,
+        "collective_us": 0.0,
+        "share": 0.045429481628999256
+      },
+      {
+        "scope": "BSM",
+        "total_duration_us": 8326628.831,
+        "kernels": 3,
+        "collective_us": 0.0,
+        "share": 0.039926163449878066
+      },
+      {
+        "scope": "<unnamed kernel>",
+        "total_duration_us": 8062227.5770000005,
+        "kernels": 65,
+        "collective_us": 2188186.5870000003,
+        "share": 0.038658360129012505
+      },
+      {
+        "scope": "_FusedDotProductAttention_0",
+        "total_duration_us": 6425684.254999999,
+        "kernels": 9,
+        "collective_us": 0.0,
+        "share": 0.03081113918363847
+      },
+      {
+        "scope": "dispatch",
+        "total_duration_us": 3598687.426,
+        "kernels": 5,
+        "collective_us": 0.0,
+        "share": 0.0172556967881852
+      },
+      {
+        "scope": "<unscoped>",
+        "total_duration_us": 3336659.944,
+        "kernels": 101,
+        "collective_us": 37318.847,
+        "share": 0.01599927569784634
+      },
+      {
+        "scope": "body",
+        "total_duration_us": 1278737.8510000005,
+        "kernels": 22,
+        "collective_us": 0.0,
+        "share": 0.006131544648476939
+      },
+      {
+        "scope": "logits_dense",
+        "total_duration_us": 629447.7069999999,
+        "kernels": 3,
+        "collective_us": 0.0,
+        "share": 0.003018200107499538
+      },
+      {
+        "scope": "k",
+        "total_duration_us": 543196.6649999999,
+        "kernels": 7,
+        "collective_us": 2730.819,
+        "share": 0.0026046265868697343
+      },
+      {
+        "scope": "decoder.apply_output_head",
+        "total_duration_us": 317571.064,
+        "kernels": 1,
+        "collective_us": 0.0,
+        "share": 0.0015227524206447587
+      },
+      {
+        "scope": "token_embedder",
+        "total_duration_us": 285817.348,
+        "kernels": 9,
+        "collective_us": 206251.92,
+        "share": 0.0013704934355394085
+      },
+      {
+        "scope": "combine",
+        "total_duration_us": 241804.286,
+        "kernels": 1,
+        "collective_us": 0.0,
+        "share": 0.0011594509184526254
+      },
+      {
+        "scope": "closed_call",
+        "total_duration_us": 157007.797,
+        "kernels": 1,
+        "collective_us": 0.0,
+        "share": 0.0007528519756505613
+      },
+      {
+        "scope": "decoder",
+        "total_duration_us": 79386.75600000001,
+        "kernels": 6,
+        "collective_us": 0.0,
+        "share": 0.00038065928722692073
+      },
+      {
+        "scope": "_one_hot",
+        "total_duration_us": 15174.395,
+        "kernels": 4,
+        "collective_us": 0.0,
+        "share": 7.276118430635646e-05
+      },
+      {
+        "scope": "decoder_norm",
+        "total_duration_us": 7241.115,
+        "kernels": 4,
+        "collective_us": 0.0,
+        "share": 3.472112747154152e-05
+      },
+      {
+        "scope": "TransformerLinenPure",
+        "total_duration_us": 6456.989,
+        "kernels": 1,
+        "collective_us": 0.0,
+        "share": 3.0961245353974e-05
+      },
+      {
+        "scope": "_where",
+        "total_duration_us": 295.031,
+        "kernels": 1,
+        "collective_us": 0.0,
+        "share": 1.414672872762878e-06
+      }
+    ]
+  },
+  "measurements": []
+}

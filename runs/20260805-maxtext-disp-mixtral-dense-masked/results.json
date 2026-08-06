@@ -1,0 +1,164 @@
+{
+  "workload": "maxtext",
+  "tag": "disp-mixtral-dense-masked",
+  "finished_at": "2026-08-05T14:45:04.164925+00:00",
+  "wall_seconds": 315.33663153648376,
+  "protocol": {
+    "warmup": 3,
+    "repeats": 10,
+    "statistic": "median"
+  },
+  "constants": {
+    "cus": 304,
+    "clock_ghz": 2.1,
+    "bf16_flops": 1307400000000000.0,
+    "fp16_flops": 1307400000000000.0,
+    "fp8_flops": 2614900000000000.0,
+    "fp32_flops": 163400000000000.0,
+    "hbm_bytes_per_s": 5300000000000.0,
+    "hbm_bytes": 206158430208,
+    "xgmi_links": 7,
+    "xgmi_link_unidir_bytes_per_s": 64000000000.0,
+    "xgmi_egress_unidir_bytes_per_s": 448000000000.0,
+    "rccl_realised_bytes_per_s": 320000000000.0
+  },
+  "notes": {
+    "config": "/workspace/maxtext/src/maxtext/configs/base.yml",
+    "command": "/opt/venv/bin/python -m maxtext.trainers.pre_train.train /workspace/maxtext/src/maxtext/configs/base.yml model_name=mixtral-8x7b hardware=gpu dataset_type=synthetic enable_checkpointing=false steps=16 per_device_batch_size=4.0 max_target_length=4096 remat_policy=save_dot_with_context_except_mlp run_name=disp-mixtral-dense-masked base_output_directory=/root/work/scale-your-amd/runs/20260805-maxtext-disp-mixtral-dense-masked/maxtext ici_expert_parallelism=-1 ici_fsdp_parallelism=1 ici_data_parallelism=1 attention=cudnn_flash_te max_segments_per_seq=1 sparse_matmul=false capacity_factor=-1",
+    "model": "mixtral-8x7b",
+    "ici": "expert=-1,fsdp=1,data=1",
+    "overrides": [
+      "model_name=mixtral-8x7b",
+      "hardware=gpu",
+      "dataset_type=synthetic",
+      "enable_checkpointing=false",
+      "steps=16",
+      "per_device_batch_size=4.0",
+      "max_target_length=4096",
+      "remat_policy=save_dot_with_context_except_mlp",
+      "run_name=disp-mixtral-dense-masked",
+      "base_output_directory=/root/work/scale-your-amd/runs/20260805-maxtext-disp-mixtral-dense-masked/maxtext",
+      "ici_expert_parallelism=-1",
+      "ici_fsdp_parallelism=1",
+      "ici_data_parallelism=1",
+      "attention=cudnn_flash_te",
+      "max_segments_per_seq=1",
+      "sparse_matmul=false",
+      "capacity_factor=-1"
+    ],
+    "returncode": 0,
+    "wall_seconds": 312.39728903770447,
+    "steps": [
+      {
+        "step": 0,
+        "seconds": 47.342,
+        "tflops_per_device": 27.587,
+        "tokens_per_second_per_device": 346.079
+      },
+      {
+        "step": 1,
+        "seconds": 15.02,
+        "tflops_per_device": 86.951,
+        "tokens_per_second_per_device": 1090.802
+      },
+      {
+        "step": 2,
+        "seconds": 14.593,
+        "tflops_per_device": 89.497,
+        "tokens_per_second_per_device": 1122.75
+      },
+      {
+        "step": 3,
+        "seconds": 14.642,
+        "tflops_per_device": 89.196,
+        "tokens_per_second_per_device": 1118.968
+      },
+      {
+        "step": 4,
+        "seconds": 14.662,
+        "tflops_per_device": 89.075,
+        "tokens_per_second_per_device": 1117.456
+      },
+      {
+        "step": 5,
+        "seconds": 14.685,
+        "tflops_per_device": 88.938,
+        "tokens_per_second_per_device": 1115.731
+      },
+      {
+        "step": 6,
+        "seconds": 14.723,
+        "tflops_per_device": 88.706,
+        "tokens_per_second_per_device": 1112.82
+      },
+      {
+        "step": 7,
+        "seconds": 14.719,
+        "tflops_per_device": 88.73,
+        "tokens_per_second_per_device": 1113.123
+      },
+      {
+        "step": 8,
+        "seconds": 14.783,
+        "tflops_per_device": 88.347,
+        "tokens_per_second_per_device": 1108.323
+      },
+      {
+        "step": 9,
+        "seconds": 14.788,
+        "tflops_per_device": 88.317,
+        "tokens_per_second_per_device": 1107.942
+      },
+      {
+        "step": 10,
+        "seconds": 14.816,
+        "tflops_per_device": 88.149,
+        "tokens_per_second_per_device": 1105.838
+      },
+      {
+        "step": 11,
+        "seconds": 14.838,
+        "tflops_per_device": 88.021,
+        "tokens_per_second_per_device": 1104.227
+      },
+      {
+        "step": 12,
+        "seconds": 14.896,
+        "tflops_per_device": 87.677,
+        "tokens_per_second_per_device": 1099.917
+      },
+      {
+        "step": 13,
+        "seconds": 14.962,
+        "tflops_per_device": 87.29,
+        "tokens_per_second_per_device": 1095.06
+      },
+      {
+        "step": 14,
+        "seconds": 14.906,
+        "tflops_per_device": 87.614,
+        "tokens_per_second_per_device": 1099.12
+      },
+      {
+        "step": 15,
+        "seconds": 14.864,
+        "tflops_per_device": 87.865,
+        "tokens_per_second_per_device": 1102.271
+      }
+    ],
+    "summary": {
+      "steps_measured": 10,
+      "first_measured_step": 6,
+      "step_s_median": 14.827,
+      "step_s_mean": 14.829500000000001,
+      "step_s_min": 14.719,
+      "step_s_max": 14.962,
+      "median_mean_gap_pct": 0.016861131719169614,
+      "tflops_per_device_median": 88.08500000000001,
+      "mfu_vs_boost_clock": 0.06737417775738107,
+      "mfu_vs_sustained_clock": 0.08897474747474748,
+      "devices": 8
+    }
+  },
+  "measurements": []
+}

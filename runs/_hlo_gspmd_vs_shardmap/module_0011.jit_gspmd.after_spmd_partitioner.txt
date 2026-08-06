@@ -1,0 +1,54 @@
+HloModule jit_gspmd, entry_computation_layout={(bf16[4096,512]{1,0}, bf16[512,14336]{1,0})->bf16[4096,14336]{1,0}}, allow_spmd_sharding_propagation_to_parameters={false,false}, num_partitions=8
+
+FileNames
+1 "<frozen runpy>"
+2 "/root/work/scale-your-amd/bench/gspmd_vs_shardmap.py"
+3 "/root/work/scale-your-amd/bench/_harness.py"
+
+FunctionNames
+1 "_run_module_as_main"
+2 "_run_code"
+3 "<module>"
+4 "main"
+5 "Run.measure"
+6 "measure"
+7 "warm"
+8 "main.<locals>.<lambda>"
+9 "main.<locals>.gspmd"
+
+FileLocations
+1 {file_name_id=1 function_name_id=1 line=198 end_line=198 column=11 end_column=11}
+2 {file_name_id=1 function_name_id=2 line=88 end_line=88 column=4 end_column=4}
+3 {file_name_id=2 function_name_id=3 line=179 end_line=179 column=21 end_column=21}
+4 {file_name_id=2 function_name_id=4 line=134 end_line=134 column=12 end_column=12}
+5 {file_name_id=3 function_name_id=5 line=224 end_line=224 column=28 end_column=28}
+6 {file_name_id=3 function_name_id=6 line=140 end_line=140 column=4 end_column=4}
+7 {file_name_id=3 function_name_id=7 line=113 end_line=113 column=30 end_column=30}
+8 {file_name_id=2 function_name_id=8 line=135 end_line=135 column=29 end_column=29}
+9 {file_name_id=2 function_name_id=9 line=106 end_line=106 column=15 end_column=15}
+
+StackFrames
+1 {file_location_id=1 parent_frame_id=1}
+2 {file_location_id=2 parent_frame_id=2}
+3 {file_location_id=3 parent_frame_id=3}
+4 {file_location_id=4 parent_frame_id=4}
+5 {file_location_id=5 parent_frame_id=5}
+6 {file_location_id=6 parent_frame_id=6}
+7 {file_location_id=7 parent_frame_id=7}
+8 {file_location_id=8 parent_frame_id=8}
+9 {file_location_id=9 parent_frame_id=9}
+
+
+%add.clone (x.1: bf16[], y.1: bf16[]) -> bf16[] {
+  %x.1 = bf16[] parameter(0)
+  %y.1 = bf16[] parameter(1)
+  ROOT %add.1 = bf16[] add(%x.1, %y.1)
+}
+
+ENTRY %main.0_spmd (param: bf16[4096,512], param.1: bf16[512,14336]) -> bf16[4096,14336] {
+  %param = bf16[4096,512]{1,0} parameter(0), sharding={devices=[1,8]<=[8]}, metadata={op_name="a"}
+  %param.1 = bf16[512,14336]{1,0} parameter(1), sharding={devices=[8,1]<=[8]}, metadata={op_name="b"}
+  %dot = bf16[4096,14336]{1,0} dot(%param, %param.1), lhs_contracting_dims={1}, rhs_contracting_dims={0}, metadata={op_name="jit(gspmd)/dot_general" stack_frame_id=9}
+  ROOT %all-reduce = bf16[4096,14336]{1,0} all-reduce(%dot), channel_id=1, replica_groups=mesh['axis_0'=1,'axis_1'=8] {'axis_1'}, use_global_device_ids=true, to_apply=%add.clone, metadata={op_name="jit(gspmd)/dot_general" stack_frame_id=9}
+}
+
