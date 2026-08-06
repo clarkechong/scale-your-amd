@@ -66,6 +66,10 @@ sass:
 # `docs` and `tools` are excluded because Jekyll copies extensionless-front-matter
 # files through verbatim, which was publishing the internal roadmap at
 # /docs/structure.md on the live site.
+#
+# `runs` is tens of gigabytes of traces and HLO dumps that nothing on the site
+# links to. Left in, Jekyll copies all of it into `_site` on every build, which
+# takes a minute per rebuild locally and would be uploaded as the Pages artifact.
 exclude:
   - CLAUDE.md
   - Gemfile
@@ -74,3 +78,6 @@ exclude:
   - docs
   - tools
   - vendor
+  - runs
+  - bench
+  - .rocprofv3
