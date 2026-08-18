@@ -1,5 +1,5 @@
 - roofline analysis (theoretical based first, e.g. arithmetic intensity, FLOPS, datatypes)
-- trace analysis with XPRof (cover XSpace .pb format)
+- trace analysis with XPRof (cover XSpace .pb format (img/what-is-an-xspace.png))
 - trace analysis with rocprofv3
 - hardware counter analysis with rocprof-compute
 - debugging with rocgdb
