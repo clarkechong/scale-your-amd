@@ -3,8 +3,8 @@
 Before starting this section, it would be beneficial to familiarize yourself with the basics of GPU programming and architecture through the many wonderful and abundant resources already out there. Many resources likely detail the NVIDIA/CUDA model, upon which this section will build upon and tailor towards AMD's CDNA architecture (specifically CNDA4, MI355X).
 
 If you're looking for a place to start, I would recommend the following:
-- [Excellent explanation on the essence of the GPU programming model](https://youtu.be/QQceTDjA4f4?si=r-JQopWAMU0TlwcV)
-- [Cornell GPU Architecture workshop](https://cvw.cac.cornell.edu/gpu-architecture)
+- [Excellent explanation of the essence of the GPU (CUDA) programming model](https://youtu.be/QQceTDjA4f4?si=r-JQopWAMU0TlwcV)
+- [Cornell GPU architecture workshop](https://cvw.cac.cornell.edu/gpu-architecture)
 - [The HIP programming model](https://rocm.docs.amd.com/projects/HIP/en/docs-6.4.2/understand/programming_model.html)
 - Many youtube resources for visual explanations.
 
@@ -35,7 +35,7 @@ Assuming you've built your knowledge base on CUDA, here is a quick mapping of co
 
 Nvidia and AMD both offer a family of GPUs tailored towards HPC/AI application (ie. outside of the consumer RTX/RADEON lineups). If you are familiar with the A100, H100, H200 series from NVIDIA, the AMD equivalent of these are the MI250, MI300 and MI350 respectively. These form the CDNA architecture series.
 
-Here is a look inside the MI355X:
+Here is a look inside the MI350:
 
 ![](img/mi350-arch-diagram.png)
 
@@ -70,7 +70,7 @@ This expands the set of natively supported datatypes:
 
 However, despite the enormous compute capability at our disposal, we are often limited by our HBM bandwidth. 
 
-For example, our peak compute with BF16 is 2.3 PFLOP/s. However, with a peak memory bandwidth of 8TB/s, we would need to perform roughly 288 FLOPs per byte loaded from HBM to fully saturate the Matrix Cores. As a result, achieving peak compute performance depends heavily on data reuse through registers, LDS, L2 cache, and matrix tiling.
+For example, our peak compute with BF16 is 2.3 PFLOP/s. With a peak HBM bandwidth of 8TB/s, we would need to perform roughly 288 FLOPs per byte loaded from HBM to fully saturate the Matrix Cores. As a result, achieving peak compute performance depends heavily on data reuse through registers, LDS, L2 cache, and matrix tiling.
 
 ---
 
@@ -92,23 +92,23 @@ When scaling GPU systems, we naturally need to think about device-to-device comm
 
 AMD's interconnect technology is called Infinity Fabric. Each Infinity Fabric (xGMI) link is bidirectional and 16 lanes wide, with a per-lane bandwidth of 38.4Gbps. This gives us 38.4\*16/8=76.8GB/s per direction, or 153.6GB/s per link. Per GPU in a full-mesh topology, you can expect an aggregate communication bandwidth of 7\*153.6=1075.2GB/s, roughly 1.07TB/s.
 
-Compared to our per-GPU HBM bandwidth of 8TB/s, it is clearly quite costly to communicate across the node. It doesn't get any better with multi-node systems!
+Compared to our per-GPU HBM bandwidth of 8TB/s, it can be quite costly to communicate across the node. But, it certainly doesn't get any better with multi-node systems!
 
 ---
 
 # Multi-node Architecture and Topology
 
-The 8 GPUs we have just described form what is called a scale-up domain. Within it, every device is a single hop from every other, and the 8 HBM stacks present as 2.3TB of coherent, shared memory that a kernel can read and write directly. Adding a 9th GPU means leaving that domain entirely: there is no coherence across the node boundary and no load/store access to a remote HBM. Every transfer instead becomes an explicit message pushed out over the network. Each MI355X OAM has 1 PCIe Gen5 x16 link (128GB/s bidirectional) for I/O, and AMD's reference cluster designs pair each GPU with its own AMD Pensando Pollara 400 AI NIC (network interface card). That is 400Gb/s per GPU, ie. 400/8=50GB/s per direction, or 8\*400=3.2Tb/s of scale-out bandwidth per node.
+The 8 GPU node is termed a scale-up domain. Within it, every device has a relatively high-speed, high-bandwidth link to every other device, and can directly read/write to memory attached to peer GPUs, enabling the aggregate HBM capacity to be used as a single large memory pool.
 
-Note that this backend network (GPU-to-GPU traffic) is physically separate from the frontend network which the host uses for storage, orchestration and the outside world.
+Scaling above a node (e.g. training with a 9th GPU) means leaving the scale-up domain of the node: there is no coherence across the node boundary and no load/store access to a remote HBM. Every transfer instead becomes an explicit message pushed out over the network. Each MI355X OAM has 1 PCIe Gen5 x16 link (128GB/s bidirectional) for I/O, and AMD's reference cluster designs pair each GPU with its own AMD Pensando Pollara 400 AI NIC (network interface card). That is 400Gb/s per GPU, ie. 400/8=50GB/s per direction, or 8\*400=3.2Tb/s of scale-out bandwidth per node.
 
-Transfers themselves are done with RDMA (Remote Direct Memory Access), where the NIC reads and writes HBM directly without staging through host memory. The host orchestrates the transfer but does not see the bytes. For this to work well, the NIC needs to sit under the same PCIe root complex as the GPU it serves, otherwise the traffic takes a detour across the CPU socket interconnect.
+Transfers themselves are done with RDMA (Remote Direct Memory Access), where the NIC reads and writes HBM directly without staging through host memory. The host orchestrates the transfer but does not see the bytes. For this to work effectively, the NIC needs to reside under the same PCIe root as the GPU it serves, otherwise the traffic takes a detour across the CPU socket interconnect.
 
-The switch fabric itself is commonly RoCEv2 (RDMA over Converged Ethernet) in a 2-tier rail-optimised design. A rail is the set of GPUs sharing the same index across all nodes, ie. GPU 3 on every node attaches to the same leaf switch. Traffic within a rail (GPU 3 to GPU 3) is a single switch hop, whereas traffic crossing rails has to climb to the spine layer, or first hop over Infinity Fabric to reach the correctly indexed local GPU. AMD's reference designs recommend 1:1.16 undersubscription and scale to 8192 GPUs.
+The switch fabric itself is commonly RoCEv2 (RDMA over Converged Ethernet) in a 2-tier rail-optimised design. A rail is the set of GPUs sharing the same index across all nodes, ie. GPU 3 on every node attaches to the same leaf switch. Traffic within a rail (GPU 3 to GPU 3) is a single switch hop, whereas traffic crossing rails has to climb to the spine layer, or first hop over Infinity Fabric to reach the correctly indexed local GPU.
 
 ![](img/multinode-topology.png)
 
-Putting all of this together, we can lay out the cost of moving a byte at each level:
+Putting all of this together, the cost of moving a byte at each level:
 
 ```
 HBM, on device            8000 GB/s
@@ -117,4 +117,4 @@ Intra-node, single peer  153.6 GB/s  (1 xGMI link)
 Inter-node, per GPU         50 GB/s  (400Gb/s NIC)
 ```
 
-Roughly 160x from top to bottom. The further a byte has to travel, the more expensive it becomes, and by a long way.
+Roughly 160x from top to bottom. The further a byte has to travel, the more expensive it becomes, by a lot.
