@@ -8,18 +8,18 @@ The most relevent components for us are the math and compute libraries (hipBLAS,
 
 > Note that as of ROCm 7.14, AMD has released their own ROCm build platform [TheRock](https://github.com/ROCm/TheRock/tree/main) which enables modular installation of ROCm components through a centralised build manager.
 
-The compiler stack is worth a moment, as it reappears at the bottom of the JAX stack. ROCm ships its own [LLVM fork](https://rocm.docs.amd.com/projects/llvm-project/en/latest/index.html):
+Also note the compiler stack for HIP. ROCm ships its own [LLVM fork](https://rocm.docs.amd.com/projects/llvm-project/en/latest/index.html):
 
 - `amdclang++` (aka HIP-Clang) is the Clang/LLVM-based compiler shipped in the `rocm-llvm` package. It compiles device code into GPU ISA.
 - `hipcc` is the driver wrapper. It invokes `amdclang++` with the right HIP include/lib flags.
 
-You do not write HIP by hand to train a model in JAX. But XLA generates LLVM IR and hands it to this same AMDGPU backend to produce the GPU binary, which we come back to [later](#where-does-llvm-appear).
+You generally won't need to write HIP by hand to train a model in JAX. But XLA generates LLVM IR and hands it to this same AMDGPU backend to produce the GPU binary, which we come back to [later](#code-generation).
 
 ---
 
 # The JAX/XLA/ROCm Stack
 
-Normally, if you are simply researching and building models in JAX, you may not need to concern yourself with XLA internals. However, if you are looking to extract the maximum performance from a large distributed training/inference workload, it is really quite helpful to look into this and understand what certain XLA performance flags achieve and what parts of the stack they affect.
+Normally, if you are simply researching and building models in JAX, you may not need to concern yourself with XLA internals. However, if you are looking to extract the maximum performance from a large distributed training/inference workload, it is helpful to look into this and understand what certain XLA performance flags achieve and what parts of the stack they affect.
 
 XLA documents their [GPU backend architecture](https://openxla.org/xla/gpu_architecture) and [how HLO is lowered to binary](https://openxla.org/xla/hlo_to_thunks).
 
@@ -41,7 +41,7 @@ optimization stages, some of which are platform specific.
 - After this, you have an optimised `HLO` representation of your JIT'd module. It then passes through the XLA backend, where stages such as code generation, op scheduling, and buffer assignment transform the `HLO` into a sequence of executable actions ("Thunks") for the target device.
 - By combining thunks with their respective codegen output, you construct the runnable executable.
 
-This all makes much more sense once you see what `StableHLO` and `HLO` actually look like.
+First, lets see what `StableHLO` and `HLO` actually look like.
 
 ---
 
@@ -99,9 +99,11 @@ XLA_FLAGS="--xla_dump_to=/tmp/hlo --xla_dump_hlo_as_text --xla_dump_hlo_pass_re=
 0011  layout_assignment
 0012  layout_assignment                     after=layout-assignment
 0014  AMDGPU_post-layout_assignment_part_1
+0018  post-layout_assignment                after=autotuner
 0021  AMDGPU_post-layout_assignment_part_2
 0024  fusion
 0025  fusion                                after=priority-fusion
+0035  autotune-fusion-emitters              after=autotuner
 0042  scheduled-gpu-module
 ```
 
@@ -118,38 +120,51 @@ versus after the `conv-rewriter` pass:
 Broadly speaking, you could group passes roughly by category:
 
 - Graph Optimizations
-    1. Simplification
-    2. Fusion
-    3. Layout optimization
-    4. Pattern matching
+    - Simplification
+    - Fusion
+    - Layout optimization
+    - Pattern matching
 
 - Lowering
-    5. Library lowering
-    6. Backend lowering
-    7. Code generation
+    - Library lowering
+    - Backend lowering
+    - Code generation
 
-- Execution Planning
-    8. Scheduling
-    9. Memory optimization
-    10. Distributed execution
+- Runtime
+    - Scheduling
+    - Memory optimization
+    - Distributed execution
+
 ---
 
 ### Layout assignment
 
 Layout assignment refers to the physical memory arrangement of a tensor's dimensions. `f32[16,2048]{1,0}` is row-major and `{0,1}` would be column-major, and the same idea extends to the 3rd, 4th, Nth dimension. A shape like `[batch, height, width, channel]` alone does not contain information on the stride order in memory.
 
-Aside from the numerous advantages of being aware of this (coalesced vs strided access, cache locality, etc), the HLO optimisation passes can also be categorised based on pre/post layout assignment:
+Aside from the numerous advantages of being aware of this (coalesced vs strided access, cache locality, etc), the HLO optimisation passes can also be divided between pre/post layout assignment:
 
-- Layout-**independent** passes run first and are valid regardless of memory order: algebraic simplification (`x*1 → x`), constant folding, expanders that decompose high-level ops into primitives, SPMD partitioning.
-- Layout-**dependent** passes run after. Fusion, GEMM rewriting, vendor library matching and Triton fusion all require access patterns, which is only known once a layout is pinned per tensor.
+- Layout-independent passes run first and are valid regardless of memory order: algebraic simplification (`x*1 → x`), constant folding, expanders that decompose high-level ops into primitives, SPMD partitioning.
+- Layout-dependent passes run after. Fusion, GEMM rewriting, vendor library matching and Triton fusion all require access patterns, which is known once a layout is pinned per tensor.
 
 In the event of a conflict between layouts (e.g, a tensor op wants {0,1} but the next op wants {1,0}), a full copy op is inserted to perform the required transposition to bridge the ops. This costs a full read, write of the tensor.
 
 ---
 
+## Autotuning
+
+A single GEMM has many valid implementations: different rocBLAS/Tensile kernels, different tilings of the work, different MFMA instruction patterns. During compilation the XLA autotuner compiles candidates and empirically measures them.
+
+Autotuning is not free. It costs compile time on every fresh run, and for "small" modules where this cost is not effectively amortized, it may not be worth applying.
+
+```bash
+--xla_gpu_autotune_level=4                 # max
+--xla_gpu_dump_autotune_results_to=FILE    # persist autotune results
+--xla_gpu_load_autotune_results_from=FILE  # load saved autotune data
+```
+
 ## XLA Scheduler
 
-The XLA scheduler is what transforms the optimised HLO into a planned sequence of ops. The two primary top-level objectives are:
+The XLA scheduler is what transforms the optimised HLO into a planned sequence of ops. The two primary top-level optimization objectives are:
 
 1. Peak memory usage 
     - Buffer lifetimes
@@ -182,23 +197,21 @@ Passes that only make sense once execution order is known live in a separate pos
 
 ## Buffer Assignment
 
-Every HLO value lives in device memory. A naive approach of assigning a unique, non-overlapping buffer per value is largely wasteful. The buffer assignment process conducts liveness analysis, for example, if some value A is dead by the time value B is computed, B can reuse A's memory. The result is a memory plan mapping each value to an offset within a set of allocations. You can imagine this is in concept similar to traditional CPU stack allocation, but applied to GPU HBM.
+Every HLO value lives in device memory. A naive approach of assigning a unique, non-overlapping buffer per value is wasteful. The buffer assignment process performs liveness analysis, for example, if some value A is dead by the time value B is computed, B can reuse A's memory. The result is a memory plan mapping each value to an offset within a set of allocations. You can imagine this is in concept similar to traditional CPU stack allocation, but applied to GPU HBM.
 
-It runs after scheduling as because lifetimes depend on execution order.
+It runs after scheduling as lifetimes depend on execution order.
 
----
+## Code Generation
 
-# Where does LLVM appear?
-
-For every instruction in the optimised module, XLA picks one of three routes:
+For every op in the optimised module, XLA lowers through one of these ROCm backend paths:
 
 1. a vendor library, expressed as a `custom-call` (rocBLAS/hipBLAS GEMM, MIOpen convolution, RCCL collective)
 2. Triton, for fusions built around a dot or a softmax-shaped reduction
-3. its own emitters, for everything else
+3. XLA emitter
 
-Only the third route reaches LLVM directly through XLA. An emitter consumes an HLO fusion and emits IR, ie. `HloFusion → [Emitter] → MLIR → [MLIR lowering passes] → LLVM IR → amdgcn ISA`.
+The XLA emitter uses an LLVM backend. An emitter consumes an HLO fusion and emits IR, ie. `HloFusion → [Emitter] → MLIR → [MLIR lowering passes] → LLVM IR → amdgcn ISA`. Vendor library `custom-call`s and Triton can both be considered offloading to an external "black-block", the output from which is the final kernel.
 
-The dump gives you the IR at both ends of the LLVM pipeline (`.ir-no-opt.ll`, `.ir-with-opt.ll`). For the `kLoop` fusion above:
+The dump gives you the IR at both ends of the LLVM pipeline (`.ir-no-opt.ll`, `.ir-with-opt.ll`). For a fused elementwise chain, `jnp.exp(a * b + c)`, which XLA lowers to a single `kLoop` fusion:
 
 ```llvm
 target triple = "amdgcn-amd-amdhsa"
@@ -214,7 +227,24 @@ The target is `amdgcn-amd-amdhsa`, so from this point down it is the same AMDGPU
 
 ---
 
-# Thunks and StreamExecutor
+# ROCm Backends
+
+- `rocBLAS`/`hipBLAS` for GEMMs, via `custom-call`
+- `MIOpen` for convolutions
+- `RCCL` for collectives
+- `Triton` for dot-shaped fusions
+
+## [WIP] JAX-AITER
+
+[`jax-aiter`](https://github.com/ROCm/jax-aiter) AITER's hand-tuned AMD kernels into XLA as FFI calls.
+
+[JAX AITER blog post](https://rocm.blogs.amd.com/software-tools-optimization/jax-aiter/README.html)
+
+---
+
+# The Runtime
+
+## Thunks and StreamExecutor
 
 The executable is ultimately a sequence of thunks, ie. a `vector<Thunk>`. A thunk is "one runtime action", e.g. launch kernel K, or do a memcpy, or run a collective. It is not the kernel itself. Execution is then not much more than:
 
@@ -237,7 +267,7 @@ kAllReduce  ─executes─▶    [RCCL enqueues kernels + comms]
 
 > The `k` in `kKernel` is just Google's naming convention for a constant.
 
-`xla/stream_executor/` is the hardware abstraction underneath. One `StreamExecutor` is one GPU, and its methods are device-driver primitives:
+`xla/stream_executor/` is the hardware abstraction underneath. One `StreamExecutor` represents one GPU, and its methods are device-driver primitives:
 
 - `Allocate` / `HostMemoryAllocate`, which is what the buffer assignment plan ultimately calls into
 - `CreateStream`, `CreateEvent` for execution queues and sync points
@@ -245,37 +275,7 @@ kAllReduce  ─executes─▶    [RCCL enqueues kernels + comms]
 - `SynchronousMemcpy`, `SynchronizeAllActivity` for host-device transfer and sync
 - `CreateCommandBuffer`, the HIP graph equivalent, which replaces a run of per-thunk launches with one graph launch and so reduces host dispatch cost
 
----
-
-# XLA Autotuner and ROCm Backends
-
-A single GEMM has many valid implementations: different rocBLAS/Tensile kernels, different tilings of the work, different MFMA instruction patterns. During compilation the XLA autotuner compiles candidates and empirically measures them.
-
-Autotuning is not free. It costs compile time on every fresh run, and for "small" modules where this cost is not effectively amortized, it may not be worth applying.
-
-```bash
---xla_gpu_autotune_level=0                 # off
---xla_gpu_dump_autotune_results_to=FILE    # persist the winners
---xla_gpu_load_autotune_results_from=FILE  # and pay the cost once
-```
-
-That leaves where the ROCm backends actually sit. After layout assignment, the rewriters match ops onto whatever can serve them:
-
-- `rocBLAS`/`hipBLAS` for GEMMs, via `custom-call`. `--xla_gpu_cublas_fallback` is the knob for preferring the library over Triton, whatever its name suggests.
-- `MIOpen` for convolutions
-- `RCCL` for collectives
-- `Triton` for dot-shaped fusions
-- native emitters for everything else
-
-## [WIP] JAX-AITER
-
-[`jax-aiter`](https://github.com/ROCm/jax-aiter) brings AITER's hand-tuned AMD kernels in as FFI calls, so they enter the module as `custom-call`s like any other library. 
-
-[JAX AITER blog post](https://rocm.blogs.amd.com/software-tools-optimization/jax-aiter/README.html)
-
----
-
-# The PJRT
+## PJRT
 
 PJRT is an API defined by XLA that a backend has to implement. It is deliberately opaque and vendor agnostic. This decoupled nature means that JAX interacts only through the PJRT, as oppose to any vendor specific interace e.g. HIP.
 
@@ -309,7 +309,7 @@ std::unique_ptr<PjRtLoadedExecutable> RocmClient::LoadExecutable(const std::stri
 }
 ```
 
-3. The PJRT interface is called, ignorant of the backend implementation:
+3. The PJRT interface is called, unaware of the backend implementation:
 
 ```cpp
 auto executable = client->LoadExecutable(compiled_binary);
@@ -318,17 +318,15 @@ auto b = client->BufferFromHost(b_data, bytes);
 executable->Execute({a.get(), b.get()});
 ```
 
-This is why `jax.devices()` returning `RocmDevice(id=0)` requires nothing of your model code, and why supporting a new accelerator is a matter of shipping a PJRT plugin rather than patching JAX.
-
 ---
 
 # XLA Compiler Performance Flags
 
 Flags are declared in `xla/debug_options_flags.cc`. There are several hundred of them, and they are set through the `XLA_FLAGS` environment variable.
 
-From the shell:
+E.g. from the shell:
 ```bash
-XLA_FLAGS="--xla_gpu_autotune_level=0 --xla_dump_to=/tmp/hlo" python3 train.py
+XLA_FLAGS="--xla_gpu_autotune_level=4 --xla_dump_to=/tmp/hlo" python3 train.py
 ```
 
 Or in Python:
@@ -341,7 +339,7 @@ os.environ["XLA_FLAGS"] = (
 import jax  # must come after
 ```
 
-Each dumped module comes with a `.debug_options` file that lists the effective options that reached the module (eg. if unsure whether certain flags were silently dropped, or added by third party frameworks).
+Each dumped module comes with a `.debug_options` file that lists the effective options that reached the module (eg. if unsure whether certain flags were silently dropped, or added by a third party framework like Maxtext).
 
 The ones used in this chapter:
 
@@ -350,9 +348,9 @@ The ones used in this chapter:
 --xla_dump_hlo_as_text                    # .txt modules
 --xla_dump_hlo_as_dot                     # .dot graphs, render with graphviz
 --xla_dump_hlo_pass_re=.*                 # a snapshot around every pass
---xla_disable_hlo_passes=priority-fusion  # turn a named pass off
+--xla_disable_hlo_passes=PASS             # turn a named pass off
 --xla_gpu_autotune_level=0                # disable autotuning
 --xla_gpu_enable_triton_gemm=false        # prefer the library GEMM path
 ```
 
-For a maintained list of what is actually worth setting on AMD hardware, see [ROCm's JAX flag reference](https://rocm.docs.amd.com/projects/cvs/en/latest/reference/configuration-files/jax.html#xla-flags).
+For a list of recommended performance flags on AMD hardware, see [ROCm's JAX flag reference](https://rocm.docs.amd.com/projects/cvs/en/latest/reference/configuration-files/jax.html#xla-flags).

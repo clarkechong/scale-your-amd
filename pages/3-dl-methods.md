@@ -1,4 +1,6 @@
-# Transformer Architecture
+# OUTLINE
+
+prerequisites: standard LLM transformer architecture (transformerblock=att+ffn)
 
 - (theory):
     - MoE
@@ -11,6 +13,7 @@
 - (execution methods)
     - sharding (DDP, FSDP, TP, PP)
         - collectives
+        - mesh configurations
     - activation checkpointing (remat)
     - mixed precision training
 

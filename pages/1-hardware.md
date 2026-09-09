@@ -39,7 +39,7 @@ Here is a look inside the MI350:
 
 ![](img/mi350-arch-diagram.png)
 
-There may be a few unfamiliar terms here such as XCD or Shader Engine (SE). Most commonly we think in terms of SMs or CUs, and leave higher abstraction levels as a hardware implementation detail. This is fine for understanding the GPU programming model, however it is still good to keep a top level view of the hardware, especially when discussing topology or cache behaviour.
+XCD or Shader Engine (SE) may be unfamiliar terms. Most commonly we think in terms of SMs or CUs, and leave higher abstraction levels as a hardware implementation detail. This is fine for understanding the GPU programming model, however it is still good to keep a top level view of the hardware, especially when discussing topology or cache behaviour.
 
 It may help to understand this with the following hierarchy:
 
@@ -62,9 +62,9 @@ For HPC/AI workloads, we are most interested in the Matrix Core.
 
 CDNA4 Matrix Cores introduced instruction and hardware support for micro-scaling formats such as MXFP8, MXFP6 and MXFP4. A more detailed explanation on micro-scaling formats on ROCm can be found [here](https://rocm.blogs.amd.com/artificial-intelligence/mxfp-t2i-t2v/README.html). You can also read the original paper on [Microscaling Data Formats for Deep Learning](https://arxiv.org/abs/2310.10537)
 
-Essentially, these formats store using lower-precision formats with an associated scaling factor (8-bit E8M0), taking the compute and memory advantages of low-bit quantization whilst attempting to preserve much of the dynamic range.
+Essentially, these formats store using lower-precision formats with an associated scaling factor (8-bit E8M0), taking the compute throughput and memory advantages of low-bit quantization whilst preserving the dynamic range of higher precision formats (FP16).
 
-This expands the set of natively supported datatypes:
+Thus, alongside traditional precision formats, the full set of natively supported datatypes is as follows:
 
 ![](img/matrix-core-dtypes.png)
 
@@ -80,13 +80,13 @@ At heart, the GPU is simply an accelerator used to offload parallelised workload
 
 ![](img/host-device-data-flow.png)
 
-In a typical GPU server system, PCIe is the primary host-device communication link (like what you'd find on a consumer desktop build!)
+In a typical GPU server system, PCIe is the primary host-device (CPU-GPU) communication link (like what you'd find on a consumer desktop build!). This is different to the technology you'll find in device-device (GPU-GPU) communication, referred to as interconnects.
 
 ---
 
 # Node Architecture and Topology
 
-When scaling GPU systems, we naturally need to think about device-to-device communication. A modern multi-GPU node is commonly organised as 8 GPUs in a full-mesh topology with direct interconnect links between all devices, ie. each device is exactly 1 hop away from any other device.
+When scaling GPU systems, we naturally need to think about device-to-device communication. A modern multi-GPU node is commonly organised as 8 GPUs in a full-mesh topology. This means direct interconnect links between all devices, ie. each device is exactly 1 hop away from any other device.
 
 ![](img/8socket-mi350.png)
 
@@ -98,11 +98,13 @@ Compared to our per-GPU HBM bandwidth of 8TB/s, it can be quite costly to commun
 
 # Multi-node Architecture and Topology
 
-The 8 GPU node is termed a scale-up domain. Within it, every device has a relatively high-speed, high-bandwidth link to every other device, and can directly read/write to memory attached to peer GPUs, enabling the aggregate HBM capacity to be used as a single large memory pool.
+Within a single 8 GPU node, every device has a relatively high-speed, high-bandwidth link to every other device, and can directly read/write to memory attached to peer GPUs. Effectively, the total HBM capacity of the node can be treated as a single large memory pool.
 
-Scaling above a node (e.g. training with a 9th GPU) means leaving the scale-up domain of the node: there is no coherence across the node boundary and no load/store access to a remote HBM. Every transfer instead becomes an explicit message pushed out over the network. Each MI355X OAM has 1 PCIe Gen5 x16 link (128GB/s bidirectional) for I/O, and AMD's reference cluster designs pair each GPU with its own AMD Pensando Pollara 400 AI NIC (network interface card). That is 400Gb/s per GPU, ie. 400/8=50GB/s per direction, or 8\*400=3.2Tb/s of scale-out bandwidth per node.
+Communication across multiple nodes is fundamentally different. GPUs cannot directly access HBM attached to GPUs in other nodes as there is no physical direct interconnect technology like Infinity Fabric between cross-node GPUs. All data movement must traverse the network fabric using RDMA (Remote Direct Memory Access).
 
-Transfers themselves are done with RDMA (Remote Direct Memory Access), where the NIC reads and writes HBM directly without staging through host memory. The host orchestrates the transfer but does not see the bytes. For this to work effectively, the NIC needs to reside under the same PCIe root as the GPU it serves, otherwise the traffic takes a detour across the CPU socket interconnect.
+RDMA is performed by a NIC (Network Interface Card). The NIC can directly read from and write to GPU HBM using DMA, allowing data to move between nodes without being copied through host memory. The CPU still handles the start/stop of the data transfer, but does not participate in moving the data itself.
+
+Each MI355X OAM typically has 1 PCIe Gen5 x16 link (128GB/s bidirectional) for I/O and an AMD Pensando Pollara 400 AI NIC. That is 400Gb/s per GPU, ie. 400/8=50GB/s per direction, or 8\*400=3.2Tb/s of scale-out bandwidth per node.
 
 The switch fabric itself is commonly RoCEv2 (RDMA over Converged Ethernet) in a 2-tier rail-optimised design. A rail is the set of GPUs sharing the same index across all nodes, ie. GPU 3 on every node attaches to the same leaf switch. Traffic within a rail (GPU 3 to GPU 3) is a single switch hop, whereas traffic crossing rails has to climb to the spine layer, or first hop over Infinity Fabric to reach the correctly indexed local GPU.
 
