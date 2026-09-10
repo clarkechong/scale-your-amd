@@ -1,4 +1,32 @@
-# Roofline Analysis
+---
+layout: distill
+title: "Profiling"
+description: "Roofline analysis, XProf, rocprofv3, rocprof-compute, and rocgdb, from a train_step down to a single kernel."
+date: 2026-09-10
+
+section_number: 4
+
+previous_section_url: "/pages/3-dl-methods"
+previous_section_name: "Chapter 3: Deep Learning Methods"
+
+next_section_url: "/pages/5-llama7b"
+next_section_name: "Chapter 5: Llama 7B"
+
+authors:
+  - name: Clarke Chong
+    url: "https://github.com/clarkechong"
+
+toc:
+  - name: "Roofline Analysis"
+  - name: "JAX and ROCm Profiling Tool Stack"
+    subsections:
+      - name: "Trace Analysis with XProf"
+      - name: "Trace Analysis with rocprofv3 and ROCTx range markers"
+      - name: "Hardware Counter Analysis with rocprof-compute"
+  - name: "Debugging with rocgdb"
+  - name: "End-to-End Performance"
+---
+## Roofline Analysis
 
 TODO
 
@@ -61,14 +89,14 @@ but remember, roofline analysis is just one component of profiling. it can ident
 
 ---
 
-# JAX/ROCm Profiling Tool Stack
+## JAX and ROCm Profiling Tool Stack
 
 there are different profiling tools for working at different abstraction levels. for example at early stage profiling (still identifying phase), framework level profiler is ideal. ideally we would liek unified profiler to see from jax level to kernel level (which xprof would like to be) but current limitations means that low level kernel details (such as what?) are not visible to jax profiler. so we use jax profiler for high level roofline analysis and trace identification, and as we identify items down the stack we go to lower level profiling tools. 
 
 <diagram here showing stack: python, framework(jax), framework(xla){hlo modules}{hlo ops}, kernel library, gpu stream, and showing where each profiler operates in the stack>
 
 
-## Trace Analysis with XProf
+### Trace Analysis with XProf
 
 XProf is visualizer for the JAX profiler. Capture with `jax.profiler`:
 
@@ -88,7 +116,7 @@ You get an `.xplane.pb` as the native output format, with a lossy timeline-only 
 
 The `.xplane.pb` is formatted as such:
 
-![](img/what-is-an-xspace.png)
+![]({{ '/pages/img/what-is-an-xspace.png' | relative_url }})
 
 - **XSpace** is the entire trace/capture.
 - **XPlane** is one device or host component within it, e.g. `/device:GPU:0` or `/host:CPU`. An 8 GPU node would contain 8 GPU XPlanes + 1 host XPlane
@@ -110,7 +138,7 @@ So, use XProf for the timeline, for op and HLO attribution, and for memory. For 
 
 ---
 
-## Trace Analysis with rocprofv3 + ROCTx range markers
+### Trace Analysis with rocprofv3 and ROCTx range markers
 
 `rocprofv3` sits a layer below XProf. On its own, it knows nothing about the framework level (HLO or JAX), only about the ROCm runtime and the device.
 
@@ -148,7 +176,7 @@ You can pass several at once:
 rocprofv3 --kernel-trace -f pftrace rocpd -d prof -o vadd_trace -- /tmp/vadd
 ```
 
-![](img/rocprofv3-perfetto-trace.png)
+![]({{ '/pages/img/rocprofv3-perfetto-trace.png' | relative_url }})
 
 There is also a `--stats` mode which aggregates the kernel trace into a `top_kernels` view in the sqlite output:
 
@@ -167,13 +195,13 @@ for d, c, p, n in sqlite3.connect(sys.argv[1]).execute(
     print(f"{d:10.0f} {c:7d} {p:6.1f}  {n[:60]}")
 ```
 
-![](img/rocprofv3-kernel-stats.png)
+![]({{ '/pages/img/rocprofv3-kernel-stats.png' | relative_url }})
 
 See [AMD's rocprofv3 documentation](https://rocm.docs.amd.com/projects/rocprofiler-sdk/en/latest/how-to/using-rocprofv3.html) for further reading
 
 ---
 
-## Hardware Counter Analysis with rocprof-compute
+### Hardware Counter Analysis with rocprof-compute
 
 Hardware counters give the most accurate and detailed breakdown of a specific kernels execution. `rocprof-compute` collects them and derives micro-architectural metrics: cache hit rates, occupancy, an empirical roofline, and speed-of-light against peak.
 
@@ -190,12 +218,12 @@ INSERT DIAGRAM EG. KERNEL -(PROFILE)-> GENERATE BASE COUNTER DATA -(ANALYZE)-> F
 - `analyze` derives the metrics. Add `-b` to select only the sections you want, and `--gui` for a dash app on `localhost:8050` instead of text tables.
 
 CLI table:
-![](img/rocprof-compute-cli.png)
+![]({{ '/pages/img/rocprof-compute-cli.png' | relative_url }})
 
 GUI:
-![](img/rocprof-compute-speed-of-light.png)
-![](img/rocprof-compute-workflow.png)
-![](img/rocprof-compute-roofline.png)
+![]({{ '/pages/img/rocprof-compute-speed-of-light.png' | relative_url }})
+![]({{ '/pages/img/rocprof-compute-workflow.png' | relative_url }})
+![]({{ '/pages/img/rocprof-compute-roofline.png' | relative_url }})
 
 Notice the roofline model here is more detailed than the XProf equivalent. 
 
@@ -203,7 +231,7 @@ See [AMD's rocprof-compute documentation](https://rocm.docs.amd.com/projects/roc
 
 ---
 
-# Debugging with rocgdb
+## Debugging with rocgdb
 
 `rocgdb` is ROCm's fork of gdb. It debugs host x86 and additionally understands AMDGPU device code, exposing wavefronts as threads and adding `info agents` / `info queues` / `info dispatches`.
 
@@ -226,13 +254,13 @@ TF_CPP_MIN_LOG_LEVEL=0 TF_CPP_MAX_VLOG_LEVEL=2 python3 train.py
 - `TF_CPP_MIN_LOG_LEVEL` is the lowest severity to print, `0` for everything down to INFO, `2` for ERROR and FATAL only
 - `TF_CPP_MAX_VLOG_LEVEL` is verbosity of the debug stream, `0` none, `2` a great deal, including per-pass and per-module timing
 
-![](img/xla-vlog-unimplemented.png)
+![]({{ '/pages/img/xla-vlog-unimplemented.png' | relative_url }})
 
 See [AMD's ROCgdb documentation](https://rocm.docs.amd.com/projects/ROCgdb/en/latest/how-to/quick-start.html) for further reading.
 
 ---
 
-# End-to-End Performance
+## End-to-End Performance
 
 START:
 

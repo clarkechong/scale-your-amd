@@ -1,3 +1,22 @@
+---
+layout: distill
+title: "Training Llama 70B"
+description: "Mixed-precision training of Llama 70B in MaxText on eight GPUs: throughput, memory, and convergence."
+date: 2026-09-10
+
+section_number: 6
+
+previous_section_url: "/pages/5-llama7b"
+previous_section_name: "Chapter 5: Llama 7B"
+
+next_section_url: "/pages/7-mixtral8-22b"
+next_section_name: "Chapter 7: Mixtral 8x22B"
+
+authors:
+  - name: Clarke Chong
+    url: "https://github.com/clarkechong"
+
+---
 What are the tradeoffs when training in mixed precision?
 
 Ideally we would like to train our models with the highest precision so that our weights can fine-tune as much as possible and we can reach a theoretically higher model performance. However, with large DNN models such as LLMs, we do not have the compute power to do everything in fp64 in a reasonable amount of time. If you do a rough estimate, <...> X hours!

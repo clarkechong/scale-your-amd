@@ -48,6 +48,15 @@ citation:
 # Jekyll
 # -----------------------------------------------------------------------------
 
+# Files without YAML front matter are copied verbatim, so every chapter still
+# needs the `---` delimiter. This only fills in the layout if a processed page
+# under `pages/` forgets to set one. Do not apply a default layout to `assets/`.
+defaults:
+  - scope:
+      path: "pages"
+    values:
+      layout: distill
+
 plugins:
   - jekyll-sitemap
 

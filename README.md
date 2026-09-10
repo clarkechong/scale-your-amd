@@ -30,15 +30,14 @@ thing not picked up automatically; restart the server after those.
 
 ## Layout
 
-`index.md` at the repository root is the landing page. Every chapter and appendix is
-one Markdown file in `pages/`, **prefixed with its chapter number** so the file tree
-reads in book order: `1-rooflines.md` through `13-conclusion.md`, then
-`a-appendix-install.md` and `b-appendix-protocol.md`. The prefix is part of the URL, so
-renaming a file means updating every link to it.
+`index.md` at the repository root is the landing page. Every chapter is one Markdown
+file in `pages/`, **prefixed with its chapter number** so the file tree reads in book
+order: `1-hardware.md` through `8-deepseek-v3.md`. The prefix is part of the URL, so
+renaming a file means updating every link to it. Each file needs YAML front matter with
+`layout: distill`; without that delimiter Jekyll copies the `.md` through verbatim and
+the page is served as raw Markdown.
 
-All fifteen have been through a first drafting pass. Sections that could be written
-without a measurement are written; the rest carry an HTML comment saying what the
-section owes, what blocks it and what would unblock it.
+The previous draft lives under `pages/archive/` and is not linked from the landing page.
 
 ```bash
 grep -rn 'BLOCKED' pages/     # remaining work, by section

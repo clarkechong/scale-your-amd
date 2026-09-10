@@ -1,4 +1,25 @@
-# OUTLINE
+---
+layout: distill
+title: "Deep Learning Methods"
+description: "Transformer, MoE, sharding, remat, and the inference tricks that change the cost model."
+date: 2026-09-10
+
+section_number: 3
+
+previous_section_url: "/pages/2-software"
+previous_section_name: "Chapter 2: Software"
+
+next_section_url: "/pages/4-profiling"
+next_section_name: "Chapter 4: Profiling"
+
+authors:
+  - name: Clarke Chong
+    url: "https://github.com/clarkechong"
+
+toc:
+  - name: "OUTLINE"
+---
+## OUTLINE
 
 prerequisites: standard LLM transformer architecture (transformerblock=att+ffn)
 

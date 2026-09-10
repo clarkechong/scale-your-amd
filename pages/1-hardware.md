@@ -1,4 +1,30 @@
-# Prerequisites
+---
+layout: distill
+title: "Hardware"
+description: "CDNA architecture, host-device systems, and the node-to-multinode topology that every later chapter substitutes numbers into."
+date: 2026-09-10
+
+section_number: 1
+
+previous_section_url: "/"
+previous_section_name: "Chapter 0: Intro"
+
+next_section_url: "/pages/2-software"
+next_section_name: "Chapter 2: Software"
+
+authors:
+  - name: Clarke Chong
+    url: "https://github.com/clarkechong"
+
+toc:
+  - name: "Prerequisites"
+  - name: "CUDA to ROCm"
+  - name: "CDNA Architecture"
+  - name: "Host-Device Heterogeneous Systems"
+  - name: "Node Architecture and Topology"
+  - name: "Multi-node Architecture and Topology"
+---
+## Prerequisites
 
 Before starting this section, it would be beneficial to familiarize yourself with the basics of GPU programming and architecture through the many wonderful and abundant resources already out there. Many resources likely detail the NVIDIA/CUDA model, upon which this section will build upon and tailor towards AMD's CDNA architecture (specifically CNDA4, MI355X).
 
@@ -10,7 +36,7 @@ If you're looking for a place to start, I would recommend the following:
 
 ---
 
-# CUDA to ROCm
+## CUDA to ROCm
 
 Assuming you've built your knowledge base on CUDA, here is a quick mapping of confusing terms between the two sides:
 
@@ -31,13 +57,13 @@ Assuming you've built your knowledge base on CUDA, here is a quick mapping of co
 
 ---
 
-# CDNA Architecture
+## CDNA Architecture
 
 Nvidia and AMD both offer a family of GPUs tailored towards HPC/AI application (ie. outside of the consumer RTX/RADEON lineups). If you are familiar with the A100, H100, H200 series from NVIDIA, the AMD equivalent of these are the MI250, MI300 and MI350 respectively. These form the CDNA architecture series.
 
 Here is a look inside the MI350:
 
-![](img/mi350-arch-diagram.png)
+![]({{ '/pages/img/mi350-arch-diagram.png' | relative_url }})
 
 XCD or Shader Engine (SE) may be unfamiliar terms. Most commonly we think in terms of SMs or CUs, and leave higher abstraction levels as a hardware implementation detail. This is fine for understanding the GPU programming model, however it is still good to keep a top level view of the hardware, especially when discussing topology or cache behaviour.
 
@@ -66,7 +92,7 @@ Essentially, these formats store using lower-precision formats with an associate
 
 Thus, alongside traditional precision formats, the full set of natively supported datatypes is as follows:
 
-![](img/matrix-core-dtypes.png)
+![]({{ '/pages/img/matrix-core-dtypes.png' | relative_url }})
 
 However, despite the enormous compute capability at our disposal, we are often limited by our HBM bandwidth. 
 
@@ -74,21 +100,21 @@ For example, our peak compute with BF16 is 2.3 PFLOP/s. With a peak HBM bandwidt
 
 ---
 
-# Host-Device Heterogeneous Systems
+## Host-Device Heterogeneous Systems
 
 At heart, the GPU is simply an accelerator used to offload parallelised workloads. The host (CPU) still needs to orchestrate the program flow by offloading the correct operations to the GPU, at the right time and with the right data.
 
-![](img/host-device-data-flow.png)
+![]({{ '/pages/img/host-device-data-flow.png' | relative_url }})
 
 In a typical GPU server system, PCIe is the primary host-device (CPU-GPU) communication link (like what you'd find on a consumer desktop build!). This is different to the technology you'll find in device-device (GPU-GPU) communication, referred to as interconnects.
 
 ---
 
-# Node Architecture and Topology
+## Node Architecture and Topology
 
 When scaling GPU systems, we naturally need to think about device-to-device communication. A modern multi-GPU node is commonly organised as 8 GPUs in a full-mesh topology. This means direct interconnect links between all devices, ie. each device is exactly 1 hop away from any other device.
 
-![](img/8socket-mi350.png)
+![]({{ '/pages/img/8socket-mi350.png' | relative_url }})
 
 AMD's interconnect technology is called Infinity Fabric. Each Infinity Fabric (xGMI) link is bidirectional and 16 lanes wide, with a per-lane bandwidth of 38.4Gbps. This gives us 38.4\*16/8=76.8GB/s per direction, or 153.6GB/s per link. Per GPU in a full-mesh topology, you can expect an aggregate communication bandwidth of 7\*153.6=1075.2GB/s, roughly 1.07TB/s.
 
@@ -96,7 +122,7 @@ Compared to our per-GPU HBM bandwidth of 8TB/s, it can be quite costly to commun
 
 ---
 
-# Multi-node Architecture and Topology
+## Multi-node Architecture and Topology
 
 Within a single 8 GPU node, every device has a relatively high-speed, high-bandwidth link to every other device, and can directly read/write to memory attached to peer GPUs. Effectively, the total HBM capacity of the node can be treated as a single large memory pool.
 
@@ -108,7 +134,7 @@ Each MI355X OAM typically has 1 PCIe Gen5 x16 link (128GB/s bidirectional) for I
 
 The switch fabric itself is commonly RoCEv2 (RDMA over Converged Ethernet) in a 2-tier rail-optimised design. A rail is the set of GPUs sharing the same index across all nodes, ie. GPU 3 on every node attaches to the same leaf switch. Traffic within a rail (GPU 3 to GPU 3) is a single switch hop, whereas traffic crossing rails has to climb to the spine layer, or first hop over Infinity Fabric to reach the correctly indexed local GPU.
 
-![](img/multinode-topology.png)
+![]({{ '/pages/img/multinode-topology.png' | relative_url }})
 
 Putting all of this together, the cost of moving a byte at each level:
 

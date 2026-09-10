@@ -1,8 +1,46 @@
-# The ROCm Ecosystem
+---
+layout: distill
+title: "Software"
+description: "The ROCm stack, HLO, and the XLA compiler path from a jax.jit to a HIP executable."
+date: 2026-09-10
+
+section_number: 2
+
+previous_section_url: "/pages/1-hardware"
+previous_section_name: "Chapter 1: Hardware"
+
+next_section_url: "/pages/3-dl-methods"
+next_section_name: "Chapter 3: Deep Learning Methods"
+
+authors:
+  - name: Clarke Chong
+    url: "https://github.com/clarkechong"
+
+toc:
+  - name: "The ROCm Ecosystem"
+  - name: "The JAX, XLA and ROCm Stack"
+  - name: "What is HLO?"
+  - name: "XLA Compiler Components"
+    subsections:
+      - name: "HLO Optimisation Passes"
+      - name: "Autotuning"
+      - name: "XLA Scheduler"
+      - name: "Buffer Assignment"
+      - name: "Code Generation"
+  - name: "ROCm Backends"
+    subsections:
+      - name: "[WIP] JAX-AITER"
+  - name: "The Runtime"
+    subsections:
+      - name: "Thunks and StreamExecutor"
+      - name: "PJRT"
+  - name: "XLA Compiler Performance Flags"
+---
+## The ROCm Ecosystem
 
 Before diving into the JAX stack, it helps to know what we're working with on the ROCm side before reaching the framework level. You can find a brief overview [here](https://rocm.docs.amd.com/en/latest/about/what-is-rocm.html).
 
-![](img/what-is-rocm.png)
+![]({{ '/pages/img/what-is-rocm.png' | relative_url }})
 
 The most relevent components for us are the math and compute libraries (hipBLAS, rocBLAS, CK, ...) and communication libraries (RCCL), along with the universally useful profiling and debugging tools (rocprof-sdk, rocprof-compute, rocgdb).
 
@@ -17,13 +55,13 @@ You generally won't need to write HIP by hand to train a model in JAX. But XLA g
 
 ---
 
-# The JAX/XLA/ROCm Stack
+## The JAX, XLA and ROCm Stack
 
 Normally, if you are simply researching and building models in JAX, you may not need to concern yourself with XLA internals. However, if you are looking to extract the maximum performance from a large distributed training/inference workload, it is helpful to look into this and understand what certain XLA performance flags achieve and what parts of the stack they affect.
 
 XLA documents their [GPU backend architecture](https://openxla.org/xla/gpu_architecture) and [how HLO is lowered to binary](https://openxla.org/xla/hlo_to_thunks).
 
-![](img/jax-rocm-stack.png)
+![]({{ '/pages/img/jax-rocm-stack.png' | relative_url }})
 
 A high-level crash course summary to understand JAX/XLA:
 
@@ -45,7 +83,7 @@ First, lets see what `StableHLO` and `HLO` actually look like.
 
 ---
 
-# What is HLO?
+## What is HLO?
 
 HLO is an intermediate representation. In `.txt` dump format, a single module can look like this:
 
@@ -63,7 +101,7 @@ Not particularly helpful...
 
 But HLO is a DAG (Directed Acyclic Graph) of operations and can be visualized intuitively as such:
 
-![](img/matmul-hlo.png)
+![]({{ '/pages/img/matmul-hlo.png' | relative_url }})
 
 - A module can be considered the top-level unit of HLO.
     - if you `jax.jit(matmul)` then `matmul` is your top level operation and hence it is the module.
@@ -77,9 +115,9 @@ But HLO is a DAG (Directed Acyclic Graph) of operations and can be visualized in
 
 Realistically, an HLO module can contain hundreds or thousands of ops. Ultimately, to create the executable, we would like a scheduled sequence of ops to run, ie. to flatten the DAG representation of HLO into a dependency-aware sequence.
 
-# XLA Compiler Components
+## XLA Compiler Components
 
-## HLO Optimisation Passes
+### HLO Optimisation Passes
 
 The base class representing the XLA GPU pipeline, `gpu_compiler.cc`, defines an entry point `RunHloPasses()` which drives unoptimised HLO to optimised HLO. Passes are grouped into named `HloPassPipeline` objects, each of which is just an ordered list of passes and a runner, ie. `pipeline.Run(module)`.
 
@@ -110,10 +148,10 @@ XLA_FLAGS="--xla_dump_to=/tmp/hlo --xla_dump_hlo_as_text --xla_dump_hlo_pass_re=
 An HLO snapshot is only written when a pass actually changes the module so you may see non-consecutive numbering in the dump.
 
 For example, take this HLO before a `conv-rewriter` pass:
-![](img/hlo-conv-before-rewriter.png)
+![]({{ '/pages/img/hlo-conv-before-rewriter.png' | relative_url }})
 
 versus after the `conv-rewriter` pass:
-![](img/hlo-conv-after-rewriter.png)
+![]({{ '/pages/img/hlo-conv-after-rewriter.png' | relative_url }})
 
 `conv_general_dilated.1`, a generic `convolution` op, is lowered to a `custom-call` with target `__cudnn$convForward`. The rest of the graph is untouched. Note that a custom-call is an HLO operation that delegates execution to backend-specific code rather than code generated directly by XLA. Here we are calling into MIOpen for a convolution kernel ("cudnn" due to XLA naming convention).
 
@@ -137,7 +175,7 @@ Broadly speaking, you could group passes roughly by category:
 
 ---
 
-### Layout assignment
+#### Layout assignment
 
 Layout assignment refers to the physical memory arrangement of a tensor's dimensions. `f32[16,2048]{1,0}` is row-major and `{0,1}` would be column-major, and the same idea extends to the 3rd, 4th, Nth dimension. A shape like `[batch, height, width, channel]` alone does not contain information on the stride order in memory.
 
@@ -150,7 +188,7 @@ In the event of a conflict between layouts (e.g, a tensor op wants {0,1} but the
 
 ---
 
-## Autotuning
+### Autotuning
 
 A single GEMM has many valid implementations: different rocBLAS/Tensile kernels, different tilings of the work, different MFMA instruction patterns. During compilation the XLA autotuner compiles candidates and empirically measures them.
 
@@ -162,7 +200,7 @@ Autotuning is not free. It costs compile time on every fresh run, and for "small
 --xla_gpu_load_autotune_results_from=FILE  # load saved autotune data
 ```
 
-## XLA Scheduler
+### XLA Scheduler
 
 The XLA scheduler is what transforms the optimised HLO into a planned sequence of ops. The two primary top-level optimization objectives are:
 
@@ -195,13 +233,13 @@ It is recommended to check this against [XLA's documentation for recommended XLA
 
 Passes that only make sense once execution order is known live in a separate post-scheduling pipeline (`RunPostSchedulingPipelines`), which is where most collective handling ends up.
 
-## Buffer Assignment
+### Buffer Assignment
 
 Every HLO value lives in device memory. A naive approach of assigning a unique, non-overlapping buffer per value is wasteful. The buffer assignment process performs liveness analysis, for example, if some value A is dead by the time value B is computed, B can reuse A's memory. The result is a memory plan mapping each value to an offset within a set of allocations. You can imagine this is in concept similar to traditional CPU stack allocation, but applied to GPU HBM.
 
 It runs after scheduling as lifetimes depend on execution order.
 
-## Code Generation
+### Code Generation
 
 For every op in the optimised module, XLA lowers through one of these ROCm backend paths:
 
@@ -227,14 +265,14 @@ The target is `amdgcn-amd-amdhsa`, so from this point down it is the same AMDGPU
 
 ---
 
-# ROCm Backends
+## ROCm Backends
 
 - `rocBLAS`/`hipBLAS` for GEMMs, via `custom-call`
 - `MIOpen` for convolutions
 - `RCCL` for collectives
 - `Triton` for dot-shaped fusions
 
-## [WIP] JAX-AITER
+### [WIP] JAX-AITER
 
 [`jax-aiter`](https://github.com/ROCm/jax-aiter) AITER's hand-tuned AMD kernels into XLA as FFI calls.
 
@@ -242,9 +280,9 @@ The target is `amdgcn-amd-amdhsa`, so from this point down it is the same AMDGPU
 
 ---
 
-# The Runtime
+## The Runtime
 
-## Thunks and StreamExecutor
+### Thunks and StreamExecutor
 
 The executable is ultimately a sequence of thunks, ie. a `vector<Thunk>`. A thunk is "one runtime action", e.g. launch kernel K, or do a memcpy, or run a collective. It is not the kernel itself. Execution is then not much more than:
 
@@ -275,7 +313,7 @@ kAllReduce  ─executes─▶    [RCCL enqueues kernels + comms]
 - `SynchronousMemcpy`, `SynchronizeAllActivity` for host-device transfer and sync
 - `CreateCommandBuffer`, the HIP graph equivalent, which replaces a run of per-thunk launches with one graph launch and so reduces host dispatch cost
 
-## PJRT
+### PJRT
 
 PJRT is an API defined by XLA that a backend has to implement. It is deliberately opaque and vendor agnostic. This decoupled nature means that JAX interacts only through the PJRT, as oppose to any vendor specific interace e.g. HIP.
 
@@ -320,7 +358,7 @@ executable->Execute({a.get(), b.get()});
 
 ---
 
-# XLA Compiler Performance Flags
+## XLA Compiler Performance Flags
 
 Flags are declared in `xla/debug_options_flags.cc`. There are several hundred of them, and they are set through the `XLA_FLAGS` environment variable.
 

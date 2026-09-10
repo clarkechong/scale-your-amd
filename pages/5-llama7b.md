@@ -1,3 +1,22 @@
+---
+layout: distill
+title: "Training Llama 7B"
+description: "A single-GPU Llama 7B in raw JAX, then the same model in MaxText, with remat and attention-backend comparisons."
+date: 2026-09-10
+
+section_number: 5
+
+previous_section_url: "/pages/4-profiling"
+previous_section_name: "Chapter 4: Profiling"
+
+next_section_url: "/pages/6-llama70b"
+next_section_name: "Chapter 6: Llama 70B"
+
+authors:
+  - name: Clarke Chong
+    url: "https://github.com/clarkechong"
+
+---
 1. training llama7b in raw jax (fp32 master, bf16 compute)
     - what is the expected: memory footprint, throughput FLOPs?
     - what is the achieved: memory footprint, throughput FLOPs?

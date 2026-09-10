@@ -1,3 +1,22 @@
+---
+layout: distill
+title: "Mixtral 8x22B"
+description: "Sharded MoE on one node: FSDP plus expert parallelism, token routing, and GroupGEMM."
+date: 2026-09-10
+
+section_number: 7
+
+previous_section_url: "/pages/6-llama70b"
+previous_section_name: "Chapter 6: Llama 70B"
+
+next_section_url: "/pages/8-deepseek-v3"
+next_section_name: "Chapter 8: DeepSeek V3"
+
+authors:
+  - name: Clarke Chong
+    url: "https://github.com/clarkechong"
+
+---
 1. baseline fp32/bf16, LHS on, fsdp1+ep8 (no sharding ie weights dupcliated across 8 gpus? and ep8 means that each gpu holds unique expert in full)
     - estimate step time and memory consumption
     - compare to achieved step time and memory consumption
