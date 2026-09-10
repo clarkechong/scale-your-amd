@@ -13,4 +13,5 @@
     - what kind of memory footprint vs throughput tradeoff did we achieve?
     - does third party research have similar findings?
 4. in raw jax, investigate into attention backends
-    - Compare raw-JAX BF16 XLA, TransformerEngine CK, direct JAX-AITER, and Tokamax, Pallas-Triton attention. Hold all other settings fixed.
+    - xla, te, aiter, triton
+    - (raw-JAX BF16 XLA, TransformerEngine CK, direct JAX-AITER, and Tokamax, Pallas-Triton attention)

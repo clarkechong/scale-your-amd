@@ -55,4 +55,22 @@ discuss and analyze.
 
 ---
 
-1. 
+1. how to train mixed precision with maxtext
+    - the relevent maxtext flags
+    - fp32 (note slow due to no te kernels)
+    - bf16 works out of the box
+    - fp16 works out of the box
+    - fp8 works out of the box
+    - mxfp8 seems to work out of the box however custom TE patch required for desired performance in this case
+        - te2.17 patch branch, explained
+    - mxfp4 is currently unsupported. walk through the (current) steps to get this working.
+        - explain why: not yet integrated into upstream maxtext so in the meantime we have to manually patch maxtext to issue mxfp4 instructions. how? we do this via mxfp4 ffi (custom calls)
+        - rocm maxtext mxfp4 branch has this patch for us
+        - jax aiter alpha 2, we need to build the relevent ffi calls
+        - Explicit FP4 environment recipe. AITER_FP4_ATTN=1 for equal scope with FP8. JA_FP4_PACK_GATEUP_AG=0 because the enabled path currently double-shuffles weights. TE/BF16 attention core retained.
+        - BASICALLY, JUST CONSULT THE PROVIDED PYTHON RUNNER
+2. present the train step results, including throughput, memory footprint, and roofline analysis
+    - based on calculation estimations for step time, throughput, memory footprint, do the achieved results align
+3. present convergence results
+    - how to precision stability vary, do the loss curves overlap, time to quality, etc
+4. does external research support these findings

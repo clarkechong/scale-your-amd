@@ -1,22 +1,21 @@
-llama70b was to demonstrate mixed precision training (no constraints on dtype to fit on node)
-this can be used to demonstrate MoE specifics
+1. baseline fp32/bf16, LHS on, fsdp1+ep8 (no sharding ie weights dupcliated across 8 gpus? and ep8 means that each gpu holds unique expert in full)
+    - estimate step time and memory consumption
+    - compare to achieved step time and memory consumption
 
-groupgemm/ragged dot (token routing, all-to-all collective)
+2. fsdp mesh experiments: fsdp 
+    - how to do this from maxtext config flags
+    - estimate effect on step time and memory footprint
+    - compare to achieved step time and memory footprint
 
-try out jax-aiter kernels
+3. MoE token routing experiments:
+    - dense masked (all tokens sent to all experts), raggeddot groupedgemm, dense padded (tokens routed, padded)
+    - how to do each of these from maxtext configuration
+        - on mi355, groupedgemm is only supported (hipblaslt) for fp16
+        - however it is currently untuned and a worse performer than dense padded path
+        - work in progress to enable triton grouped gemm which can readily outperform dense padded path
+    - expected relationship between them for memory footprint and step time throughput
+    - vs achieved step time and memory footprint
 
-Baseline MoE
+4. lhs off
+    - improvement in peak memory footprint, vs latency
 
-+ GroupGEMM
-
-+ Token sorting
-
-+ All-to-all overlap
-
-+ Ragged Dot
-
-+ Fused routing
-
----
-
-jax-aiter vs jax-triton vs te attention
