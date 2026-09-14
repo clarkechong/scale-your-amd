@@ -1,13 +1,13 @@
 ---
 layout: distill
-title: "Compiler, Runtime, and RCCL Controls"
-description: "A controlled method for changing XLA, JAX, HIP, and RCCL settings on MI355X without losing correctness or attribution."
+title: "Tuning the Compiler, Runtime, and RCCL"
+description: "After the workload, mesh, and kernel routes are fixed, change XLA, JAX, HIP, and RCCL controls only when a profile identifies the mechanism."
 date: 2026-09-13
 
 section_number: 9
 
 previous_section_url: "/pages/8-mixture-of-experts-on-mi355x"
-previous_section_name: "Chapter 8: Mixture of Experts"
+previous_section_name: "Chapter 8: Training Mixture-of-Experts on MI355X"
 
 next_section_url: "/pages/10-llama-7b-exposing-the-complete-stack"
 next_section_name: "Chapter 10: Llama 7B"
@@ -38,6 +38,11 @@ toc:
 Start from the frozen case-study configuration. Change one control only when a
 profile identifies the mechanism it can affect. Keep the change only if the same
 workload passes correctness checks and improves the target metric.
+
+Earlier chapters identify the memory constraint, collective payloads, overlap
+opportunities, and eligible kernel routes. This chapter is their single control
+surface: scheduler flags, collective combining and pipelining, command buffers,
+route-selection flags, hardware queues, and RCCL overrides are not tuned elsewhere.
 
 This chapter uses:
 

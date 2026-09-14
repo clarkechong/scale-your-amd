@@ -6,8 +6,8 @@ date: 2026-09-13
 
 section_number: 4
 
-previous_section_url: "/pages/3-predicting-and-measuring-one-training-step"
-previous_section_name: "Chapter 3: Predicting and Measuring One Training Step"
+previous_section_url: "/pages/3-profiling-and-analysis-of-one-training-step"
+previous_section_name: "Chapter 3: Profiling and Analysis of a Training Step"
 
 next_section_url: "/pages/5-making-the-model-fit"
 next_section_name: "Chapter 5: Making the Model Fit"

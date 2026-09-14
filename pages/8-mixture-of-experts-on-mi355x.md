@@ -1,23 +1,23 @@
 ---
 layout: distill
-title: "Mixture-of-Experts on MI355X"
-description: "Routing, expert execution, token movement, and mesh choices for training sparse models in JAX on ROCm."
+title: "Training Mixture-of-Experts on MI355X"
+description: "Apply memory, parallelism, communication, and kernel decisions together when sparse training work is determined by routing."
 date: 2026-09-13
 
 section_number: 8
 
 previous_section_url: "/pages/7-a-map-of-kernel-backends-on-jax"
-previous_section_name: "Chapter 7: A Map of Kernel Backends on JAX"
+previous_section_name: "Chapter 7: A Map of ROCm Kernel Backends on JAX"
 
 next_section_url: "/pages/9-compiler-runtime-and-rccl-controls"
-next_section_name: "Chapter 9: Compiler Runtime and RCCL Controls"
+next_section_name: "Chapter 9: Tuning the Compiler, Runtime, and RCCL"
 
 authors:
   - name: Clarke Chong
     url: "https://github.com/clarkechong"
 
 toc:
-  - name: "The MoE Cost Ledger"
+  - name: "Why Sparse Training Is Different"
   - name: "Routing and Precision"
   - name: "Load Balance and Imbalance"
   - name: "Capacity Padding Dropping and Dropless Execution"
@@ -30,6 +30,11 @@ toc:
   - name: "The Grouped GEMM Win Condition"
   - name: "Token Movement and Ragged Collectives"
   - name: "Expert Parallelism on One MI355X Node"
+    subsections:
+      - name: "Mixtral state under EP-8"
+      - name: "EP versus FSDP"
+      - name: "EP versus TP"
+      - name: "One-node placement"
   - name: "Rematerialization and Custom VJPs"
   - name: "Four Required Diagnostics"
   - name: "Decision Procedure"
@@ -50,6 +55,11 @@ MI355X node is a one-hop full mesh, which is a good topology for an intra-node
 AllToAll. Achieved step time therefore depends on expert-kernel efficiency and the
 physical placement of the expert mesh axis, in addition to the reduced useful FLOP
 count.
+
+This chapter is the integration point for sparse training. Earlier chapters only
+signpost MoE-specific exceptions; routing, capacity, expert kernels, token
+collectives, expert parallelism, rematerialization, and diagnostics are owned here
+and evaluated as one training contract.
 
 This chapter uses four evidence labels:
 
@@ -72,7 +82,7 @@ Scaling Book. Its [sharding](https://jax-ml.github.io/scaling-book/sharding/) an
 general collective and parallelism theory. The purpose here is to turn that theory into
 MI355X, MaxText, and ROCm decisions.
 
-## The MoE Cost Ledger
+## Why Sparse Training Is Different
 
 Use the following symbols for one routed SwiGLU layer:
 
@@ -110,7 +120,7 @@ pass and approximately $18(k+E_s)DF$ FLOPs per token for forward plus backward. 
 router projection adds $2DE$ forward FLOPs per token, or approximately $6DE$ for
 training. **[analytical]**
 
-This produces two ledgers that must remain separate:
+This produces two counts that must remain separate:
 
 1. **Total parameters** determine model-state memory, checkpoint size, optimizer state,
    and how much weight data FSDP may gather.
@@ -136,7 +146,7 @@ Current MaxText model configs show how quickly that multiplier grows. **[cited]*
 | DeepSeek V3 | 7168 | 2048 | 256 | 8 | 1 | 32x on the routed experts |
 
 The shared DeepSeek expert is not part of the 32x ratio. It runs for every token and
-must be added to both the useful and issued FLOP ledgers.
+must be added to both the useful and issued FLOP counts.
 
 Three FLOP counts are useful in an MoE profile:
 
@@ -196,8 +206,9 @@ requirements: loss scaling and overflow checks become part of the experiment.
 
 The local MaxText branch contains a JAX-AITER MXFP4 fused-MoE forward path. It is marked
 inference-only and has no training VJP. It is not one of the four training paths below.
-[Chapter 7]({{ '/pages/7-a-map-of-kernel-backends-on-jax' | relative_url }}) owns the current
-kernel-reachability table, including this forward-only exception.
+[Chapter 7]({{ '/pages/7-a-map-of-kernel-backends-on-jax' | relative_url }}) defines
+the forward/backward kernel-proof standard; this chapter records the sparse routes
+that pass or fail it.
 
 ## Load Balance and Imbalance
 
@@ -462,8 +473,8 @@ recommended MI355X implementation.
 Megablox and Tokamax are additional `jax.lax.ragged_dot`-style backends in upstream
 MaxText's decision tree, while the local JAX-AITER branch has a forward-only fused
 MXFP4 MoE path. They do not create additional validated MI355X training paths here.
-Their platform, dtype, gradient, and workspace restrictions belong to
-[Chapter 7]({{ '/pages/7-a-map-of-kernel-backends-on-jax' | relative_url }}).
+Their platform, dtype, gradient, and workspace restrictions are part of this
+chapter's versioned sparse-route status.
 
 ## The Grouped GEMM Win Condition
 
@@ -621,6 +632,33 @@ layout. It introduces dispatch and combine on the critical path.
 The memory argument usually comes first. An MoE optimizer stores state for all expert
 parameters, not only the selected experts. If the state does not fit on one MI355X,
 the minimum EP or FSDP degree is constrained before throughput tuning begins.
+
+### Mixtral state under EP-8
+
+The current Mixtral recipe stores BF16 parameters and BF16 Adam moments. In the
+inspected trainer, its BF16 parameter gradients remain BF16 despite the
+`grad_dtype=float32` request. The first estimate is therefore six persistent bytes
+and two live-gradient bytes per local parameter.
+
+Of approximately 140.63 billion total parameters, 135.291 billion belong to routed
+experts and 5.339 billion are shared attention, router, norm, embedding, and output
+parameters. With FSDP-1 and EP-8:
+
+$$
+\begin{aligned}
+P_{\mathrm{local}}
+  &=\frac{135.291\times10^9}{8}+5.339\times10^9
+   =22.25\times10^9,\\
+M_{\mathrm{persistent}}
+  &\approx124.33\ \mathrm{GiB/GPU},\\
+M_{\mathrm{persistent+gradients}}
+  &\approx165.78\ \mathrm{GiB/GPU}.
+\end{aligned}
+$$
+
+This is **[analytical]** and must be checked against resolved parameter shardings,
+compiled memory, and runtime peak allocation. Top-2 routing reduces activated FLOPs;
+it does not reduce these stored weights or optimizer moments.
 
 ### EP versus FSDP
 
@@ -814,7 +852,7 @@ If any of those invariants change, label the comparison accordingly.
    JAX and jaxlib, MaxText commit, container, effective `XLA_FLAGS`, and kernel-library
    versions.
 
-2. **Build the model ledger.** Write down $D$, $F$, $E$, $k$, shared experts, MoE-layer
+2. **Account for the model.** Write down $D$, $F$, $E$, $k$, shared experts, MoE-layer
    count, total parameters, activated parameters, and expert-state bytes.
 
 3. **Choose the minimum memory sharding.** Determine whether complete experts fit.

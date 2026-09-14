@@ -1,7 +1,7 @@
 ---
 layout: distill
 title: "Making the Model Fit"
-description: "Account for training state and activations, then use donation, rematerialization, accumulation, sharding, and offload in a measured order."
+description: "Account for the peak memory of one optimizer update, then apply donation, rematerialization, accumulation, FSDP, sharded initialization, and offload in a measured order."
 date: 2026-09-13
 
 section_number: 5
@@ -10,20 +10,20 @@ previous_section_url: "/pages/4-training-in-mixed-precision"
 previous_section_name: "Chapter 4: Training in Mixed Precision"
 
 next_section_url: "/pages/6-jax-shardings-to-a-training-mesh"
-next_section_name: "Chapter 6: Sharding"
+next_section_name: "Chapter 6: Parallelism for Higher Throughput"
 
 authors:
   - name: Clarke Chong
     url: "https://github.com/clarkechong"
 
 toc:
-  - name: "Two Ledgers and One Peak"
-  - name: "Training-State Ledger"
+  - name: "Start with the Memory Peak"
+  - name: "Persistent Training State"
     subsections:
       - name: "Llama 7B"
       - name: "Llama 70B under FSDP"
-      - name: "Mixtral under Expert Parallelism"
-  - name: "Activation Ledger"
+      - name: "Sparse Models"
+  - name: "Activation Memory"
   - name: "Measure the Compiled Program"
   - name: "Donate Replaced State"
   - name: "Scan and Rematerialization"
@@ -31,7 +31,10 @@ toc:
       - name: "The Policy Surface"
       - name: "Interactions That Change the Answer"
   - name: "Gradient Accumulation"
-  - name: "Shard State and Initialize It Sharded"
+  - name: "FSDP and Sharded Initialization"
+    subsections:
+      - name: "Choose the minimum FSDP degree"
+      - name: "Initialize directly into shards"
   - name: "Host Offload"
   - name: "A Memory Decision Procedure"
   - name: "Decision Table"
@@ -43,15 +46,16 @@ capacity. This can happen while initializing the optimizer, compiling the step,
 materializing an attention score, gathering an FSDP weight, creating a
 low-precision workspace, or returning a new state before the old state dies.
 
-Use two ledgers before compiling:
+Separate two classes of memory before compiling:
 
 1. persistent training state: parameters, optimizer moments, scale state, and
    counters;
 2. live step state: gradients, saved activations, temporary buffers, collective
    buffers, library workspaces, and outputs.
 
-Then compare both with XLA's buffer assignment and the allocator high-water mark. The
-ledgers explain the terms. The compiled program decides which terms overlap in time.
+Then compare both with XLA's buffer assignment and the allocator high-water mark.
+The estimates explain the terms. The compiled program decides which terms overlap
+in time.
 
 This chapter uses the same evidence tags as Chapter 4. **[source]** identifies
 checked-in code or configuration, **[measured]** requires a complete Appendix F
@@ -61,7 +65,7 @@ support is verified against MaxText v26.6, the ROCm MaxText MXFP4 branch at `b43
 JAX/JAXLIB and ROCm PJRT/plugin 0.11.0, and 8x MI355X experiment configs, on
 **13 September 2026**.
 
-## Two Ledgers and One Peak
+## Start with the Memory Peak
 
 Define:
 
@@ -91,7 +95,7 @@ adds four bytes per local parameter. In the pinned MaxText source, `mu_dtype`
 controls the first moment and the second moment inherits `weight_dtype`; there is no
 independent `nu_dtype`.
 
-This formula is a steady-state ledger. It omits several possible peaks:
+This formula is a steady-state estimate. It omits several possible peaks:
 
 - a separate input checkpoint while parameters are being restored;
 - the old and new state at a functional update boundary;
@@ -105,7 +109,7 @@ Do not solve those omissions by adding one arbitrary "safety factor." Name each 
 term, measure the compiled step, and reserve headroom for terms the compiler report
 cannot see.
 
-## Training-State Ledger
+## Persistent Training State
 
 ### Llama 7B
 
@@ -147,51 +151,22 @@ The same config uses sequence length 4096 and microbatch 15 per device. Its
 `remat_policy=full` is not incidental. A no-remat activation estimate is much larger
 than the sharded optimizer state, so FSDP alone cannot make the run fit.
 
-### Mixtral under Expert Parallelism
+### Sparse Models
 
-The Mixtral config has 56 layers, width 6144, MLP width 16,384, eight experts, top-2
-routing, 48 query heads, and eight KV heads. Its state roles are:
+Top-k routing reduces the expert FLOPs used by each token, but it does not remove
+inactive expert weights or their optimizer state. A sparse model therefore sizes
+persistent memory from **total parameters**, not activated parameters.
 
-```yaml
-weight_dtype: "bfloat16"
-grad_dtype: "float32"
-mu_dtype: "bfloat16"
-```
+Expert parallelism can divide expert state while leaving attention, embeddings,
+routers, norms, and other dense state replicated. It is not equivalent to dividing
+the complete model by the expert-parallel degree. This chapter uses that distinction
+only to decide whether the step can fit.
 
-The second Adam moment inherits the BF16 weight dtype. The steady-state coefficient is
-therefore approximately:
+[Chapter 8, Training Mixture-of-Experts on MI355X]({{ '/pages/8-mixture-of-experts-on-mi355x' | relative_url }})
+owns the Mixtral state calculation, routing buffers, expert-parallel placement, and
+FSDP-versus-EP comparison.
 
-```text
-2 bytes weights + 2 bytes mu + 2 bytes nu
-= 6 persistent bytes per local parameter
-```
-
-The pinned trainer casts a gradient leaf to `grad_dtype` only when that leaf is
-already FP32; it does not upcast BF16 parameter gradients. Treat the Mixtral
-gradient tree as BF16 unless HLO or runtime state proves otherwise. One live BF16
-gradient tree therefore adds approximately two bytes per local parameter.
-
-The model contains about 140.63 billion parameters **[analytical]** from the pinned
-MaxText dimensions. Top-2 routing does not reduce that state. Every expert is trainable
-and needs weights, gradients, and moments.
-
-The experiment uses FSDP-1 and expert parallelism 8. With one expert shard per GPU,
-about 16.91 billion expert parameters are local, while about 5.34 billion shared
-attention, router, norm, embedding, and output parameters remain local. The first state
-estimate is:
-
-```text
-P_local = 22.25e9
-persistent state = 22.25e9 * 6 bytes = 124.33 GiB per GPU
-with one live BF16 gradient tree = 165.78 GiB per GPU
-```
-
-This is **[analytical]** and assumes the logical axis rules shard expert weights as
-intended. Verify the actual parameter shardings. Unlike FSDP-8, EP-8 does not divide
-the shared state by eight. This distinction is why "the model is sharded eight ways"
-is not a memory calculation.
-
-## Activation Ledger
+## Activation Memory
 
 For a dense Transformer without a materialized attention-score matrix, the following
 formula gives a partial estimate of commonly saved named residuals per GPU:
@@ -230,17 +205,9 @@ for each live score or probability tensor. Flash attention avoids materializing 
 full matrix in HBM. Changing `remat_policy` cannot make a materialized quadratic
 attention algorithm behave like flash attention; select the attention backend first.
 
-For an MoE layer, replace the dense MLP term with a routing-aware estimate:
-
-```text
-3F  ->  3 * E_a * F
-```
-
-and add token indices, routing weights, permutations, capacity padding, and AllToAll
-buffers. `E_a` is the number of selected experts. Expert parallelism changes where
-those routed activations live, not the number produced globally. The Mixtral config's
-`E_a=2`, fixed-capacity one-hot execution, and EP-8 must be represented in the
-activation ledger separately from its parameter ledger.
+For an MoE layer, add token indices, routing weights, permutations, capacity
+padding, and AllToAll buffers. Their sizes depend on the selected routing and expert
+execution path, so Chapter 8 owns the complete sparse activation estimate.
 
 Three practical rules follow:
 
@@ -296,11 +263,11 @@ JAX documents `memory_analysis()` as a debugging interface whose availability an
 shape can vary across versions and backends. Record raw output rather than building a
 parser that assumes every future field exists.
 
-If the ledger and XLA disagree, reconcile these categories:
+If the estimate and XLA disagree, reconcile these categories:
 
 | Difference | Likely place to inspect |
 |---|---|
-| Arguments larger than the state ledger | Extra parameter copy, scale history, batch, or replicated shard |
+| Arguments larger than the state estimate | Extra parameter copy, scale history, batch, or replicated shard |
 | Outputs almost as large as arguments | Donation missing or unusable |
 | Temporary storage dominates | Saved activations, fused-op workspace, collective buffer, padding, or poor lifetime reuse |
 | Host temporary storage is nonzero | Offload or host-memory placement |
@@ -468,23 +435,50 @@ Check precision compatibility. The pinned MaxText source explicitly rejects its
 static check in the pinned source; this is not proof that accumulation works. Validate
 their forward, backward, scale state, and loss explicitly.
 
-## Shard State and Initialize It Sharded
+## FSDP and Sharded Initialization
 
-If persistent state dominates, shard it before changing activation policy.
+If persistent state dominates, shard it before changing activation policy. This is
+FSDP's primary role in the memory decision: parameters, gradients, master weights,
+and optimizer state are distributed according to their logical axis rules, then
+weights are gathered when a layer needs them.
 
-FSDP shards parameters, gradients, and optimizer state according to MaxText's logical
-axis rules. `ici_fsdp_parallelism=8` can divide a fully shardable state term by eight,
-as in Llama 70B. It also introduces temporary gathered weights and communication that
-the steady-state division omits.
+### Choose the minimum FSDP degree
+
+A useful capacity condition is:
+
+$$
+M_{\mathrm{replicated}}
++\frac{M_{\mathrm{shardable}}}{d_{\mathrm{FSDP}}}
++M_{\mathrm{temporary}}(d_{\mathrm{FSDP}})
+\leq M_{\mathrm{budget}}.
+$$
+
+The replicated term includes leaves whose logical rules do not use `fsdp`. The
+temporary term includes gathered weights, collective buffers, workspaces, and
+overlap-induced live ranges. Consequently, dividing total state by the FSDP degree is
+only a lower-level estimate.
+
+The Llama 70B configuration uses:
+
+```yaml
+ici_fsdp_parallelism: 8
+dcn_fsdp_parallelism: 1
+```
+
+Choose the smallest degree that satisfies the compiled and runtime peak-memory
+checks. Chapter 6 prices the resulting AllGather and ReduceScatter traffic and
+decides whether that degree is efficient.
 
 `shard_optimizer_over_data=true` is a separate ZeRO-1-style option. It shards optimizer
 state over the data axis while model parameters remain replicated for compute. Do not
 call ordinary FSDP and optimizer-only sharding the same configuration; their memory and
 collective costs differ.
 
-Expert parallelism shards expert state only. The Mixtral ledger shows the consequence:
-expert parameters divide over `ici_expert_parallelism=8`, while shared attention and
-embedding state remains replicated because `ici_fsdp_parallelism=1`.
+For sparse models, expert parallelism can shard expert state while shared attention
+and embedding state remains replicated. Chapter 8 owns that separate memory and
+communication decision.
+
+### Initialize directly into shards
 
 Sharding must apply during initialization. This pattern is unsafe for a model larger
 than one GPU:
@@ -558,14 +552,14 @@ insufficient or when capacity matters more than throughput.
 
 1. Freeze the workload: model, sequence length, global batch, precision assignment,
    attention backend, mesh, and optimizer.
-2. Build the persistent-state ledger from actual parameter leaves and dtypes. Separate
+2. Estimate persistent state from actual parameter leaves and dtypes. Separate
    shared, FSDP-sharded, tensor-sharded, and expert-sharded terms.
-3. Build the no-remat activation ledger. Include naive-attention scores, logits, MoE
+3. Estimate no-remat activation memory. Include naive-attention scores, logits, MoE
    dispatch, quantizer state, and known workspaces as separate terms.
 4. Initialize directly with target shardings. Record allocator memory after parameters
    and after optimizer creation.
 5. Compile the donated train step. Save raw `memory_analysis()` output and reconcile
-   arguments, outputs, aliases, temporaries, and host memory with the ledgers.
+   arguments, outputs, aliases, temporaries, and host memory with the estimates.
 6. If persistent state dominates, increase FSDP or optimizer sharding before remat.
    Recheck temporary gathered-weight buffers and communication.
 7. If activations dominate, select flash attention, then sweep `none`, a selective

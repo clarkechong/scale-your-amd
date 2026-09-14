@@ -1,16 +1,16 @@
 ---
 layout: distill
-title: "A Map of Kernel Backends on JAX"
-description: "How dense GEMM, attention, fused pointwise work, and MoE reach MI355X kernels through XLA, libraries, Triton, and FFI."
+title: "A Map of ROCm Kernel Backends on JAX"
+description: "Once precision, sharding, and local shapes are fixed, choose and prove the fastest correct forward-and-backward kernel route for dense GEMM, attention, and fused work."
 date: 2026-09-13
 
 section_number: 7
 
 previous_section_url: "/pages/6-jax-shardings-to-a-training-mesh"
-previous_section_name: "Chapter 6: Sharding"
+previous_section_name: "Chapter 6: Parallelism for Higher Throughput"
 
 next_section_url: "/pages/8-mixture-of-experts-on-mi355x"
-next_section_name: "Chapter 8: Mixture of Experts"
+next_section_name: "Chapter 8: Training Mixture-of-Experts on MI355X"
 
 authors:
   - name: Clarke Chong
@@ -22,7 +22,6 @@ toc:
   - name: "Dense GEMM"
   - name: "Attention Routes"
   - name: "Fused Pointwise and Reduction Work"
-  - name: "MoE Kernel Preview"
   - name: "Restrictions That Change the Route"
   - name: "Correctness and Kernel Proof"
   - name: "Fallback Order"
@@ -32,10 +31,11 @@ toc:
 
 ## The Decision
 
-For each expensive operation, choose a route that has a correct forward pass, a
-correct gradient, acceptable memory use, and a kernel implementation for the exact
-MI355X shape. A framework setting is only a request. The optimized HLO and device
-trace establish what ran.
+Chapters 4 through 6 fixed the precision recipe, memory strategy, mesh, and local
+operation shapes. For each resulting expensive operation, choose a route that has a
+correct forward pass, a correct gradient, acceptable memory use, and a kernel
+implementation for the exact MI355X problem. A framework setting is only a request.
+The optimized HLO and device trace establish what ran.
 
 This chapter uses the following evidence labels:
 
@@ -315,47 +315,18 @@ To prove an XLA fusion, inspect the fusion body and verify that the intermediate
 has no external user. To prove an FFI fusion, identify the custom call and the
 single corresponding device launch.
 
-## MoE Kernel Preview
-
-Chapter 8 develops the routing and communication model. The kernel choices needed
-for the Mixtral case are:
-
-- **Fixed-capacity one-hot:** the BF16 baseline. Tokens are placed into fixed
-  expert capacity before dense expert products.
-- **Dense masked:** dropless BF16 execution that evaluates masked dense work.
-- **Dense padded:** tokens are routed, each expert problem is padded, and regular
-  dense dots are issued.
-- **Ragged GroupedGEMM:** `jax.lax.ragged_dot` is rewritten to one hipBLASLt
-  grouped-GEMM route when eligible.
-
-The controlled sparse pair is FP16 in both arms. **[source]** The pinned XLA
-hipBLASLt grouped-GEMM integration supports FP16 on gfx950 but not BF16, and was
-described upstream as not yet tuned. The general hipBLASLt datatype table showing
-BF16 GEMM support does not override this narrower XLA grouped-GEMM restriction.
-Comparing the FP16 sparse arms with the BF16 baseline confounds expert algorithm
-and dtype; only the two FP16 sparse arms isolate the grouped-versus-padded route.
-
-The relevant grouped-GEMM request is:
-
-```bash
---xla_gpu_enable_cublaslt=true
---xla_gpu_experimental_use_ragged_dot_grouped_gemm=true
-```
-
-The first name is retained for compatibility on ROCm. The HLO must still contain
-the grouped custom call, and the trace must show a grouped hipBLASLt kernel. The
-separate ragged AllToAll flags select token movement, not the expert GEMM.
-
-The MaxText/JAX-AITER feature tree also contains a fused MXFP4 MoE path, but its
-own configuration describes it as forward-only. It is not a training fallback for
-this Mixtral case.
+Sparse expert execution is not previewed here. Its kernel cannot be separated from
+routing, padding, data-dependent group sizes, token movement, and expert placement.
+[Chapter 8, Training Mixture-of-Experts on MI355X]({{ '/pages/8-mixture-of-experts-on-mi355x' | relative_url }})
+owns the fixed-capacity, dense-masked, dense-padded, and grouped-GEMM routes together
+with their full training contract.
 
 ## Restrictions That Change the Route
 
 ### Gradient
 
 - Require a VJP and prove dQ/dK/dV or dInput/dWeight kernels separately.
-- A forward-only MoE or GEMM route is excluded from training.
+- A forward-only route is excluded from training.
 - Gradient atomics and conversion modes can alter determinism and numeric error.
 
 ### Dtype and accumulation
@@ -375,7 +346,7 @@ this Mixtral case.
 
 ### Workspace and rematerialization
 
-- Workspace is live device memory and belongs in the peak-memory ledger.
+- Workspace is live device memory and belongs in the peak-memory estimate.
 - Deterministic and nondeterministic backward routes can require different
   temporaries.
 - Rematerialization can execute a fused forward kernel again during backward.
@@ -420,9 +391,7 @@ contract, not the route with the most optimistic peak FLOP/s.
 3. Use a different fused library backend only after forward and gradient checks.
 4. Use direct JAX-AITER or Pallas-Triton only with a pinned build and full kernel
    proof.
-5. For MoE, fall back from ragged GroupedGEMM to the matched dense-padded route,
-   then to fixed-capacity or dense-masked execution as memory permits.
-6. Change dtype, packing, or model semantics only as a new experiment arm. Do not
+5. Change dtype, packing, or model semantics only as a new experiment arm. Do not
    call it a backend fallback.
 
 Private monkeypatches, unsupported XLA flags, and forward-only kernels are
@@ -449,20 +418,14 @@ Status on 2026-09-13:
 - **JAX-AITER MXFP4 projections:** requested by the pinned MaxText feature branch
   and alpha-2 FFI build. The case keeps the attention core in BF16; a
   per-projection kernel-proof artifact is not present.
-- **hipBLASLt ragged GroupedGEMM:** the Mixtral source requests FP16 because BF16
-  support is reported absent for the pinned route. Both the dtype restriction and
-  executed kernel remain unverified without v26.6 compile and trace artifacts.
-- **AITER fused MXFP4 MoE:** forward-only in the inspected feature tree; excluded
-  from training.
 
 Revalidate this list whenever JAX, the ROCm plugin/PJRT, XLA, MaxText,
 Transformer Engine, JAX-AITER, Tokamax, or ROCm changes.
 
 **Recommendation status: BLOCKED.** XLA attention is the correctness fallback.
-TE/CK, direct JAX-AITER, and Tokamax are candidate fused-attention arms; dense
-padded and fixed-capacity execution are candidate MoE fallbacks. No candidate
-outranks another without forward/backward correctness, optimized HLO, kernel
-trace, workspace, memory, and tokens/s/GPU artifacts for the exact shape.
+TE/CK, direct JAX-AITER, and Tokamax are candidate fused-attention arms. No
+candidate outranks another without forward/backward correctness, optimized HLO,
+kernel trace, workspace, memory, and tokens/s/GPU artifacts for the exact shape.
 
 ## Primary References
 
@@ -472,10 +435,8 @@ trace, workspace, memory, and tokens/s/GPU artifacts for the exact shape.
 - [XLA FFI custom calls](https://openxla.org/xla/custom_call)
 - [ROCm JAX installation and compatibility](https://rocm.docs.amd.com/projects/ai-ecosystem/en/latest/frameworks/jax/install.html)
 - [hipBLASLt datatype support](https://rocm.docs.amd.com/projects/hipBLASLt/en/latest/reference/data-type-support.html)
-- [hipBLASLt grouped GEMM API](https://rocm.docs.amd.com/projects/hipBLASLt/en/latest/reference/ext-reference.html)
-- [XLA gfx950 grouped-GEMM restriction](https://github.com/openxla/xla/commit/ae3a4afa4f3247377423405adc6eb6da8e0baa83)
 - [Transformer Engine JAX API](https://docs.nvidia.com/deeplearning/transformer-engine/api/jax.html)
 - [JAX-AITER](https://github.com/ROCm/jax-aiter)
 - [Tokamax](https://github.com/openxla/tokamax)
 
-<h3 markdown=1 class="next-section">Next: [Mixture of Experts]({{ '/pages/8-mixture-of-experts-on-mi355x' | relative_url }}).</h3>
+<h3 markdown=1 class="next-section">Next: [Training Mixture-of-Experts on MI355X]({{ '/pages/8-mixture-of-experts-on-mi355x' | relative_url }}).</h3>

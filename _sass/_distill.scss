@@ -87,6 +87,12 @@ d-article {
     align-self: start;
     grid-column: 1 / 4;
     grid-row: auto / span 4;
+    // Keep a long TOC from contributing its full height to the first four
+    // article rows. Its navigation can overflow this zero-height grid item
+    // while the sticky positioning continues to follow the article.
+    height: 0;
+    min-height: 0;
+    overflow: visible;
     justify-self: end;
     position: sticky;
     top: 85px;

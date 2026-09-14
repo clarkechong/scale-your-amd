@@ -17,12 +17,17 @@ authors:
     url: "https://github.com/clarkechong"
 
 toc:
-  - name: "How to read this chapter"
-  - name: "Device identity and JAX visibility"
-  - name: "From chiplets to wavefronts"
+  - name: "Inside one MI355X"
+    subsections:
+      - name: "What JAX sees"
+      - name: "Package organization"
+      - name: "Compute hierarchy"
   - name: "Matrix execution"
     subsections:
-      - name: "From lane fragments to macrotiles"
+      - name: "From one projection to a GEMM"
+      - name: "Blocked GEMM"
+      - name: "Inner and outer views"
+      - name: "MFMA lane fragments"
       - name: "Shape tails"
       - name: "A useful TPU contrast"
   - name: "The rest of a training kernel"
@@ -41,54 +46,32 @@ toc:
       - name: "Dense and sparse peaks"
   - name: "Partition modes"
   - name: "Capacity bandwidth and the BF16 roofline"
-  - name: "Eight GPU scale up"
+  - name: "8x GPU scale up"
     subsections:
       - name: "Directional bandwidth"
       - name: "Partial participation"
       - name: "No transparent pooled JAX memory"
-  - name: "Scale out preview"
+  - name: "Scale out domain"
   - name: "Hardware constants sheet"
   - name: "Where these constants reappear"
   - name: "References"
 ---
-This chapter supplies the hardware constants used by the rest of the book. The
-scope is one AMD Instinct MI355X OAM, its `gfx950` execution target, and the
-eight-OAM UBB 2.0 scale-up domain. Other accelerators appear only when a contrast
-changes how a JAX training program should be reasoned about.
 
-## How to read this chapter
+The AMD Instinct MI355 belongs to AMD's CDNA family of accelerators for HPC and AI workloads, serving a role equivalent to NVIDIA's H100 and H200. Its architecture is designed around the computational patterns common in modern AI models, with an emphasis on high-throughput matrix multiplication and *matrix cores* that perform these operations efficiently.
 
-Facts copied from a linked specification or architecture document are marked
-**[cited]**. Arithmetic derived from those facts is marked **[analytical]**.
-There are no **[measured]** claims in this chapter. In particular, the existing
-benchmark artifacts in this project identify MI300X `gfx942` devices, so they
-cannot support MI355X performance claims.
+## Inside one MI355X
 
-The peak rates below are ceilings, not promised sustained rates. They assume the
-published 2.4 GHz peak engine clock, a supported dense Matrix Core instruction,
-enough independent work, and no time lost to memory, communication, launch
-overhead, or non-matrix operations. Later chapters compare traces against these
-ceilings.
+MI355X is an OCP (Open Compute Project) Accelerator Module based on AMD CDNA 4.
+Its LLVM target is `gfx950`. This section follows one accelerator from the
+logical device presented to JAX, through its chiplet package, down to the
+wavefronts that execute instructions.
 
-> Verified against the linked AMD, ROCm, JAX, and OCP documentation on
-> **13 September 2026**. Capacities and rates use the decimal labels in AMD's
-> product material unless a binary unit such as KiB is written explicitly.
-
-## Device identity and JAX visibility
-
-**[cited]** MI355X is an OCP Accelerator Module based on AMD CDNA 4. Its LLVM
-target is `gfx950`. The package contains two I/O dies (IODs), eight Accelerator
-Complex Dies (XCDs), eight HBM3E stacks, and 256 active Compute Units (CUs). It
-has 288 GB of HBM3E and a 2.4 GHz peak engine clock. Eight OAMs fit on the AMD
-Universal Base Board 2.0, or UBB 2.0. These identities come from the
-[MI355X GPU product brief](https://www.amd.com/content/dam/amd/en/documents/instinct-tech-docs/product-briefs/amd-instinct-mi355x-gpu-brochure.pdf)
-and the
-[CDNA 4 architecture white paper](https://www.amd.com/content/dam/amd/en/documents/instinct-tech-docs/white-papers/amd-cdna-4-architecture-whitepaper.pdf).
+### What JAX sees
 
 In the full-chip SPX partition used throughout this book, one physical OAM is one
 logical GPU. JAX normally prints it as a device such as `rocm:0`; XLA compiles
-GPU code for `gfx950`. An eight-OAM node in SPX mode therefore contributes eight
-logical JAX devices, subject to process and container visibility. The name
+GPU code for `gfx950`. Each visible OAM therefore contributes one logical JAX
+device, subject to process and container visibility. The name
 `rocm:0` describes a runtime device, not an XCD, a CU, or the whole UBB.
 
 The host CPU still launches work and manages the process. Each OAM has one PCIe
@@ -96,15 +79,18 @@ Gen 5 x16 connection for host or I/O traffic. Device-to-device traffic within
 the UBB uses Infinity Fabric links instead. The distinction matters because
 host staging, xGMI peer traffic, and HBM access have different limits.
 
-{% comment %}
-> **Figure 1 placeholder.** *Caption: One MI355X OAM as JAX sees it in SPX mode.
-> Show two IODs below eight XCDs, eight 36 GB HBM3E stacks around the IODs,
-> 256 MB Infinity Cache on the IODs, and the external interfaces: seven xGMI
-> peer links plus one PCIe Gen 5 x16 link. Label the whole OAM `rocm:n`; do not
-> label an XCD as a JAX device.*
-{% endcomment %}
+### Package organization
 
-## From chiplets to wavefronts
+**[cited]** The package contains two I/O dies (IODs), eight Accelerator Complex
+Dies (XCDs), eight HBM3E stacks, and 256 active Compute Units (CUs). It has
+288 GB of HBM3E and a 2.4 GHz peak engine clock. These identities come from the
+[MI355X GPU product brief](https://www.amd.com/content/dam/amd/en/documents/instinct-tech-docs/product-briefs/amd-instinct-mi355x-gpu-brochure.pdf)
+and the
+[CDNA 4 architecture white paper](https://www.amd.com/content/dam/amd/en/documents/instinct-tech-docs/white-papers/amd-cdna-4-architecture-whitepaper.pdf).
+
+{% include figure.liquid path="pages/img/mi350-arch-diagram.png" class="img-fluid" alt="AMD MI350 Series package with two IODs, eight XCDs, eight HBM3E stacks, PCIe, and Infinity Fabric links" caption="AMD's MI350 Series package diagram, which covers the MI355X organization used here: two IODs connect eight XCDs, eight HBM3E stacks, host PCIe, and external Infinity Fabric. The diagram's 1,075 GB/s Infinity Fabric figure is aggregate bidirectional bandwidth; later cost models use per-direction rates." %}
+
+### Compute hierarchy
 
 **[cited]** The execution hierarchy is:
 
@@ -124,7 +110,7 @@ MI355X OAM: one physical GPU
 
 Across the package, `8 XCDs × 32 active CUs/XCD = 256 CUs`. There are four SIMDs
 and four Matrix Cores per CU, giving 1,024 of each across the OAM. An XCD and a
-Shader Engine are not synonyms. The XCD is a compute chiplet containing CUs,
+Shader Engine are not the same unit. The XCD is a compute chiplet containing CUs,
 cache, and scheduling resources.
 
 **[cited]** A CU has 64 stream processors arranged as four SIMD16 vector
@@ -138,7 +124,7 @@ resources permit.
 
 For readers coming from CUDA, the small translation table is:
 
-| NVIDIA term | AMD CDNA 4 term | MI355X fact |
+| NVIDIA term | AMD CDNA 4 term | MI355X |
 |---|---|---|
 | Streaming Multiprocessor | Compute Unit | 256 per OAM |
 | warp | wavefront | 64 threads, not 32 |
@@ -149,56 +135,113 @@ For readers coming from CUDA, the small translation table is:
 | local memory spill | scratch | backed outside the register file |
 | NVLink | xGMI over Infinity Fabric | seven direct peer links |
 
-The mapping is for vocabulary, not performance. Scheduling rules, register
-allocation, instruction shapes, and topology still differ.
-
 ## Matrix execution
 
-Transformer training spends most of its FLOPs in matrix multiplications. On
-CDNA 4, those products should lower to Matrix Fused Multiply-Add (MFMA)
-instructions. An MFMA is a wave-level operation: all 64 lanes provide fragments
-of the input matrices and receive fragments of the output accumulator.
+Transformer training spends most of its FLOPs in matrix multiplications. For a
+compute-bound matrix kernel, MFMA is the innermost compute primitive. Kernel
+optimization chooses parallel work, tiles, data movement, and schedules that
+keep useful MFMA instructions issuing.
 
-For a tile \(D=A B+C\), the logical FLOP count is
+### From one projection to a GEMM
+
+A Transformer linear projection can be written as
 
 $$
-F_{\mathrm{tile}} = 2mnk,
+Y[M,N]=X[M,K]W[K,N].
 $$
 
-because every multiply-accumulate is counted as two floating-point operations.
+For an MLP up-projection, $M$ is the number of local token rows, $K=D$ is the
+model width, and $N=F$ is the feed-forward width. These are the dimensions seen
+by the kernel after batching and sharding; a large global projection can become
+a much smaller local GEMM on each GPU.
+
+JAX represents the contraction as `dot_general`. Chapter 2 follows the compiler
+path in detail. At the GPU boundary, XLA can select a hipBLASLt library call, a
+Triton implementation, or generated code. With a library call, the library
+kernel owns the tiling and MFMA decomposition. With a generated route, the
+compiler emits more of that structure itself. The resulting GPU kernel still
+has to divide the GEMM into workgroups, stage operands, and accumulate output
+tiles.
+
+{% include figure.liquid path="pages/img/gemm-to-mfma.png" class="img-fluid" alt="A Transformer projection lowering through dot_general and a GEMM kernel into workgroup macrotiles and wave-level MFMA instructions" caption="The abstraction narrows from a model projection to a wave-level matrix instruction. Tile sizes in the diagram are symbolic because hipBLASLt, Triton, AITER, and XLA can select different macrotiles and MFMA forms for the same JAX contraction." %}
+
+### Blocked GEMM
+
+A kernel partitions the output matrix into macrotiles. A workgroup owns one
+output region $C_{IJ}$ and loops over blocks of the contracting dimension:
+
+$$
+C_{IJ}\mathrel{+}=A_{IK_b}B_{K_bJ}.
+$$
+
+Each iteration loads an $A$ tile and a $B$ tile, commonly stages them through
+LDS, and updates register-resident accumulators. Splitting $M$ and $N$ creates
+parallel workgroups; splitting $K$ creates repeated accumulation and operand
+reuse. The workgroup writes the output macrotile after all $K$ blocks have
+contributed.
+
+### Inner and outer views
+
+Every scalar output is an inner product between one row of $A$ and one column
+of $B$:
+
+$$
+C_{ij}=\sum_k A_{ik}B_{kj}.
+$$
+
+The same GEMM can be viewed one $K$ position at a time as an outer-product
+update:
+
+$$
+C\mathrel{+}=A[:,k]B[k,:].
+$$
+
+These are two views of the same contraction. Tiling does not choose one over
+the other. Each output element accumulates a dot product, while each $K$ slice
+updates many output elements at once. A blocked GEMM groups several such
+positions into the matrix update $C_{IJ}\mathrel{+}=A_{IK_b}B_{K_bJ}$.
+
+{% include figure.liquid path="pages/img/gemm-inner-outer.png" class="img-fluid" alt="A matrix multiplication shown as a scalar inner product and as an outer-product update over one K slice" caption="One output element is a row-column inner product; one K slice is an outer-product update across the output. An MFMA performs the blocked matrix form, updating many partial dot products together." %}
+
+### MFMA lane fragments
+
+An MFMA applies the same matrix update at instruction scale:
+
+$$
+D=A B+C,\qquad F_{\mathrm{tile}}=2mnk,
+$$
+
+where every multiply-accumulate counts as two floating-point operations. An
+MFMA is a wave-level operation: all 64 lanes provide register fragments of the
+input matrices and receive fragments of the output accumulator.
+
 The instruction name states its logical shape. CDNA 4 adds BF16 and FP16 forms
-with output tiles of \(16\times16\) and \(32\times32\), including
-`16x16x32` and `32x32x16` forms. Its low-precision scaled family includes
+with output tiles of $16\times16$ and $32\times32$, including `16x16x32` and
+`32x32x16` forms. Its low-precision scaled family includes
 `v_mfma_scale_f32_16x16x128_f8f6f4` and
 `v_mfma_scale_f32_32x32x64_f8f6f4`. The exact operand layout is defined by the
 [CDNA 4 ISA](https://www.amd.com/content/dam/amd/en/documents/instinct-tech-docs/instruction-set-architectures/amd-instinct-cdna4-instruction-set-architecture.pdf).
 
-The `f32` in those names describes the accumulator. Low-precision inputs do not
-force low-precision accumulation. A normal training GEMM can multiply BF16,
-FP16, FP8, or MX values while keeping partial sums in FP32 registers, then
-convert the stored output to the requested dtype. The later precision
-experiments must identify all three roles: input format, accumulator format,
-and output format.
-
-### From lane fragments to macrotiles
+The `f32` in those names describes the accumulator. Low-precision inputs can
+therefore contribute to FP32 partial sums before the kernel converts its stored
+output to the requested dtype. The later precision experiments identify all
+three roles: input format, accumulator format, and output format.
 
 **[cited]** AMD's
 [CDNA 4 FP8 GEMM guide](https://rocm.blogs.amd.com/software-tools-optimization/cdna4-gemm-kernels/README.html)
 shows the lane mapping for a `16x16x128` FP8 instruction. Each of the 64 lanes
-holds 32 FP8 elements from \(A\), 32 from \(B\), and four FP32 accumulator
-values. Together the lanes update a \(16\times16\) output tile:
+holds 32 FP8 elements from $A$, 32 from $B$, and four FP32 accumulator values.
+Together the lanes update a $16\times16$ output tile:
 
 $$
 2(16)(16)(128)=65{,}536\ \text{FLOPs per instruction}.
 $$
 
-That instruction tile is smaller than the region assigned to a workgroup.
-Several waves usually cooperate through LDS to build a *macrotile*. One
-published MI355X example assigns eight waves to a
-\(256\times256\times128\) workgroup tile. The workgroup loads operand tiles,
-each wave updates its output fragments, and the fragments are written back as
-one larger result. The example establishes a mapping, not a universal best
-tile. hipBLASLt, Triton, AITER, and XLA can choose different shapes.
+An instruction tile is smaller than the region assigned to a workgroup. Several
+waves cooperate through LDS to build a macrotile. One published MI355X example
+assigns eight waves to a $256\times256\times128$ workgroup tile. Each wave
+issues many MFMA updates as the workgroup advances through its output and $K$
+tiles.
 
 The important data path is:
 
@@ -207,22 +250,19 @@ HBM or cache → LDS staging tile → VGPR operand fragments
              → MFMA → FP32 accumulator registers → output
 ```
 
-Reuse at the LDS and register levels is what turns an HBM-limited dot product
-into a compute-limited GEMM.
+For a compute-bound GEMM, the innermost throughput question is whether useful
+MFMA instructions can issue continuously. Namely:
 
-{% comment %}
-> **Figure 2 placeholder.** *Caption: One `16x16x128` low-precision MFMA inside
-> a larger GEMM macrotile. Show 64 lanes contributing A and B fragments, four
-> FP32 outputs per lane, four or eight waves sharing LDS, and repeated K tiles
-> accumulating into register-resident C fragments. Distinguish instruction
-> tile, wave tile, and workgroup macrotile.*
-{% endcomment %}
+- Are there enough output tiles to distribute work across 256 CUs?
+- Do the local $M$, $N$, and $K$ dimensions fill efficient instruction tiles?
+- Can LDS and VGPR movement keep the Matrix Cores supplied?
+- Do tails, register pressure, spills, or bank conflicts reduce useful issue?
 
 ### Shape tails
 
 Matrix dimensions rarely arrive as one hardware instruction. A kernel tiles
-\(M\), \(N\), and \(K\), then masks, pads, or sends incomplete edge tiles to a
-cleanup path. For tile sizes \(T_M,T_N,T_K\), a simple padded-work estimate is
+$M$, $N$, and $K$, then masks, pads, or sends incomplete edge tiles to a
+cleanup path. For tile sizes $T_M,T_N,T_K$, a simple padded-work estimate is
 
 $$
 F_{\mathrm{padded}} =
@@ -231,7 +271,7 @@ F_{\mathrm{padded}} =
  \left\lceil\frac{K}{T_K}\right\rceil T_K.
 $$
 
-**[analytical]** If only \(M\) has a tail, \(M=257\), and the macrotile step is
+**[analytical]** If only $M$ has a tail, $M=257$, and the macrotile step is
 32 rows, padding to 288 rows adds
 
 $$
@@ -256,7 +296,7 @@ problem differs:
 - On a TPU, array dimensions and MXU tiling determine how well the systolic
   array is filled.
 - On MI355X, MFMA shape, wave and workgroup tiles, register allocation, LDS
-  staging, and the number of CUs receiving work all matter.
+  staging, and the number of CUs receiving work all influence utilization.
 
 The [JAX Scaling Book TPU chapter](https://jax-ml.github.io/scaling-book/tpus/)
 explains the systolic side. This companion uses the same roofline method but
@@ -276,9 +316,10 @@ scalar, memory, and control pipelines:
   reductions may require several workgroups or a device collective.
 - Memory instructions move values among HBM, caches, LDS, and registers.
 
-These paths explain why a twofold matrix peak does not imply a twofold training
-step speedup. If a fraction \(p\) of step time improves by a factor \(s\), the
-largest end-to-end speedup with the remainder unchanged is
+These paths explain why a $2\times$ matrix peak does not imply a $2\times$
+training-step speedup. This is [Amdahl's law](https://doi.org/10.1145/1465482.1465560):
+if a fraction $p$ of step time improves by a factor $s$, the largest
+end-to-end speedup with the remainder unchanged is
 
 $$
 S_{\mathrm{step}}=\frac{1}{(1-p)+p/s}.
@@ -291,9 +332,10 @@ $$
 S_{\mathrm{step}}=\frac{1}{0.15+0.85/2}=1.74,
 $$
 
-not 2. This is an illustration, not a measurement. The real \(p\) comes from a
-profile. Attention softmax, normalization, optimizer work, routing, launch
-gaps, and collectives determine the remaining fraction.
+not $2\times$. Here, 85% is a hypothetical attribution. A profile determines
+the workload-specific value of $p$ by measuring time spent in attention
+softmax, normalization, optimizer work, routing, launch gaps, collectives, and
+other work outside the accelerated GEMMs.
 
 ## Memory hierarchy
 
@@ -323,7 +365,7 @@ Infinity Fabric toward the IODs, Infinity Cache, or HBM controllers.
 
 In SPX mode, workgroups are distributed across XCDs; ordinary JAX code does not
 pin an HLO operation to a chosen XCD. Library kernels may use XCD-aware tile
-ordering, but a model author should not assume that two successive workgroups
+ordering, but as the programmer, you should not assume that two successive workgroups
 share an L2 slice. Cache reuse is a kernel and schedule property that must be
 checked with counters.
 
@@ -492,9 +534,9 @@ eight-bit biased exponent. The element encodings are:
 
 | Format | Element encoding | Scale block | Effective storage including one scale |
 |---|---|---:|---:|
-| MXFP8 | E4M3 or E5M2 | 32 values | \(8+8/32=8.25\) bits/value |
-| MXFP6 | E3M2 or E2M3 | 32 values | \(6+8/32=6.25\) bits/value |
-| MXFP4 | E2M1 | 32 values | \(4+8/32=4.25\) bits/value |
+| MXFP8 | E4M3 or E5M2 | 32 values | $8+8/32=8.25$ bits/value |
+| MXFP6 | E3M2 or E2M3 | 32 values | $6+8/32=6.25$ bits/value |
+| MXFP4 | E2M1 | 32 values | $4+8/32=4.25$ bits/value |
 
 The effective-storage column is **[analytical]** and excludes tensor padding,
 alignment, and auxiliary metadata. A block whose length is not a multiple of 32
@@ -567,11 +609,10 @@ can enumerate as eight devices, while the same OAM in SPX enumerates as one.
 The peak compute, memory capacity, and cache scope available to one JAX device
 have changed even though `jax.device_count()` increased.
 
-This book assumes **SPX with NPS1** for full-OAM training unless a case study
-says otherwise. DPX with NPS2 is AMD's efficiency recommendation for partitioned
+This book assumes **SPX with NPS1** for full-OAM training. DPX with NPS2 is AMD's efficiency recommendation for partitioned
 MI355X workloads, but it is not a general recommendation to split a large JAX
-training job. Always record partition mode with a benchmark. A clean twofold,
-fourfold, or eightfold error in a roofline often means the calculation assumed
+training job. Always record partition mode with a benchmark. A clean $2\times$,
+$4\times$, or $8\times$ error in a roofline often means the calculation assumed
 SPX while the process saw a partition.
 
 ## Capacity bandwidth and the BF16 roofline
@@ -581,8 +622,8 @@ Capacity answers whether the local shard, activations, compiler temporaries, and
 workspaces fit. Bandwidth limits kernels that do too little arithmetic per byte
 fetched from HBM.
 
-For peak compute \(C\), bandwidth \(\beta_{\mathrm{HBM}}\), and arithmetic
-intensity \(I=F/Q\), the ideal roofline is
+For peak compute $C$, bandwidth $\beta_{\mathrm{HBM}}$, and arithmetic
+intensity $I=F/Q$, the ideal roofline is
 
 $$
 P\leq\min\left(C,\ I\beta_{\mathrm{HBM}}\right),
@@ -611,7 +652,7 @@ Chapter 3 applies this ratio to concrete training projections and derives the
 corresponding token-row threshold. This chapter only supplies the hardware side
 of that calculation.
 
-## Eight GPU scale up
+## 8x GPU scale up
 
 **[cited]** The MI355X UBB 2.0 places eight OAMs in a one-hop, fully connected
 mesh. Every GPU has one dedicated xGMI link to each of its seven peers. There is
@@ -623,13 +664,7 @@ because every pair can communicate directly. It also sets a hard placement
 boundary: a parallelism axis of size eight can remain inside xGMI; a larger
 axis crosses NICs.
 
-{% comment %}
-> **Figure 4 placeholder.** *Caption: The eight-GPU MI355X UBB 2.0 as a complete
-> graph. Draw eight OAM vertices, seven direct xGMI edges incident on each
-> vertex, and one PCIe Gen 5 x16 I/O edge leaving each OAM. Annotate one xGMI
-> edge as 76.8 GB/s per direction and 153.6 GB/s bidirectional. Annotate the
-> per-GPU directional sum as 537.6 GB/s, not 1,075.2 GB/s.*
-{% endcomment %}
+{% include figure.liquid path="pages/img/8socket-mi350.png" class="img-fluid" alt="Eight AMD MI350X accelerators on a UBB 2.0 baseboard" caption="AMD's eight-OAM MI350 platform. The accelerators pictured are MI350X rather than MI355X, but both use the same CDNA 4 package organization and UBB 2.0 baseboard layout discussed here." %}
 
 ### Directional bandwidth
 
@@ -702,7 +737,7 @@ unsharded 400 GB model. Parameters, optimizer state, activations, workspaces,
 and temporary buffers must fit each device according to their explicit or
 compiler-chosen shardings.
 
-## Scale out preview
+## Scale out domain
 
 An MI355X OAM exposes PCIe Gen 5 x16, with a published 128 GB/s bidirectional
 rate, or 64 GB/s per direction before protocol overhead. A server can connect
@@ -725,25 +760,19 @@ $$
 \frac{400\ \mathrm{Gb/s}}{8}=50\ \mathrm{GB/s}.
 $$
 
-This is a **reference design**, not an intrinsic MI355X topology. Deployed
+This is simply a reference design, not an intrinsic MI355X topology. Deployed
 servers may use Pollara, Broadcom, NVIDIA, or other supported RDMA adapters;
 they may use a fat tree, rail, or hybrid network; and subscription ratios vary.
-Do not write "each MI355X has a Pollara NIC."
 
-In a rail layout, GPU index \(i\) on each node is paired with NIC index \(i\),
+{% include figure.liquid path="pages/img/amd-2tier-design.png" class="img-fluid" alt="Generic two-tier network connecting groups of GPU nodes through leaf and spine switches" caption="A generic two-tier scale-out design. The diagram shows the leaf-and-spine hierarchy rather than a fixed MI355X configuration; NIC models, switch counts, rail placement, and subscription ratios depend on the deployed system." %}
+
+In a rail layout, GPU index $i$ on each node is paired with NIC index $i$,
 and equal-index NICs share a low-hop network rail. Traffic that changes rail
 must traverse a spine or first move over local xGMI to the correctly placed
 GPU. Physical mesh ordering, process ranks, and JAX mesh axes must agree before
 rail placement can help.
 
-{% comment %}
-> **Figure 5 placeholder.** *Caption: A non-normative two-node rail example.
-> Each node has eight MI355X GPUs in an xGMI full mesh and eight external 400G
-> NICs connected one-to-one by PCIe. GPU 3 on both nodes maps to rail 3. Show a
-> same-rail path through one leaf and a cross-rail path through a spine or local
-> xGMI hop. Label Pollara 400 as one reference-design NIC option, not a device
-> integrated into MI355X.*
-{% endcomment %}
+{% include figure.liquid path="pages/img/multinode-topology.png" class="img-fluid" alt="Two eight-GPU MI355X nodes connected through a rail-optimized leaf-and-spine network" caption="A non-normative two-node rail example. Each node contains an eight-GPU xGMI full mesh, while one external NIC per GPU connects equal GPU indices to the same leaf. The highlighted paths contrast a same-rail transfer with cross-rail traffic that reaches the spine. Pollara 400 is the reference NIC used in this schematic." %}
 
 There are no multi-node MI355X training measurements in this book yet.
 Multi-node bandwidth, overlap, and scaling claims must remain **[analytical]**
@@ -752,11 +781,7 @@ state, switch fabric, rail map, RCCL settings, and message-size curve.
 
 ## Hardware constants sheet
 
-Use this sheet for the analytical models in later chapters. Replace a peak with
-a measured sustained value only when the measurement protocol and workload are
-named.
-
-| Quantity | MI355X value | Scope or qualifier |
+| Quantity | MI355X | Scope |
 |---|---:|---|
 | Architecture target | `gfx950` | CDNA 4 |
 | Form factor | OAM | UBB 2.0 platform |
@@ -790,10 +815,10 @@ named.
 - [Chapter 2]({{ '/pages/2-lowering-jax-jit-on-rocm' | relative_url }}) follows a `jax.jit`
   computation from StableHLO to `gfx950` code and identifies whether GEMMs reach
   MFMA library kernels.
-- [Chapter 3]({{ '/pages/3-predicting-and-measuring-one-training-step' | relative_url }}) uses 288 GB, 8 TB/s,
+- [Chapter 3]({{ '/pages/3-profiling-and-analysis-of-one-training-step' | relative_url }}) uses 288 GB, 8 TB/s,
   2.5166 PFLOP/s, and 76.8 GB/s per direction to derive memory, compute, and
   communication bounds for training parallelism.
-- [Chapter 3]({{ '/pages/3-predicting-and-measuring-one-training-step' | relative_url }}) checks those analytical
+- [Chapter 3]({{ '/pages/3-profiling-and-analysis-of-one-training-step' | relative_url }}) checks those analytical
   bounds against clocks, kernels, counters, and collective traces.
 - The [Llama 7B]({{ '/pages/10-llama-7b-exposing-the-complete-stack' | relative_url }}) case separates raw JAX
   execution from optimized attention routes.
@@ -804,6 +829,12 @@ named.
   needed to quantify AllToAll exposure.
 
 ## References
+
+Performance model:
+
+- [Gene M. Amdahl, "Validity of the Single Processor Approach to Achieving Large Scale Computing Capabilities" (1967)](https://doi.org/10.1145/1465482.1465560).
+  The upper bound on end-to-end speedup when only part of a workload is
+  accelerated.
 
 Primary hardware and architecture sources:
 

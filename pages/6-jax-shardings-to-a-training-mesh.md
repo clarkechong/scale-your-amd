@@ -1,7 +1,7 @@
 ---
 layout: distill
-title: "JAX Shardings to a Training Mesh"
-description: "How named JAX shardings become collectives, how to place training parallelism on one eight-GPU MI355X node, and how to verify the compiled result."
+title: "Parallelism Strategies for Higher Throughput"
+description: "Once one optimizer update fits, use JAX meshes, collectives, and training parallelism to add GPUs without giving the gain back to communication or inefficient local shapes."
 date: 2026-09-13
 
 section_number: 6
@@ -10,7 +10,7 @@ previous_section_url: "/pages/5-making-the-model-fit"
 previous_section_name: "Chapter 5: Making the Model Fit"
 
 next_section_url: "/pages/7-a-map-of-kernel-backends-on-jax"
-next_section_name: "Chapter 7: A Map of Kernel Backends on JAX"
+next_section_name: "Chapter 7: A Map of ROCm Kernel Backends on JAX"
 
 authors:
   - name: Clarke Chong
@@ -34,12 +34,16 @@ toc:
       - name: Expert Parallelism
   - name: MaxText Sharding Surface
   - name: Place an Eight-GPU Mesh
-  - name: Combining and Overlap
   - name: Mesh Decision Procedure
   - name: References
 ---
 
 ## Prerequisites and Scope
+
+Chapter 5 selected the minimum changes required to fit one optimizer update in
+memory. This chapter asks the next question: **how should additional GPUs divide
+the work so that global throughput rises without communication or smaller local
+kernels consuming the gain?**
 
 Read the JAX Scaling Book chapters
 [Sharded Matrices and How to Multiply Them](https://jax-ml.github.io/scaling-book/sharding/)
@@ -49,9 +53,10 @@ first. They derive the general rules. This chapter keeps only the notation and d
 needed to configure JAX and MaxText on MI355X.
 
 [Chapter 1]({{ '/pages/1-mi355x-as-a-training-machine' | relative_url }}) supplies the topology, and
-[Chapter 5]({{ '/pages/5-making-the-model-fit' | relative_url }}) supplies the state and activation
-ledgers. A mesh is acceptable only if it fits in memory, preserves tensor divisibility,
-and puts its frequent collectives on suitable links.
+[Chapter 5]({{ '/pages/5-making-the-model-fit' | relative_url }}) supplies the memory
+constraint and required FSDP degree. A mesh is acceptable only if it fits in memory,
+preserves tensor divisibility, leaves efficient local operations, and puts its
+frequent collectives on suitable links.
 
 The hardware discussion here covers one eight-GPU MI355X node. Multi-node placement
 is outside the current evidence scope. There is no MI355X RCCL benchmark bundle in
@@ -344,16 +349,8 @@ RCCL/ROCm versions, SPX or partition mode, in-place status, channel settings, an
 correctness. Run standalone bandwidth and in-step overlap as separate experiments.
 **BLOCKED**
 
-The Mixtral ragged route adds these experimental XLA controls:
-
-```text
---xla_gpu_experimental_ragged_all_to_all_use_barrier_with_nccl=false
---xla_gpu_unsupported_use_ragged_all_to_all_one_shot_kernel=true
-```
-
-They describe the planned compatibility path, not a measured MI355X result.
-**[source]** The `unsupported` name is a warning to pin the build, verify the
-HLO, check token-routing correctness, and keep the dense-padded fallback.
+The Mixtral ragged-collective compatibility controls are specific to sparse
+training and are handled in Chapters 8 and 9.
 
 ## Training Parallelism
 
@@ -390,17 +387,17 @@ or convergence limit can cap data parallelism before bandwidth does.
 X[B_fsdp, T, D]    W[..., P_fsdp]
 ```
 
-- Shards parameters, gradients, master weights, and optimizer state when their
-  logical rules include `fsdp`.
+- Chapter 5 already selected FSDP when parameters, gradients, master weights, and
+  optimizer state did not fit.
 - AllGathers each needed weight layout and ReduceScatters gradients.
-- Reduces persistent state roughly with the FSDP degree, subject to replicated leaves,
-  workspaces, and collective buffers.
+- This chapter prices those collectives and their effect on local computation.
 - MaxText fields: `ici_fsdp_parallelism`, `dcn_fsdp_parallelism`, and the specialized
   `fsdp_transpose` fields.
 
-Weight AllGather is on the forward critical path unless prefetched. Use the memory
-ledger to choose the minimum FSDP degree that fits, then test whether its gather and
-reduce-scatter are exposed.
+Weight AllGather is on the forward critical path unless prefetched. Start with the
+minimum FSDP degree Chapter 5 found, then test whether its gather and reduce-scatter
+are exposed. Add another parallelism axis only when it improves throughput without
+violating the memory bound.
 
 The checked-in Llama 70B recipe uses `ici_fsdp_parallelism: 8` and leaves the other
 main axes at one. **[source]**
@@ -479,30 +476,16 @@ stage smaller.
 W[E_expert, D, F]    tokens[token_owner, D]
 ```
 
-Expert parallelism shards expert weights and changes token ownership:
+Expert parallelism shards expert weights and sends tokens to the devices that own
+their selected experts. It can solve a sparse-model capacity problem, but it adds
+data-dependent dispatch and combine collectives and changes the local expert GEMM
+shapes. Tensor and expert parallelism compete for the same eight-GPU scale-up domain.
 
-1. route and sort tokens;
-2. AllToAll from token owners to expert owners;
-3. run local expert GEMMs; and
-4. AllToAll outputs back before unpermuting.
-
-It divides expert-weight memory but adds routing buffers, imbalance, and two layout
-changes per MoE layer. Keep the expert axis inside the eight-GPU full mesh when
-possible. Tensor and expert parallelism compete for that same fast domain.
-
-MaxText fields are `ici_expert_parallelism` and `dcn_expert_parallelism`. The Mixtral
-plan fixes eight experts and tests:
-
-```text
-FSDP-8 × EP-1
-FSDP-4 × EP-2
-FSDP-2 × EP-4
-FSDP-1 × EP-8
-```
-
-The checked-in baseline is BF16, FSDP-1, EP-8, fixed-capacity one-hot execution.
-These are experiment definitions; no v26.6 result artifacts are present.
-**[source] BLOCKED**
+This chapter needs only that placement constraint. MaxText fields are
+`ici_expert_parallelism` and `dcn_expert_parallelism`.
+[Chapter 8, Training Mixture-of-Experts on MI355X]({{ '/pages/8-mixture-of-experts-on-mi355x' | relative_url }})
+owns routing, AllToAll traffic, FSDP-versus-EP meshes, expert kernels, and the
+Mixtral sweep.
 
 ## MaxText Sharding Surface
 
@@ -568,64 +551,24 @@ Use these defaults:
 - Use PP across a slow boundary only after checking its microbatch bubble and stage
   balance.
 
-On one node, current recipes instantiate two useful endpoints:
+On one node, the Llama 70B recipe instantiates the capacity-first endpoint:
 
 ```yaml
-# Llama 70B: maximize state sharding
 ici_fsdp_parallelism: 8
 ici_tensor_parallelism: 1
 ici_expert_parallelism: 1
-
-# Mixtral baseline: one whole expert per device
-ici_fsdp_parallelism: 1
-ici_tensor_parallelism: 1
-ici_expert_parallelism: 8
 ```
 
-The intermediate Mixtral cells trade expert ownership for FSDP state sharding. They
-are a controlled way to determine whether weight collectives, token movement, memory,
-or expert-kernel shape is the active constraint. Do not predict the winner from
-topology alone.
+The sparse endpoint and intermediate FSDP/EP factorizations are developed only in
+Chapter 8.
 
-## Combining and Overlap
+### Stop before tuning execution controls
 
-Asynchronous collectives create an interval between start and done in which
-independent compute may run. Three conditions are required:
-
-1. the collective has an asynchronous lowering;
-2. useful independent work is ready; and
-3. the runtime can progress communication while kernels run.
-
-The current Llama and Mixtral flag files enable the latency-hiding scheduler and set
-the AllGather, ReduceScatter, and AllReduce combine thresholds to 8 GiB:
-
-```text
---xla_gpu_enable_latency_hiding_scheduler=true
---xla_gpu_all_gather_combine_threshold_bytes=8589934592
---xla_gpu_reduce_scatter_combine_threshold_bytes=8589934592
---xla_gpu_all_reduce_combine_threshold_bytes=8589934592
-```
-
-These values are **[source]**, not evidence that communication is hidden.
-
-Combining and overlap can work against each other. Combining reduces launch latency
-and can move a transfer into the bandwidth-efficient message regime, but one large
-collective may have less independent compute around it and require a larger temporary
-buffer. Splitting creates more scheduling opportunities but pays more startup cost.
-Pipelined collective matmuls go further by exchanging a chunk while multiplying the
-previous chunk; use `shard_map` when that schedule must be explicit.
-
-Evaluate the trade in this order:
-
-1. dump HLO and count collective operations, payloads, and start/done pairs;
-2. measure the MI355X latency/bandwidth curve at those payloads;
-3. inspect the trace for compute concurrent with RCCL kernels;
-4. compute exposed collective time rather than total collective duration;
-5. check peak memory and recompilation; and
-6. compare tokens/s/GPU in an unprofiled run.
-
-Change combine thresholds and latency hiding as separate experiment axes. An archived
-MI300X result cannot select the MI355X setting.
+This chapter identifies collective kinds, payloads, participant groups, and overlap
+opportunities. It does not select scheduler flags, combine thresholds, stream
+priority, or RCCL algorithms.
+[Chapter 9, Tuning the Compiler, Runtime, and RCCL]({{ '/pages/9-compiler-runtime-and-rccl-controls' | relative_url }})
+owns those controls and changes them only after a profile identifies the mechanism.
 
 ## Mesh Decision Procedure
 
@@ -644,13 +587,13 @@ Record:
 
 ### 2. Choose axes required for memory
 
-Use the Chapter 5 ledger.
+Use the Chapter 5 memory bound.
 
 - Add the minimum FSDP degree that makes persistent state fit.
 - Add TP only if weight or activation sharding is still needed and local GEMMs remain
   viable.
 - Add CP only when per-sequence activation memory requires splitting the context.
-- For MoE, choose an EP divisor that gives valid expert ownership and enough memory.
+- For MoE, defer the EP/FSDP choice to Chapter 8.
 - Add PP only if tensor sharding and rematerialization still do not produce a workable
   stage.
 
@@ -666,11 +609,11 @@ For one node, the active ICI degrees must multiply to eight. Enumerate divisors 
 than guessing:
 
 ```text
-(fsdp, expert) = (8,1), (4,2), (2,4), (1,8)
 (fsdp, tensor) = (8,1), (4,2), (2,4), (1,8)
 ```
 
 Reject candidates that fail tensor, head, expert, layer, or batch divisibility.
+Chapter 8 performs the corresponding FSDP/EP enumeration for sparse models.
 
 ### 5. Place frequent communication locally
 
@@ -706,11 +649,11 @@ one mesh factorization. Report tokens/s/GPU first, then step time, peak HBM, col
 payload and exposed duration, and kernel attribution. A mesh is selected only after it
 passes correctness and memory checks.
 
-**Recommendation status: BLOCKED.** The Llama 70B and Mixtral configs define
-FSDP-8 and EP-8 endpoints, but no accepted MI355X RCCL curve or Mixtral mesh-sweep
-bundle ranks them. Use those endpoints as experiment arms, not general defaults.
-Retest after changes to XLA partitioning, RCCL, device ordering, model shape, or
-message size.
+**Recommendation status: BLOCKED.** The Llama 70B config defines an FSDP-8
+capacity endpoint, but no accepted MI355X RCCL curve ranks throughput-oriented
+factorizations. Use candidate meshes as experiment arms, not general defaults.
+Chapter 8 owns the separate sparse-model ranking. Retest after changes to XLA
+partitioning, RCCL, device ordering, model shape, or message size.
 
 ## References
 

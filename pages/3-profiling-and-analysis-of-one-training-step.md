@@ -1,7 +1,7 @@
 ---
 layout: distill
-title: "Predicting and Measuring One Training Step"
-description: "A unified workflow for predicting training-step costs, measuring throughput, and tracing gaps through HLO and ROCm profiling tools."
+title: "Profiling and Analysis of a Training Step"
+description: "Predict one optimizer update, measure it cleanly, and trace performance gaps from JAX and HLO through the ROCm profiling stack."
 date: 2026-09-13
 
 section_number: 3
@@ -17,27 +17,26 @@ authors:
     url: "https://github.com/clarkechong"
 
 toc:
-  - name: "The Three Time Bounds"
-  - name: "Transformer Ledger"
-  - name: "Training-State Ledger"
-  - name: "Batching Ledger"
-  - name: "MoE Ledger"
-  - name: "Metrics"
-  - name: "Three Worked Ledgers"
-  - name: "Prediction Worksheet"
-  - name: "Measurement Contract"
-  - name: "Artifact Bundle"
-  - name: "XProf"
-  - name: "rocprofv3"
-  - name: "rocprof-compute"
-  - name: "From HLO to a Kernel"
-  - name: "Multi-Level Rooflines"
-  - name: "Triage Order"
-  - name: "Reporting Template"
+  - name: "What Are We Trying to Explain?"
+  - name: "Predicting One Training Step"
+  - name: "Measuring One Training Step"
+  - name: "The Profiling Stack"
+  - name: "One Operation, Three Profilers"
+  - name: "Interpreting the Profile"
+  - name: "Reporting the Result"
 ---
 
-This chapter supplies the arithmetic used by the experiments. It predicts which
-resource should limit a step and checks whether the model can fit. It does not try to
+One synchronized optimizer update took longer than expected. The purpose of this
+chapter is to find out why. The workflow is:
+
+1. predict the compute, HBM, and communication time;
+2. measure the unchanged workload without instrumentation;
+3. use XProf to locate the expensive framework or HLO component;
+4. use `rocprofv3` and ROCTx to identify the ROCm dispatches underneath it; and
+5. use `rocprof-compute` when hardware counters are needed to explain one kernel.
+
+The arithmetic is therefore background for profiling, not a separate model-analysis
+chapter. This chapter keeps only the quantities needed to predict a trace. It does not
 replace the full derivations in the
 [JAX Scaling Book roofline chapter](https://jax-ml.github.io/scaling-book/roofline/),
 [Transformer chapter](https://jax-ml.github.io/scaling-book/transformers/), or
@@ -46,28 +45,56 @@ replace the full derivations in the
 All numbers in this chapter are **[analytical]** unless marked otherwise. Decimal
 units are used for bandwidth and capacity: `1 TB = 10^12 bytes`.
 
-## The Three Time Bounds
+## What Are We Trying to Explain?
+
+The headline observation is **seconds per optimizer update** for a fixed workload.
+Four broad causes can make that number larger than expected:
+
+- **compute work:** model FLOPs, rematerialization, padding, or deliberately dense
+  execution of sparse work;
+- **memory traffic:** bytes crossing HBM because of poor reuse, casts, temporary
+  buffers, or missed fusion;
+- **communication:** collectives whose message size, placement, or overlap differs
+  from the prediction; and
+- **runtime overhead:** compilation, launch latency, synchronization, input
+  starvation, or idle gaps that the three resource bounds do not model.
+
+The tools answer different questions. XProf shows where time is attributed in the
+JAX/HLO program. `rocprofv3` shows what the ROCm runtime and GPU executed.
+`rocprof-compute` explains how efficiently a selected kernel used the hardware.
+
+## Predicting One Training Step
+
+### Resource bounds
 
 For one operation or one training step, write three ideal times:
 
-```text
-t_compute = FLOPs / compute_rate
-t_hbm     = bytes_moved_to_or_from_HBM / HBM_bandwidth
-t_comms   = bytes_moved_over_links / achieved_link_bandwidth
-```
+$$
+\begin{aligned}
+t_{\mathrm{compute}}
+  &= \frac{\mathrm{FLOPs}}{\mathrm{compute\ rate}},\\
+t_{\mathrm{HBM}}
+  &= \frac{\mathrm{bytes\ moved\ to/from\ HBM}}{\mathrm{HBM\ bandwidth}},\\
+t_{\mathrm{comms}}
+  &= \frac{\mathrm{bytes\ moved\ over\ links}}{\mathrm{achieved\ link\ bandwidth}}.
+\end{aligned}
+$$
 
 Within this simplified resource model, complete overlap gives the largest term and
 no overlap gives their sum:
 
-```text
-max(t_compute, t_hbm, t_comms)
-    <= modeled resource-service time
-    <= t_compute + t_hbm + t_comms
-```
+$$
+\max\!\left(t_{\mathrm{compute}},t_{\mathrm{HBM}},t_{\mathrm{comms}}\right)
+\leq t_{\mathrm{resource\ service}}
+\leq t_{\mathrm{compute}}+t_{\mathrm{HBM}}+t_{\mathrm{comms}}.
+$$
 
 Actual elapsed time cannot beat the lower bound, but it can exceed the upper end of
 this bracket. The model omits fixed costs, idle gaps, inefficient kernels, and
 collective startup. Those costs matter most for small kernels and messages.
+The Scaling Book's
+[roofline chapter](https://jax-ml.github.io/scaling-book/roofline/) derives this
+model in full; here it is the hypothesis that the profile will test.
 
 The inputs must describe the execution, not only the model:
 
@@ -80,29 +107,39 @@ The inputs must describe the execution, not only the model:
 
 ### The MI355X BF16 ridge point
 
-Chapter 1 gives a dense BF16 matrix peak of `2.5166 PFLOP/s` and peak HBM bandwidth
-of `8 TB/s` for one MI355X. The hardware ridge point is therefore:
+[Chapter 1, MI355X as a Training Machine]({{ '/pages/1-mi355x-as-a-training-machine' | relative_url }})
+gives a dense BF16 matrix peak of `2.5166 PFLOP/s` and peak HBM bandwidth of
+`8 TB/s` for one MI355X. The hardware ridge point is therefore:
 
-```text
-2.5166e15 FLOP/s / 8e12 byte/s = 314.6 FLOP/byte
-```
+$$
+\frac{2.5166\times10^{15}\ \mathrm{FLOP/s}}
+     {8\times10^{12}\ \mathrm{byte/s}}
+=314.6\ \mathrm{FLOP/byte}.
+$$
 
 Use **315 FLOP/byte**, not 288. An operation below 315 FLOP/byte cannot reach the
 dense BF16 compute ceiling if HBM supplies every counted byte.
 
 Arithmetic intensity is:
 
-```text
-intensity = FLOPs / HBM bytes
-roofline  = min(compute_rate, intensity * HBM_bandwidth)
-```
+$$
+\begin{aligned}
+I_{\mathrm{HBM}}
+  &= \frac{\mathrm{FLOPs}}{\mathrm{HBM\ bytes}},\\
+P_{\mathrm{roofline}}
+  &= \min\!\left(
+      P_{\mathrm{compute}},
+      I_{\mathrm{HBM}}\,\beta_{\mathrm{HBM}}
+     \right).
+\end{aligned}
+$$
 
 For a projection `X[B_tok, D] @ W[D, F]`, if the weight dominates traffic and each
 element occupies `w` bytes:
 
-```text
-intensity ~= 2 * B_tok / w
-```
+$$
+I_{\mathrm{HBM}}\approx\frac{2B_{\mathrm{tok}}}{w}.
+$$
 
 With BF16 operands, `w = 2`, so the approximate intensity is `B_tok` FLOP/byte.
 This is a useful first check, not a claim about actual traffic. FP32 parameter
@@ -113,8 +150,12 @@ Communication has the same form. Divide useful compute by bytes sent over xGMI o
 the network, then compare that intensity with `compute_rate / achieved_link_bandwidth`.
 Use the bandwidth for the actual message size. Small tensor-parallel collectives do
 not necessarily reach the asymptotic bandwidth of a large gradient reduction.
+[Chapter 6, Parallelism Strategies for Higher Throughput]({{ '/pages/6-jax-shardings-to-a-training-mesh' | relative_url }})
+derives the collective traffic and mesh placement that supply this term.
 
-## Transformer Ledger
+### Model Work: Parameters and FLOPs
+
+#### Model dimensions
 
 Use the following symbols:
 
@@ -128,25 +169,33 @@ Use the following symbols:
 - `B`: sequences in the local microbatch
 - `T`: sequence length
 
+#### Dense parameters
+
 A Llama-style SwiGLU MLP has three matrices:
 
-```text
-P_mlp = 3 * D * F
-```
+$$
+P_{\mathrm{MLP}}=3DF.
+$$
 
 The attention projections have one query, key, value, and output matrix:
 
-```text
-P_attn = D*N*H + 2*D*K*H + N*H*D
-       = 2 * D * (N + K) * H
-```
+$$
+\begin{aligned}
+P_{\mathrm{attn}}
+  &= DNH+2DKH+NHD\\
+  &= 2D(N+K)H.
+\end{aligned}
+$$
 
 With two RMSNorm scales per layer, untied input and output embeddings, and one final
 norm:
 
-```text
-P_dense = L * (P_mlp + P_attn + 2D) + 2VD + D
-```
+$$
+P_{\mathrm{dense}}
+=L\left(P_{\mathrm{MLP}}+P_{\mathrm{attn}}+2D\right)+2VD+D.
+$$
+
+#### Training FLOPs
 
 The input embedding is a gather. It contributes parameters and bytes but no matrix
 multiply FLOPs. The output projection contributes `2BTDV` forward FLOPs.
@@ -156,64 +205,65 @@ token. Backpropagation adds an input-gradient and a weight-gradient contraction 
 the same size. The common training count is therefore three times the forward
 projection count:
 
-```text
-training weight FLOPs ~= 6 * used_weight_parameters * tokens
-```
+$$
+F_{\mathrm{weights,train}}
+\approx 6\,P_{\mathrm{used\ weights}}\,N_{\mathrm{tokens}}.
+$$
 
 Attention scores need a separate term because they have no learned weights and grow
 with `T^2`. A full forward `QK^T` plus `AV` costs:
 
-```text
-4 * B * N * T^2 * H
-```
+$$
+F_{\mathrm{attn,forward}}=4BNT^2H.
+$$
 
 The experiment repositories follow MaxText and charge half of that for causal
 attention, then multiply by three for training. This convention assumes the
 implementation avoids the masked half:
 
-```text
-causal attention training FLOPs = 6 * B * N * T^2 * H * L
-```
+$$
+F_{\mathrm{attn,causal\ train}}=6BNT^2HL.
+$$
 
 State the convention with every MFU result. A kernel may issue a different number of
-hardware operations, especially with rematerialization or padding.
+hardware operations, especially with rematerialization or padding. The complete
+parameter and FLOP derivations are in the Scaling Book's
+[Transformer chapter](https://jax-ml.github.io/scaling-book/transformers/); the
+purpose here is to establish the numerator used by the profiler analysis.
 
-## Training-State Ledger
+### Memory Capacity and Traffic
 
-Parameter count alone does not predict memory. Record each persistent and transient
-tensor separately:
+Memory introduces two different questions:
 
-| Item | First estimate | Qualification |
-|---|---:|---|
-| Parameters | `P * bytes(weight_dtype)` | These may themselves be the master weights. Do not add a second master copy unless the implementation creates one. |
-| Gradients | `P * bytes(grad_dtype)` | Usually live during backward and the update. |
-| Adam first moment | `P * bytes(mu_dtype)` | MaxText exposes `mu_dtype`. |
-| Adam second moment | `P * bytes(weight_dtype)` | In the inspected MaxText/Optax source, `nu` inherits the weight dtype. |
-| Activations | policy- and shape-dependent | Attention backend, layer scanning, and rematerialization dominate. |
-| Workspaces | backend-dependent | GEMM, attention, and grouped-GEMM libraries may reserve large buffers. |
-| Collective buffers | sharding-dependent | FSDP gathers and MoE dispatch add temporary live ranges. |
-| XLA temporaries | executable-dependent | Fusion, scheduling, and donation decide which buffers overlap. |
+1. **Does the step fit?** Count persistent parameters and optimizer state, live
+   gradients and activations, gathered buffers, library workspaces, and XLA
+   temporaries.
+2. **How many bytes move?** Count traffic across HBM or a lower memory level. An
+   allocated tensor is not necessarily read from HBM on every use, and a temporary
+   can generate traffic without dominating allocated capacity.
 
-Treat the tensor sum as a feasibility estimate, not peak HBM. The check is the
-compiled executable's memory analysis plus runtime peak allocation, covered below
-and in Chapter 5.
+The detailed state and activation accounting belongs to
+[Chapter 5, Making the Model Fit]({{ '/pages/5-making-the-model-fit' | relative_url }}).
+For profiling, retain its predicted peak and compare it with both
+`compiled.memory_analysis()` and the runtime allocator high-water mark. A mismatch
+is evidence about buffer lifetimes, donation, workspaces, fragmentation, or
+unexpected replication.
 
-Sharding applies per tensor. An `n`-way FSDP estimate may divide parameters,
-gradients, and optimizer state by `n`, but gathered weights and some small leaves can
-remain replicated. Expert parallelism divides expert state while leaving dense
-layers replicated unless another axis shards them.
-
-## Batching Ledger
+### What Counts as One Training Step
 
 The experiment unit is one optimizer update:
 
-```text
-tokens per GPU per update = microbatch_sequences_per_GPU
-                            * sequence_length
-                            * gradient_accumulation_steps
-
-global tokens per update  = tokens per GPU per update * GPU_count
-```
+$$
+\begin{aligned}
+\mathrm{tokens/GPU/update}
+  &= \mathrm{microbatch\ sequences/GPU}
+     \times \mathrm{sequence\ length}
+     \times \mathrm{accumulation\ steps},\\
+\mathrm{global\ tokens/update}
+  &= \mathrm{tokens/GPU/update}
+     \times \mathrm{GPU\ count}.
+\end{aligned}
+$$
 
 This convention matches the three experiment repositories. Keep these terms
 distinct:
@@ -227,47 +277,60 @@ distinct:
 FSDP shards state and also uses the FSDP axis in the input batch layout in these
 recipes. It does not make the global batch equal to the batch on one GPU.
 
-## MoE Ledger
+### Sparse-Model Adjustments
 
 For `E` experts with `E_a` selected per token and expert hidden width `F_e`:
 
-```text
-total expert parameters     = E   * 3 * D * F_e
-activated expert parameters = E_a * 3 * D * F_e
-router parameters           = D * E
-```
+$$
+\begin{aligned}
+P_{\mathrm{experts,total}} &= 3EDF_e,\\
+P_{\mathrm{experts,active}} &= 3E_aDF_e,\\
+P_{\mathrm{router}} &= DE.
+\end{aligned}
+$$
 
 Persistent state follows the total parameter count. Useful expert FLOPs follow the
 activated count. This split is why an MoE can be lighter in arithmetic than its HBM
 footprint suggests.
 
-Implementation details can invalidate the useful-FLOP estimate:
+Three runtime effects can invalidate the useful-FLOP estimate:
 
 - Dense masked execution computes all `E` experts, a factor of `E/E_a` more expert
-  work than the activated ledger.
+  work than the activated model count.
 - Fixed-capacity execution pads under-filled experts and may drop overflow tokens.
 - Ragged grouped GEMM avoids padding but can lose matrix efficiency on small or
   uneven groups.
 
-With `B_tok` input tokens per GPU, perfect balance sends:
+Record the router histogram, padding or dropped-token rate, and activated versus
+issued FLOPs alongside the profile. The profile cannot reconstruct those values
+after the run. [Chapter 8, Training Mixture-of-Experts on MI355X]({{ '/pages/8-mixture-of-experts-on-mi355x' | relative_url }})
+derives the routing, capacity, expert-kernel, and AllToAll costs.
 
-```text
-mean tokens per expert = B_tok * E_a / E
-imbalance factor       = max(tokens_per_expert) / mean(tokens_per_expert)
-```
+### Expected Trace Signatures
 
-The router histogram and dropped-token rate are part of the measurement contract.
-A profile cannot reconstruct them after the run.
+The prediction should imply something visible:
 
-## Metrics
+- **compute-bound:** long matrix kernels, sustained MFMA activity, and little exposed
+  idle time;
+- **HBM-bound:** low arithmetic intensity and memory traffic near the measured
+  bandwidth ceiling;
+- **communication-bound:** RCCL work on the critical path with insufficient compute
+  underneath it; and
+- **runtime-bound:** gaps between device kernels, repeated compilation, excessive
+  launch activity, or host/input stalls.
+
+These are hypotheses, not conclusions. XProf locates the interval, `rocprofv3`
+identifies the dispatches, and `rocprof-compute` tests the hardware-level explanation.
+
+## Measuring One Training Step
 
 ### Primary: tokens/s/GPU
 
-```text
-tokens/s/GPU = global tokens per optimizer update
-               / elapsed seconds per update
-               / GPU count
-```
+$$
+\mathrm{tokens/s/GPU}
+=\frac{\mathrm{global\ tokens/update}}
+       {\mathrm{seconds/update}\times\mathrm{GPU\ count}}.
+$$
 
 Use a fixed model, sequence length, global batch, accumulation count, and data
 semantics when comparing two runs. Report useful input tokens. Do not count padded
@@ -280,8 +343,8 @@ tokens twice or silently exclude dropped MoE assignments.
   participating GPUs. Use activated MoE FLOPs and state the attention convention.
 - **HFU:** issued hardware FLOPs divided by peak. It includes rematerialized,
   padded, and dense-masked work, so it can exceed MFU substantially.
-- **Peak HBM:** runtime high-water mark per GPU, compared with the static tensor
-  ledger and XLA's buffer assignment.
+- **Peak HBM:** runtime high-water mark per GPU, compared with the static memory
+  estimate and XLA's buffer assignment.
 - **Exposed communication:** the portion of step wall time during which a required
   collective runs without useful compute overlapping it. Summed kernel duration
   across eight GPUs is not wall time.
@@ -295,111 +358,27 @@ tokens twice or silently exclude dropped MoE assignments.
 Time-to-quality is useful only when a defensible quality target exists. It is not
 the primary metric in this book.
 
-## Three Worked Ledgers
+### Worked Prediction: Llama 7B
 
-The architecture values below come from the checked-in Llama 7B implementation and
-the inspected MaxText model configs used by the Llama 70B and Mixtral experiments.
+The one-GPU Llama 7B run processes four sequences of length 4096, or 16,384 tokens
+per optimizer update. Under the causal-attention convention above, the model performs
+702.279 TFLOPs per update. If every counted operation sustained the MI355X dense
+BF16 peak, the compute lower bound would be:
 
-| Quantity | Llama 2 7B | Llama 2 70B | Mixtral 8x22B |
-|---|---:|---:|---:|
-| `L` | 32 | 80 | 56 |
-| `D` | 4096 | 8192 | 6144 |
-| `F` or `F_e` | 11008 | 28672 | 16384 |
-| `N` / `K` / `H` | 32 / 32 / 128 | 64 / 8 / 128 | 48 / 8 / 128 |
-| `V` | 32000 | 32000 | 32768 |
-| Experts / active | dense | dense | 8 / 2 |
-| Total parameters | 6.738B | 68.977B | 140.630B |
-| Activated parameter ledger | 6.738B | 68.977B | 39.161B |
-| Matrix-weight parameters charged by MFU | 6.607B | 68.713B | approximately 38.959B |
+$$
+t_{\mathrm{compute}}
+=\frac{702.279\ \mathrm{TFLOPs}}
+       {2{,}516.6\ \mathrm{TFLOP/s}}
+\approx0.279\ \mathrm{s/update}.
+$$
 
-The activated ledger includes embeddings and norm scales, which contribute
-parameters but not the same matrix FLOPs as dense projections. The MFU row keeps
-only matrix weights charged by this chapter's FLOP convention: 6,607,077,376 for
-Llama 7B, 68,713,185,280 for Llama 70B, and approximately 38,959,448,064 for
-Mixtral. The Mixtral activated ledger is not the number of parameters stored on
-one GPU.
+That is a bound, not a prediction that the full step will attain peak. Attention,
+normalization, the optimizer, HBM traffic, launch overhead, and imperfect GEMMs all
+add gaps that the profiling workflow must attribute. Chapter 10 carries this workload
+through the complete stack; Chapters 11 and 12 own the corresponding Llama 70B and
+Mixtral calculations.
 
-### Work per optimizer update
-
-| Quantity | Llama 2 7B | Llama 2 70B | Mixtral 8x22B |
-|---|---:|---:|---:|
-| GPUs | 1, or 8 for the FSDP sweep | 8 | 8 |
-| Microbatch sequences/GPU | 4 | 15 | 4 |
-| Sequence length | 4096 | 4096 | 4096 |
-| Accumulation steps | 1 | 1 | 2 |
-| Tokens/GPU/update | 16384 | 61440 | 32768 |
-| Global tokens/update | 16384 on 1 GPU; 131072 on 8 | 491520 | 262144 |
-| Model FLOPs/GPU/update | 702.279 TFLOPs | 26.320 PFLOPs | 7.937 PFLOPs |
-
-The FLOP row uses the causal-attention convention above. It excludes optimizer
-elementwise work, rematerialized forward work, padding, and communication.
-
-The Llama 7B one-GPU and FSDP-8 arms keep four sequences per GPU, so the global
-workload grows eightfold. This is weak scaling, not a fixed-global-batch speedup
-test. A scaling-efficiency claim needs a separate FSDP-8 arm with the original
-global batch of four sequences.
-
-The Llama 70B FP32 arm also needs separate treatment. It uses microbatch 1 with
-15 accumulation steps and dot-product attention, while the other arms use
-microbatch 15, one step, and Transformer Engine attention. The nominal tokens and
-model FLOPs per optimizer update are unchanged, but local matrix shapes, activation
-memory, kernel launches, and attention cost are not.
-
-If the synchronized update takes `s` seconds, the primary throughputs are:
-
-```text
-Llama 7B:        16384 / s tokens/s/GPU
-Llama 70B:       61440 / s tokens/s/GPU
-Mixtral 8x22B:   32768 / s tokens/s/GPU
-```
-
-### State before activations and workspaces
-
-The two dense recipes use FP32 parameters and FP32 Adam moments:
-`12 persistent bytes/parameter`. One live FP32 gradient tree adds another four
-bytes per local parameter.
-
-```text
-Llama 7B persistent:       6.738B * 12 = 80.86 GB
-Llama 7B live gradients:   6.738B *  4 = 26.95 GB
-Llama 7B ideal FSDP-8 persistent:       10.11 GB/GPU
-Llama 7B ideal FSDP-8 gradients:         3.37 GB/GPU
-
-Llama 70B persistent:     68.977B * 12 = 827.72 GB
-Llama 70B live gradients: 68.977B *  4 = 275.91 GB
-Llama 70B ideal FSDP-8 persistent:      103.46 GB/GPU
-Llama 70B ideal FSDP-8 gradients:        34.49 GB/GPU
-```
-
-The Mixtral recipe uses BF16 parameters and BF16 first and second Adam moments:
-`6 persistent bytes/parameter`. Its `grad_dtype=float32` request does not upcast
-BF16 parameter gradients in the inspected trainer, so use two bytes per live gradient
-unless the compiled state proves otherwise.
-
-```text
-Mixtral global persistent state: 140.630B * 6 = 843.78 GB
-```
-
-For the EP-8 baseline, the architecture has 135.291B expert parameters and 5.339B
-other parameters. If expert state is split eight ways and all non-expert state is
-replicated, the structural estimate is:
-
-```text
-P_local = 135.291B / 8 + 5.339B = 22.25B
-persistent = 22.25B * 6 = 133.50 GB/GPU
-one live BF16 gradient tree = 22.25B * 2 = 44.50 GB/GPU
-```
-
-Together these two terms consume about 178 GB, leaving about 110 GB of the
-advertised 288 GB capacity for activations, gathered buffers, workspaces, runtime
-state, and headroom. The actual local shard shapes must be checked in the
-compiled program.
-
-> **BLOCKED (measurement):** the current repositories do not contain a common
-> v26.6 peak-HBM artifact bundle for these three recipes. The values above are
-> tensor ledgers, not measured peaks.
-
-## Prediction Worksheet
+### Prediction Worksheet
 
 Fill this in before each run:
 
@@ -468,9 +447,13 @@ This chapter contains no **[measured]** MI355X profiler result. Archived gfx942
 observations and untested gfx950 fields are identified as unverified where they
 appear.
 
-## Measurement Contract
+### Measurement Contract
 
-### Freeze the workload
+The complete reproducibility and convergence protocol is
+[Appendix B]({{ '/pages/b-measurement-and-convergence-protocol' | relative_url }}).
+The main chapter keeps the rules needed to interpret profiler output.
+
+#### Freeze the workload
 
 A comparison is valid only if these fields match:
 
@@ -488,7 +471,7 @@ MoE experiments, also keep routing inputs fixed and report dropped or padded tok
 If a configuration must change to fit, describe the comparison as a different
 workload.
 
-### Record the machine and software
+#### Record the machine and software
 
 Store the raw output of:
 
@@ -526,7 +509,7 @@ The three experiment repositories declare the mutable tag
 JAXLIB, ROCm plugin, and PJRT 0.11.0. Record the image digest and what the
 process actually imports rather than treating those declarations as pins.
 
-### Separate compile, warmup, and measurement
+#### Separate compile, warmup, and measurement
 
 The first execution can compile and autotune. Relevant XLA flags normally
 participate in JAX's compilation-cache key. Reuse risk remains when a custom
@@ -563,7 +546,7 @@ for _ in range(20):
 Time one optimizer update. If gradient accumulation is two, the interval includes
 both microbatches and the optimizer update.
 
-### Keep timing and profiling independent
+#### Keep timing and profiling independent
 
 Use the same config, flags, data, and warmed step in every run, but do not expect
 profiler wall time to equal clean-run wall time.
@@ -579,43 +562,38 @@ Synthetic reused data isolates the compiled train step. It does not test the inp
 pipeline. Real data is required for convergence and end-to-end input throughput.
 Label both.
 
-## Artifact Bundle
+### Preserve the Evidence
 
-One run should be inspectable without the original machine. Appendix F defines the
-normative directory and schema. Its top level is:
+One run should be inspectable without the original machine. Preserve the resolved
+configuration, performance-related environment, raw timing samples, optimized HLO,
+XPlane trace, ROCm profiler databases, counter output, and checksums. Record which
+artifacts came from the clean run and which came from instrumented runs.
 
-```text
-artifacts/<case_id>/<run_id>/
-├── manifest.yaml
-├── run-contract.yaml
-├── checksums.sha256
-├── config/
-├── hardware/
-├── data/
-├── logs/
-├── results/
-├── ledgers/
-├── components/
-├── monitoring/
-├── hlo/
-├── profiles/
-├── checkpoints/
-└── fallback/
-```
+[Appendix F]({{ '/pages/f-case-study-artifact-schema' | relative_url }}) defines the
+normative directory layout and manifest schema. CSV summaries and screenshots are
+derived views; preserve the native XPlane, `rocpd`, and `rocprof-compute` outputs.
 
-`manifest.yaml` identifies which files came from the clean timing run and which
-came from instrumented runs. Its `omissions` list records missing artifacts and
-reasons. Preserve raw profiler databases; CSV summaries are derived data.
+## The Profiling Stack
 
-The bundle does not need every directory for every experiment. A timing-only result
-still needs the manifest, resolved config, flags, versions, raw steps, and summary.
+The tools overlap, but each has a distinct role:
 
-## XProf
+1. **XProf finds where:** framework scopes, HLO attribution, the host/device
+   timeline, memory views, and candidate kernel families.
+2. **`rocprofv3` confirms what ran:** HIP/HSA activity, kernel dispatches, memory
+   copies, RCCL events, and manually chosen ROCTx ranges.
+3. **`rocprof-compute` explains why:** MFMA activity, cache and HBM traffic,
+   occupancy constraints, LDS/register pressure, and empirical rooflines.
+
+Start at the highest level that can answer the question and move downward only when
+the remaining gap requires lower-level evidence. The compact command and search
+reference is [Appendix D, Profiler and HLO Cookbook]({{ '/pages/d-profiler-and-hlo-cookbook' | relative_url }}).
+
+### XProf: Find the Component
 
 XProf reads the trace produced by JAX and retains the most useful automatic bridge
 between JAX scopes, HLO operations, and GPU kernels.
 
-### Capture
+#### Capture
 
 Warm up before opening the trace:
 
@@ -646,7 +624,7 @@ JAX normally writes an `.xplane.pb` plus a timeline-oriented
 `.trace.json.gz`. Preserve the XPlane file. The JSON trace is convenient for
 Perfetto but does not retain every relationship used by XProf.
 
-### Read the data model
+#### Read the data model
 
 - **XSpace** is the complete capture.
 - **XPlane** represents a host or device.
@@ -670,7 +648,7 @@ Add `jax.named_scope` around stable model components such as `attention`,
 `mlp/up_proj`, and `optimizer`. A trace cannot reliably recover a source-level name
 that the program never supplied.
 
-### Validate fields on ROCm
+#### Validate fields on ROCm
 
 Archived XProf 2.23 captures on gfx942 showed missing device step grouping, an
 unsupported AMD compute ceiling in the roofline view, zeros for some occupancy and
@@ -684,13 +662,13 @@ corroborates it. Never convert summed device time directly into step wall time.
 > gfx950/v26.6 XPlane field audit. Revalidate the archived limitations before
 > describing any one of them as current.
 
-## rocprofv3
+### rocprofv3: Inspect Runtime Execution
 
 `rocprofv3` observes the ROCm runtime and device below XLA. It has richer ROCm
 events and kernel metadata than XProf, but it does not automatically know the HLO
 or Python source that caused a dispatch.
 
-### Timeline capture
+#### Timeline capture
 
 Wrap the unchanged experiment command:
 
@@ -726,7 +704,7 @@ rocprofv3 --kernel-include-regex "Cijk_" --kernel-trace --stats \
 List generated tables from SQLite's `sqlite_master`; rocprofiler table names can
 carry a session-specific suffix.
 
-### ROCTx ranges
+#### ROCTx annotations
 
 Use ROCTx to mark one optimizer update or a small number of stable phases. Capture
 them with `--marker-trace`. Match range names to `jax.named_scope` names where
@@ -737,7 +715,7 @@ The raw Llama 7B runner demonstrates another useful technique: call
 `roctxProfilerPause` before the loop, resume for one warmed step, then pause again.
 This keeps initialization and unrelated steps out of a counter capture.
 
-### Hardware counters
+#### Targeted hardware counters
 
 First inspect counters available on the installed version:
 
@@ -759,7 +737,7 @@ Llama 7B repository stores its intended groups in `configs/pmc/rocm.txt`.
 PMC collection can serialize dispatches and may replay work. Its trace is evidence
 about the selected kernels and counters, not overlap or step throughput.
 
-## rocprof-compute
+### rocprof-compute: Explain the Kernel
 
 Use `rocprof-compute` after the trace has identified a small workload or kernel
 family worth deeper analysis. It collects base counters, often through multiple
@@ -799,9 +777,11 @@ report. The useful outputs are:
 
 Do not compare the replayed profile's elapsed time with the clean timing run.
 
-## From HLO to a Kernel
+## One Operation, Three Profilers
 
-The reliable correlation starts at the framework and moves downward.
+The reliable correlation starts at the framework and moves downward. Chapter 2
+[explains the complete `jax.jit` lowering path]({{ '/pages/2-lowering-jax-jit-on-rocm' | relative_url }});
+this section uses that path as a navigation map rather than re-deriving it.
 
 ### 1. Name the source operation
 
@@ -841,6 +821,8 @@ layout, custom-call target, backend config, and fusion body.
 On ROCm, some XLA compatibility strings retain CUDA-oriented names. A custom-call
 target containing `cublas` is not proof that an NVIDIA library ran. The loaded code
 object, kernel family, and ROCm trace settle the backend path.
+[Chapter 7, A Map of ROCm Kernel Backends on JAX]({{ '/pages/7-a-map-of-kernel-backends-on-jax' | relative_url }})
+documents the candidate GEMM, attention, and fused-kernel routes.
 
 ### 4. Follow source metadata
 
@@ -872,15 +854,25 @@ Python scope
 XProf supplies the automatic HLO bridge. ROCTx supplies manually chosen phase
 boundaries in the ROCm trace. They complement each other.
 
-## Multi-Level Rooflines
+## Interpreting the Profile
+
+Collecting a trace is not the goal. The goal is to accept or reject the resource
+hypothesis made before the run, explain the gap between the clean timing result and
+its bound, and stop once the evidence is sufficient.
+
+### Multi-Level Rooflines
 
 One HBM roofline cannot distinguish cache reuse from HBM traffic. For each memory
 level `m`, compute a separate intensity:
 
-```text
-I_m = FLOPs / bytes_crossing_level_m
-P_m = min(compute_peak, I_m * bandwidth_m)
-```
+$$
+\begin{aligned}
+I_m
+  &= \frac{\mathrm{FLOPs}}{\mathrm{bytes\ crossing\ level}\ m},\\
+P_m
+  &= \min\!\left(P_{\mathrm{compute}},I_m\beta_m\right).
+\end{aligned}
+$$
 
 Useful levels on MI355X are registers/LDS, L1, per-XCD L2, Infinity Cache, HBM, xGMI,
 and the scale-out network. Do not reuse one byte count at every level. Each boundary
@@ -897,11 +889,13 @@ Use three scopes:
 
 The theoretical BF16/HBM line uses the constants calculated above:
 
-```text
-compute peak = 2.5166 PFLOP/s
-HBM peak     = 8 TB/s
-ridge point  = 315 FLOP/byte
-```
+$$
+\begin{aligned}
+P_{\mathrm{compute}} &= 2.5166\ \mathrm{PFLOP/s},\\
+\beta_{\mathrm{HBM}} &= 8\ \mathrm{TB/s},\\
+I_{\mathrm{ridge}} &= 315\ \mathrm{FLOP/byte}.
+\end{aligned}
+$$
 
 An empirical roofline substitutes sustained compute and measured bandwidth from the
 same machine state. It must not quietly mix a boost-clock compute ceiling with a
@@ -911,7 +905,7 @@ replay-derived bandwidth.
 > only with a checked-in `rocprof-compute` bundle. No current experiment
 > repository contains those measurements.
 
-## Triage Order
+### Triage Order
 
 Work down this list and stop when the gap is explained.
 
@@ -931,6 +925,8 @@ Work down this list and stop when the gap is explained.
 7. **Check communication.** Compare message bytes with bandwidth at that message
    size, then measure the exposed portion. A long collective that is fully hidden
    is not the first target.
+   [Chapter 9, Tuning the Compiler, Runtime, and RCCL]({{ '/pages/9-compiler-runtime-and-rccl-controls' | relative_url }})
+   covers the settings that can change combining and overlap.
 8. **Check MFMA efficiency.** For the dominant GEMMs, compare shape, tile count,
    MFMA activity, LDS/register limits, and achieved FLOP rate. Low occupancy alone
    is not proof of a problem.
@@ -940,7 +936,7 @@ Work down this list and stop when the gap is explained.
 This order keeps kernel-level investigation behind cheaper checks for invalid
 workloads, idle devices, wrong shardings, and fallbacks.
 
-## Reporting Template
+## Reporting the Result
 
 Every case-study result should include this block or an equivalent machine-readable
 manifest:

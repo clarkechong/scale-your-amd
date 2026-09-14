@@ -194,8 +194,8 @@ This book is authoritative for:
 - Chapters 1 and 2 own platform facts and the concrete execution path. The Scaling
   Book supplies only broad architecture or compiler context.
 - Chapter 3 borrows generic cost-model forms and owns the MI355X constants,
-  workload ledger, worked predictions, measurement protocol, and ROCm/JAX profiling
-  workflow.
+  workload definition, worked prediction, measurement contract, and ROCm/JAX
+  profiling workflow.
 - Chapters 4 through 9 own configuration decisions on the pinned MI355X stack.
   They may link to generic parallelism or numerical background.
 - Chapters 10 through 12 own the experiment design, artifacts, results, and
@@ -400,112 +400,69 @@ Planned file: `pages/2-lowering-jax-jit-on-rocm.md`
   - source-file tours move to Appendix D
   - exhaustive compiler-pass catalogues remain external
 
-### Chapter 3 — Predicting and measuring one training step
+### Chapter 3 — Profiling and analysis of a training step
 
-Planned file: `pages/3-predicting-and-measuring-one-training-step.md`
+Planned file: `pages/3-profiling-and-analysis-of-one-training-step.md`
 
-- Scaling Book recap links
-  - rooflines
-  - Transformer arithmetic
-  - sharded matrix multiplication
-  - training parallelism
-- Three lower bounds
-  - compute time
-  - HBM time
-  - communication time
-  - overlap bracket
-- Dense Transformer ledger
-  - model dimensions
-  - MLP parameters
-  - attention parameters
-  - vocabulary parameters
-  - forward FLOPs
-  - backward FLOPs
-  - attention-score correction
-- Training-state ledger
-  - parameters
-  - master weights
-  - gradients
-  - optimizer moments
-  - activations
-  - workspaces
-  - collective buffers
-  - XLA temporaries
-- Batching vocabulary
-  - sequence length
-  - microbatch
-  - per-device tokens
-  - global batch
-  - gradient accumulation
-- MoE ledger
-  - total parameters
-  - activated parameters
-  - routing FLOPs
-  - expert imbalance
-- Output metrics
-  - step time
+- Investigation question
+  - one synchronized optimizer update
+  - compute work
+  - HBM traffic
+  - communication
+  - runtime overhead
+- Predicting one training step
+  - compute, HBM, and communication bounds
+  - MI355X BF16 ridge point
+  - model dimensions and FLOPs
+  - memory capacity versus traffic
+  - batch and optimizer-update semantics
+  - sparse-model adjustments
+  - expected trace signatures
+- Measuring one training step
   - tokens/s/GPU
   - MFU and HFU
   - peak HBM
   - exposed communication
   - compile cost
   - validation loss
-  - convergence equivalence
-  - optional time-to-quality
-- MI355X worked ledgers
-  - Llama 7B
-  - Llama 70B
-  - Mixtral 8x22B
-- Reusable prediction worksheet
-  - required inputs
-  - units and dimensional checks
-  - predicted bottleneck
-  - expected tokens/s/GPU range
-  - observed result slot
-  - reconciliation notes
-
-- Measurement contract
-  - hardware manifest
-  - container and repository commits
-  - effective flags
-  - partition mode
-  - warmup
-  - synchronization
-  - repetitions
-  - median and variance
-  - synthetic versus real data
-- Required artifact bundle
-  - configuration
-  - commands
-  - logs
-  - optimized HLO
-  - trace
-  - memory analysis
-  - metrics
-  - provenance
+  - one Llama 7B worked prediction
+  - reusable prediction worksheet
+  - workload contract
+  - compile, warmup, and timing separation
+  - timing versus instrumented runs
+  - evidence preservation
+- Profiling stack
+  - XProf finds the framework or HLO component
+  - `rocprofv3` and ROCTx identify runtime dispatches
+  - `rocprof-compute` explains kernel efficiency
 - XProf
-  - XSpace, XPlane, XLane, and XEvent
+  - XSpace, XPlane, XLane, XEvent, and XStat
   - Trace Viewer
   - operation-to-HLO attribution
   - Kernel Stats
   - Memory Viewer
   - known ROCm limitations
 - `rocprofv3`
-  - kernel trace
-  - runtime trace
-  - RCCL trace
-  - ROCTx ranges
-  - lossless output
-  - PMC perturbation warning
+  - kernel, runtime, copy, and RCCL traces
+  - ROCTx annotations
+  - lossless `rocpd`
+  - targeted PMC collection
+  - perturbation warning
 - `rocprof-compute`
   - counters
   - speed-of-light analysis
-  - cache behavior
-  - occupancy
+  - cache and HBM behavior
+  - occupancy and resource pressure
   - empirical roofline
-- HLO-to-kernel correlation
-- Multi-level rooflines
-- Triage order
+- One-operation correlation
+  - named JAX scope
+  - optimized HLO
+  - XProf event
+  - ROCm dispatch
+  - kernel counters
+- Interpreting the profile
+  - multi-level rooflines
+  - triage order
   - host or input starvation
   - compilation or recompilation
   - wrong sharding
@@ -516,9 +473,16 @@ Planned file: `pages/3-predicting-and-measuring-one-training-step.md`
   - numerical regression
 - Reporting template used by later chapters
 - Reference boundary
-  - full tool UI tours move to Appendix D
+  - generic derivations remain in the Scaling Book
+  - full command cookbook remains in Appendix D
+  - full measurement protocol remains in Appendix B
+  - artifact schema remains in Appendix F
 
 ## Part II — JAX Performance Features on ROCm
+
+Decision order: choose precision, make one update fit, distribute it for throughput,
+select the local kernel routes, integrate those decisions for sparse training, then
+tune compiler and runtime controls only when profiling identifies a mechanism.
 
 ### Chapter 4 — Training in mixed precision
 
@@ -579,7 +543,7 @@ Planned file: `pages/5-making-the-model-fit.md`
 - Persistent state
 - Activation memory
 - Attention-score materialization
-- MoE dispatch buffers
+- Sparse-model capacity signpost
 - XLA memory analysis
 - Runtime high-water mark
 - Donation and aliasing
@@ -591,7 +555,7 @@ Planned file: `pages/5-making-the-model-fit.md`
   - `full`
   - scan and common-subexpression-elimination interaction
   - attention interaction
-  - MoE interaction
+- sparse-layer interaction
 - Gradient accumulation
 - FSDP state sharding
 - Sharded initialization
@@ -601,7 +565,7 @@ Planned file: `pages/5-making-the-model-fit.md`
 - Memory decision procedure
 - Inputs to the Llama 7B and Llama 70B case studies
 
-### Chapter 6 — JAX shardings to a training mesh
+### Chapter 6 — Parallelism strategies for higher throughput
 
 Planned file: `pages/6-jax-shardings-to-a-training-mesh.md`
 
@@ -629,7 +593,6 @@ Planned file: `pages/6-jax-shardings-to-a-training-mesh.md`
   - message-size curve
   - participant count
   - directional bandwidth
-  - ragged AllToAll
 - Training strategies
   - data parallelism
   - FSDP
@@ -637,7 +600,7 @@ Planned file: `pages/6-jax-shardings-to-a-training-mesh.md`
   - sequence parallelism
   - context parallelism
   - pipeline parallelism
-  - expert-parallelism preview
+  - expert-parallelism signpost
 - Required treatment for each strategy
   - state being sharded
   - persistent-memory effect
@@ -648,11 +611,11 @@ Planned file: `pages/6-jax-shardings-to-a-training-mesh.md`
 - Eight-GPU placement
   - TP and EP competition
   - reserved scale-out axes
-- Combining, pipelining, and overlap
+- Collective payload and overlap opportunities
 - Concrete mesh decision procedure
 - Inputs to all distributed case studies
 
-### Chapter 7 — A map of kernel backends on JAX
+### Chapter 7 — A map of ROCm kernel backends on JAX
 
 Planned file: `pages/7-a-map-of-kernel-backends-on-jax.md`
 
@@ -682,18 +645,13 @@ Planned file: `pages/7-a-map-of-kernel-backends-on-jax.md`
   - RMSNorm
   - SwiGLU
   - cross entropy
-- MoE kernel preview
-  - dense masked
-  - fixed capacity
-  - dense padded
-  - ragged or GroupedGEMM
 - Correctness validation
 - Kernel-proof workflow
 - Fallback ranking
 - Versioned reachability table
-- Inputs to the Llama 7B and Mixtral case studies
+- Inputs to the Llama 7B and Llama 70B case studies
 
-### Chapter 8 — Mixture-of-Experts on MI355X
+### Chapter 8 — Training Mixture-of-Experts on MI355X
 
 Planned file: `pages/8-mixture-of-experts-on-mi355x.md`
 
@@ -721,6 +679,7 @@ Planned file: `pages/8-mixture-of-experts-on-mi355x.md`
   - ragged collectives
 - Expert parallelism
   - memory rationale
+  - Mixtral EP-8 state
   - FSDP-by-EP trade
   - TP-by-EP competition
   - one-node placement
@@ -735,7 +694,7 @@ Planned file: `pages/8-mixture-of-experts-on-mi355x.md`
 - MoE decision procedure
 - Inputs to the Mixtral case study
 
-### Chapter 9 — Compiler, runtime, and RCCL controls
+### Chapter 9 — Tuning the compiler, runtime, and RCCL
 
 Planned file: `pages/9-compiler-runtime-and-rccl-controls.md`
 
@@ -1101,7 +1060,7 @@ scale-your-amd/
 ├── pages/
 │   ├── 1-mi355x-as-a-training-machine.md
 │   ├── 2-lowering-jax-jit-on-rocm.md
-│   ├── 3-predicting-and-measuring-one-training-step.md
+│   ├── 3-profiling-and-analysis-of-one-training-step.md
 │   ├── 4-training-in-mixed-precision.md
 │   ├── 5-making-the-model-fit.md
 │   ├── 6-jax-shardings-to-a-training-mesh.md
@@ -1195,7 +1154,7 @@ serving scope, stale support claims, and old chapter-number assumptions before r
 - Reuse tooling limitations, command patterns, and profiler signatures in Chapter 3
   and Appendix D.
 - Recheck all zero-field, counter, and XProf limitations on the pinned stack.
-- Prefer the tighter active `pages/3-predicting-and-measuring-one-training-step.md` structure when material overlaps.
+- Prefer the tighter active `pages/3-profiling-and-analysis-of-one-training-step.md` structure when material overlaps.
 
 ### `pages/archive/4-sharding.md`
 
@@ -1273,7 +1232,7 @@ serving scope, stale support claims, and old chapter-number assumptions before r
 
 - `pages/1-mi355x-as-a-training-machine.md` is the primary source for Chapter 1.
 - `pages/2-lowering-jax-jit-on-rocm.md` is the primary source for Chapter 2.
-- `pages/3-predicting-and-measuring-one-training-step.md` is the primary source for Chapter 3.
+- `pages/3-profiling-and-analysis-of-one-training-step.md` is the primary source for Chapter 3.
 - The current Llama and Mixtral pages provide intent and notes, while the experiment
   repositories and captured artifacts provide evidence.
 

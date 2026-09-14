@@ -9,15 +9,15 @@ section_number: 2
 previous_section_url: "/pages/1-mi355x-as-a-training-machine"
 previous_section_name: "Chapter 1: Hardware"
 
-next_section_url: "/pages/3-predicting-and-measuring-one-training-step"
-next_section_name: "Chapter 3: Predicting and Measuring One Training Step"
+next_section_url: "/pages/3-profiling-and-analysis-of-one-training-step"
+next_section_name: "Chapter 3: Profiling and Analysis of a Training Step"
 
 authors:
   - name: Clarke Chong
     url: "https://github.com/clarkechong"
 
 toc:
-  - name: "The Executable Contract"
+  - name: "What `jax.jit` Actually Produces"
   - name: "JAX Transformations"
   - name: "The IR Ladder"
   - name: "Shardy and Partitioning"
@@ -35,7 +35,7 @@ toc:
   - name: "Failure Taxonomy"
 ---
 
-## The Executable Contract
+## What `jax.jit` Actually Produces {#what-jax-jit-actually-produces}
 
 `jax.jit` does not map each JAX operation to one fixed ROCm library call. It
 specializes a function, partitions it across the selected devices, optimizes the
@@ -56,22 +56,22 @@ JAX function
   -> HIP/HSA dispatches on gfx950
 ```
 
-The practical questions are therefore concrete:
+The practical questions are therefore:
 
 1. Which function and input signature did JAX compile?
 2. Which per-device program and communication did Shardy produce?
-3. Which XLA route was selected for each expensive operation?
+3. Which XLA route was selected for each operation?
 4. Which kernel name reached the MI355X?
 
 The mechanisms below are documented by JAX, OpenXLA, and ROCm and are marked
 `[cited]`. The experiment examples are source-verified against the checked-in Llama 7B,
-Llama 70B, and Mixtral launchers. This chapter reports no timing result.
+Llama 70B, and Mixtral launchers.
 
 ## JAX Transformations
 
 A JAX program is a composition of transformations, not a sequence of eager library
-calls. [JAX transformations](https://docs.jax.dev/en/latest/101/transformations.html)
-trace array operations and produce a new program. `[cited]`
+calls like what you'd find by default on PyTorch. [JAX transformations](https://docs.jax.dev/en/latest/101/transformations.html)
+trace array operations and produce a JIT compiled program. `[cited]`
 
 - A **PyTree** gives parameters, optimizer state, and batches a nested structure.
   Transformations flatten that structure to array leaves and reconstruct it at the
@@ -225,7 +225,7 @@ shapes and collectives generated from that intent.
 
 OpenXLA documents the complete
 [HLO-to-thunks path](https://openxla.org/xla/hlo_to_thunks). The exact pass list
-changes between XLA revisions, but the decisions remain recognizable. `[cited]`
+changes between XLA revisions, but the general pipeline components remain the same. `[cited]`
 
 ### Rewrites Layout and Fusion
 
@@ -314,7 +314,7 @@ kernels.
   kernel.
 
 ROCm uses a shared XLA GPU backend, so CUDA-derived names remain in flags, HLO
-targets, and internal APIs. They are compatibility names, not proof that an NVIDIA
+targets, and internal APIs. They are compatibility names, not necessarily that an NVIDIA
 library loaded. For example, current XLA
 [lowers a supported ROCm grouped matmul](https://github.com/openxla/xla/pull/38735)
 to `custom_call_target="__cublas$lt$groupedMatmul"` and executes it with

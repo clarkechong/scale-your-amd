@@ -7,7 +7,7 @@ date: 2026-09-13
 section_number: 10
 
 previous_section_url: "/pages/9-compiler-runtime-and-rccl-controls"
-previous_section_name: "Chapter 9: Compiler, Runtime, and RCCL Controls"
+previous_section_name: "Chapter 9: Tuning the Compiler, Runtime, and RCCL"
 
 next_section_url: "/pages/11-llama-2-70b-mixed-precision-training"
 next_section_name: "Chapter 11: Llama 70B"

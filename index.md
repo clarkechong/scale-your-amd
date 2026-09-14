@@ -21,43 +21,52 @@ toc:
   - name: "What This Book Covers"
   - name: "Reader and Prerequisites"
   - name: "Part I: The JAX Stack on ROCm using MI355X"
+    subsections:
+      - name: "1. MI355X as a Training Machine"
+        url: "/pages/1-mi355x-as-a-training-machine"
+      - name: "2. Lowering jax.jit on ROCm"
+        url: "/pages/2-lowering-jax-jit-on-rocm"
+      - name: "3. Profiling and Analysis of a Training Step"
+        url: "/pages/3-profiling-and-analysis-of-one-training-step"
   - name: "Part II: JAX Performance Features on ROCm"
+    subsections:
+      - name: "4. Training in Mixed Precision"
+        url: "/pages/4-training-in-mixed-precision"
+      - name: "5. Making the Model Fit"
+        url: "/pages/5-making-the-model-fit"
+      - name: "6. Parallelism Strategies for Higher Throughput"
+        url: "/pages/6-jax-shardings-to-a-training-mesh"
+      - name: "7. A Map of ROCm Kernel Backends on JAX"
+        url: "/pages/7-a-map-of-kernel-backends-on-jax"
+      - name: "8. Training Mixture-of-Experts on MI355X"
+        url: "/pages/8-mixture-of-experts-on-mi355x"
+      - name: "9. Tuning the Compiler, Runtime, and RCCL"
+        url: "/pages/9-compiler-runtime-and-rccl-controls"
   - name: "Part III: Case Studies: Expectations and Results"
+    subsections:
+      - name: "10. Llama 7B: Exposing the Complete Stack"
+        url: "/pages/10-llama-7b-exposing-the-complete-stack"
+      - name: "11. Llama 2 70B: Mixed Precision Training"
+        url: "/pages/11-llama-2-70b-mixed-precision-training"
+      - name: "12. Mixtral 8x22B: Sharding Meshes and MoE Optimizations"
+        url: "/pages/12-mixtral-8x22b-sharding-meshes-and-moe-optimizations"
   - name: "Appendices"
-  - name: "Versioning and Attribution"
+  - name: "Attribution"
 ---
-
-The [JAX Scaling Book](https://jax-ml.github.io/scaling-book/) already gives a
-careful treatment of rooflines, Transformer accounting, sharded matrix
-multiplication, and training parallelism. This book uses the same foundation for a
-narrower question:
-
-> Given a fixed training workload on MI355X, which JAX and MaxText configuration
-> produces the most tokens per second per GPU without changing the learning
-> behaviour?
-
-The answer depends on details that a hardware-independent treatment cannot settle:
-which ROCm kernel XLA selects, which low-precision paths carry gradients, how Shardy
-maps logical axes onto an eight-GPU baseboard, and whether a nominally supported
-feature runs quickly on the declared software stack.
 
 ## What This Book Covers
 
-The current evidence scope is one MI355X or one eight-GPU MI355X UBB 2.0 node. The
-software path is JAX, XLA, ROCm, and MaxText. The main subject is pre-training
-throughput. Validation loss is used as a guardrail when a performance feature changes
-numerics.
+The famous [JAX Scaling Book](https://jax-ml.github.io/scaling-book/) teaches a comprehensive understanding on TPU architecure, rooflines, Transformer analysis, sharding behaviour, training parallelism, and much more. 
 
-The current book covers one MI355X or one eight-GPU MI355X node. It does not
-present multi-node performance results.
+This ROCm book serves as complementary material for readers to understand the ROCm stack for JAX, including ROCm experimental features, and in general how to extract the best training performance out of AMD GPU's with JAX.
 
-The book does not cover production serving. For KV-cache economics, continuous
-batching, speculative decoding, and serving-engine design, use the inference chapters
-of the Scaling Book and the documentation for vLLM or SGLang.
+Namely,
 
-Generic theory is repeated only when it is needed to understand an AMD result. Each
-recap links to the fuller derivation in the Scaling Book, substitutes MI355X
-constants, and then moves to the JAX or MaxText control that the reader can use.
+> For a given training workload on MI355X, how can we achieve the best tokens/s/gpu with JAX and MaxText without changing the learning behaviour.
+
+But perhaps more importantly, readers should be aware of the performance features available within the JAX/XLA/MaxText ecosystem, understand their underlying mechanisms, and know where to find further information.
+
+Given the pace of active development, the JAX/ROCm software stack evolves rapidly, with new optimizations and capabilities often arriving faster than documentation can be updated. Consequently, the goal is not merely to present performance recommendations for the current state of the ecosystem, but to provide readers with the context necessary to discover new developments, evaluate their applicability, and incorporate optimizations suited to their own training environments.
 
 ## Reader and Prerequisites
 
@@ -74,29 +83,34 @@ derivations should use the corresponding Scaling Book chapters linked throughout
 2. [**Lowering `jax.jit` on ROCm**]({{ '/pages/2-lowering-jax-jit-on-rocm' | relative_url }})
    follows a training step from Python through StableHLO and XLA to ROCm libraries,
    generated kernels, FFI calls, and the HIP runtime.
-3. [**Predicting and Measuring One Training Step**]({{ '/pages/3-predicting-and-measuring-one-training-step' | relative_url }})
-   defines the compute, memory, and communication ledgers, then tests them using a
-   fixed benchmark protocol, HLO, XProf, `rocprofv3`, and hardware counters.
+3. [**Profiling and Analysis of a Training Step**]({{ '/pages/3-profiling-and-analysis-of-one-training-step' | relative_url }})
+   predicts one optimizer update, measures it cleanly, and traces performance gaps
+   through HLO, XProf, `rocprofv3`, ROCTx, and hardware counters.
 
 ## Part II: JAX Performance Features on ROCm
 
+The chapters follow one configuration decision in order: choose the numeric recipe,
+make one optimizer update fit, distribute it for throughput, select kernels for the
+resulting local operations, apply those decisions together for sparse models, and
+only then tune compiler or runtime controls.
+
 4. [**Training in Mixed Precision**]({{ '/pages/4-training-in-mixed-precision' | relative_url }})
    covers BF16, FP16, FP8, MXFP8, MXFP6, and MXFP4 as per-tensor training recipes.
-5. [**Making the Model Fit**]({{ '/pages/5-making-the-model-fit' | relative_url }}) covers
-   activation memory, optimizer state, donation, scanned layers, rematerialization,
-   gradient accumulation, and sharded initialization.
-6. [**JAX Shardings to a Training Mesh**]({{ '/pages/6-jax-shardings-to-a-training-mesh' | relative_url }})
-   connects `Mesh`, `PartitionSpec`, and Shardy to RCCL traffic and MaxText
-   parallelism fields.
-7. [**A Map of Kernel Backends on JAX**]({{ '/pages/7-a-map-of-kernel-backends-on-jax' | relative_url }})
-   compares the dense GEMM, attention, and fused-kernel paths that are available on
-   ROCm and shows how to confirm which path ran.
-8. [**Mixture-of-Experts on MI355X**]({{ '/pages/8-mixture-of-experts-on-mi355x' | relative_url }}) covers
-   routing, capacity, dropping, dropless execution, expert kernels, all-to-all
-   dispatch, and expert parallelism.
-9. [**Compiler, Runtime, and RCCL Controls**]({{ '/pages/9-compiler-runtime-and-rccl-controls' | relative_url }})
-    covers the flags used by the experiments, including autotuning, collective
-    combining, latency hiding, command buffers, and RCCL controls.
+5. [**Making the Model Fit**]({{ '/pages/5-making-the-model-fit' | relative_url }})
+   covers persistent and activation memory, donation, rematerialization, accumulation,
+   FSDP as a capacity tool, sharded initialization, and offload.
+6. [**Parallelism Strategies for Higher Throughput**]({{ '/pages/6-jax-shardings-to-a-training-mesh' | relative_url }})
+   connects `Mesh`, `PartitionSpec`, and Shardy to local shapes, collectives,
+   parallelism strategies, and eight-GPU placement.
+7. [**A Map of ROCm Kernel Backends on JAX**]({{ '/pages/7-a-map-of-kernel-backends-on-jax' | relative_url }})
+   selects and proves dense GEMM, attention, and fused forward/backward kernel paths
+   for the local operations produced by the precision and mesh decisions.
+8. [**Training Mixture-of-Experts on MI355X**]({{ '/pages/8-mixture-of-experts-on-mi355x' | relative_url }})
+   integrates sparse-model memory, routing, capacity, expert kernels, AllToAll
+   traffic, expert parallelism, rematerialization, and diagnostics.
+9. [**Tuning the Compiler, Runtime, and RCCL**]({{ '/pages/9-compiler-runtime-and-rccl-controls' | relative_url }})
+   changes autotuning, collective combining, latency hiding, command buffers, and
+   RCCL controls only after a profile identifies the mechanism.
 
 ## Part III: Case Studies: Expectations and Results
 
@@ -124,11 +138,8 @@ measurements are not presented as results.
 - [**Appendix E: Compatibility and Negative Results**]({{ '/pages/e-compatibility-and-negative-results' | relative_url }})
 - [**Appendix F: Case-study Artifacts**]({{ '/pages/f-case-study-artifact-schema' | relative_url }})
 
-## Versioning and Attribution
+## Attribution
 
-Every software claim states the relevant version or commit and its verification
-date. A new ROCm, JAX, MaxText, Transformer Engine, or JAX-AITER release triggers
-retesting rather than silent carryover.
 
 The book reuses concepts and, where noted, adapted material from the MIT-licensed
 JAX Scaling Book. Citations accompany reused derivations and figures. AMD, JAX,
