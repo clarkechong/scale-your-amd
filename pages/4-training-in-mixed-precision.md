@@ -1,16 +1,16 @@
 ---
 layout: distill
-title: "Precision as a Training Decision"
+title: "Training in Mixed Precision"
 description: "Choose tensor dtypes, scaling recipes, and MI355X execution paths without mistaking a selected config for a low-precision kernel."
 date: 2026-09-13
 
-section_number: 5
+section_number: 4
 
-previous_section_url: "/pages/4-measuring-and-explaining-a-training-step"
-previous_section_name: "Chapter 4: Profiling"
+previous_section_url: "/pages/3-predicting-and-measuring-one-training-step"
+previous_section_name: "Chapter 3: Predicting and Measuring One Training Step"
 
-next_section_url: "/pages/6-making-the-model-fit"
-next_section_name: "Chapter 6: Making the Model Fit"
+next_section_url: "/pages/5-making-the-model-fit"
+next_section_name: "Chapter 5: Making the Model Fit"
 
 authors:
   - name: Clarke Chong
@@ -322,7 +322,7 @@ Low precision changes more than compute:
 - A faster matrix path can expose communication or fixed-cost kernels that were hidden
   in the BF16 run.
 
-Chapter 6 builds the complete state and activation ledgers. The useful rule here is
+Chapter 5 builds the complete state and activation ledgers. The useful rule here is
 that a compute format saves persistent memory only when the stored tensor role also
 changes.
 

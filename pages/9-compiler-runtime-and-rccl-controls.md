@@ -4,13 +4,13 @@ title: "Compiler, Runtime, and RCCL Controls"
 description: "A controlled method for changing XLA, JAX, HIP, and RCCL settings on MI355X without losing correctness or attribution."
 date: 2026-09-13
 
-section_number: 10
+section_number: 9
 
-previous_section_url: "/pages/9-mixture-of-experts-on-mi355x"
-previous_section_name: "Chapter 9: Mixture of Experts"
+previous_section_url: "/pages/8-mixture-of-experts-on-mi355x"
+previous_section_name: "Chapter 8: Mixture of Experts"
 
-next_section_url: "/pages/11-llama-7b-exposing-the-complete-stack"
-next_section_name: "Chapter 11: Llama 7B"
+next_section_url: "/pages/10-llama-7b-exposing-the-complete-stack"
+next_section_name: "Chapter 10: Llama 7B"
 
 authors:
   - name: Clarke Chong
@@ -547,7 +547,7 @@ arm is unsupported for that pin, not a failed performance experiment.
 ### MXFP8 workspace
 
 The Llama 70B MXFP8 arm requires the Transformer Engine gfx950 workspace patch
-described in Chapter 8. A flag cannot repair an undersized FFI workspace. The
+described in Chapter 7. A flag cannot repair an undersized FFI workspace. The
 runner probes the installed source and fails if the patch is absent. Preserve that
 probe.
 
@@ -654,7 +654,7 @@ At minimum:
 - compare a short loss trajectory;
 - for kernel or low-precision changes, compare outputs and gradients against the
   reference route;
-- use the Chapter 5 convergence guardrail before accepting a new precision or
+- use the Chapter 4 convergence guardrail before accepting a new precision or
   numerical mode.
 
 The MI355X WarpSpeed safety variable is a prerequisite, not a performance arm.
@@ -733,4 +733,4 @@ and change one control only after a profile identifies its mechanism.
 - [RCCL usage tips](https://rocm.docs.amd.com/projects/rccl/en/latest/how-to/rccl-usage-tips.html)
 - [Current XLA debug-option definitions](https://github.com/openxla/xla/blob/main/xla/xla.proto)
 
-<h3 markdown=1 class="next-section">Next: [Llama 7B]({{ '/pages/11-llama-7b-exposing-the-complete-stack' | relative_url }}).</h3>
+<h3 markdown=1 class="next-section">Next: [Llama 7B]({{ '/pages/10-llama-7b-exposing-the-complete-stack' | relative_url }}).</h3>

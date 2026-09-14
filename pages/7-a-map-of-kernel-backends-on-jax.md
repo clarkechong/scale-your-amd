@@ -1,16 +1,16 @@
 ---
 layout: distill
-title: "Kernels Reachable from JAX"
+title: "A Map of Kernel Backends on JAX"
 description: "How dense GEMM, attention, fused pointwise work, and MoE reach MI355X kernels through XLA, libraries, Triton, and FFI."
 date: 2026-09-13
 
-section_number: 8
+section_number: 7
 
-previous_section_url: "/pages/7-from-jax-shardings-to-a-training-mesh"
-previous_section_name: "Chapter 7: Sharding"
+previous_section_url: "/pages/6-jax-shardings-to-a-training-mesh"
+previous_section_name: "Chapter 6: Sharding"
 
-next_section_url: "/pages/9-mixture-of-experts-on-mi355x"
-next_section_name: "Chapter 9: Mixture of Experts"
+next_section_url: "/pages/8-mixture-of-experts-on-mi355x"
+next_section_name: "Chapter 8: Mixture of Experts"
 
 authors:
   - name: Clarke Chong
@@ -123,7 +123,7 @@ All three repositories currently set:
 ```
 
 These flags make candidates eligible; they do not force every dot through Triton.
-The autotuner can still choose a library route. Chapter 10 gives the controlled
+The autotuner can still choose a library route. Chapter 9 gives the controlled
 sweep and cache rules.
 
 ### Training requires three matrix products
@@ -219,7 +219,7 @@ aiter::fmha_bwd_hd128_bf16_causal_a32_psskddv
 This is one route with two layers: Transformer Engine owns the JAX-facing
 attention interface and selects a ROCm CK/AITER implementation. Do not report
 “TE versus AITER” unless the AITER arm is the direct FFI route below.
-The raw trace is not checked in, so Chapter 11 must reproduce this attribution.
+The raw trace is not checked in, so Chapter 10 must reproduce this attribution.
 
 ### Direct JAX-AITER
 
@@ -317,7 +317,7 @@ single corresponding device launch.
 
 ## MoE Kernel Preview
 
-Chapter 9 develops the routing and communication model. The kernel choices needed
+Chapter 8 develops the routing and communication model. The kernel choices needed
 for the Mixtral case are:
 
 - **Fixed-capacity one-hot:** the BF16 baseline. Tokens are placed into fixed
@@ -404,7 +404,7 @@ Use this order for every new kernel route:
 9. **Time in a clean process.** Do not use profiler or PMC timings. Report
    tokens/s/GPU first.
 10. **Apply the quality guardrail.** For a low-precision training change, use the
-    convergence protocol in Chapter 5 before making a final recommendation.
+    convergence protocol in Chapter 4 before making a final recommendation.
 
 An HLO custom call without a trace is incomplete proof: the library can dispatch
 internally. A kernel name without HLO is also incomplete: it does not show which
@@ -478,4 +478,4 @@ trace, workspace, memory, and tokens/s/GPU artifacts for the exact shape.
 - [JAX-AITER](https://github.com/ROCm/jax-aiter)
 - [Tokamax](https://github.com/openxla/tokamax)
 
-<h3 markdown=1 class="next-section">Next: [Mixture of Experts]({{ '/pages/9-mixture-of-experts-on-mi355x' | relative_url }}).</h3>
+<h3 markdown=1 class="next-section">Next: [Mixture of Experts]({{ '/pages/8-mixture-of-experts-on-mi355x' | relative_url }}).</h3>

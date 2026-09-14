@@ -4,13 +4,13 @@ title: "Making the Model Fit"
 description: "Account for training state and activations, then use donation, rematerialization, accumulation, sharding, and offload in a measured order."
 date: 2026-09-13
 
-section_number: 6
+section_number: 5
 
-previous_section_url: "/pages/5-precision-as-a-training-decision"
-previous_section_name: "Chapter 5: Precision as a Training Decision"
+previous_section_url: "/pages/4-training-in-mixed-precision"
+previous_section_name: "Chapter 4: Training in Mixed Precision"
 
-next_section_url: "/pages/7-from-jax-shardings-to-a-training-mesh"
-next_section_name: "Chapter 7: Sharding"
+next_section_url: "/pages/6-jax-shardings-to-a-training-mesh"
+next_section_name: "Chapter 6: Sharding"
 
 authors:
   - name: Clarke Chong
@@ -53,7 +53,7 @@ Use two ledgers before compiling:
 Then compare both with XLA's buffer assignment and the allocator high-water mark. The
 ledgers explain the terms. The compiled program decides which terms overlap in time.
 
-This chapter uses the same evidence tags as Chapter 5. **[source]** identifies
+This chapter uses the same evidence tags as Chapter 4. **[source]** identifies
 checked-in code or configuration, **[measured]** requires a complete Appendix F
 bundle, **[analytical]** means arithmetic not confirmed by a profile, and
 **[cited]** means a named external source's result or behavior. Current
@@ -576,7 +576,7 @@ insufficient or when capacity matters more than throughput.
 9. Add host offload only after sharding, donation, attention, remat, and accumulation
    are understood. Treat it as a capacity experiment until overlap is measured.
 10. Choose the lowest-memory configuration that meets the tokens/s/GPU target and
-    retains the Chapter 5 convergence guardrail. Keep headroom for checkpoint restore,
+    retains the Chapter 4 convergence guardrail. Keep headroom for checkpoint restore,
     profiler overhead, and runtime variance.
 
 ## Decision Table

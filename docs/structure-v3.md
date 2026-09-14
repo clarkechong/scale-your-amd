@@ -194,11 +194,11 @@ This book is authoritative for:
 - Chapters 1 and 2 own platform facts and the concrete execution path. The Scaling
   Book supplies only broad architecture or compiler context.
 - Chapter 3 borrows generic cost-model forms and owns the MI355X constants,
-  workload ledger, metric definitions, and worked predictions.
-- Chapter 4 owns the measurement protocol and ROCm/JAX profiling workflow.
-- Chapters 5 through 10 own configuration decisions on the pinned MI355X stack.
+  workload ledger, worked predictions, measurement protocol, and ROCm/JAX profiling
+  workflow.
+- Chapters 4 through 9 own configuration decisions on the pinned MI355X stack.
   They may link to generic parallelism or numerical background.
-- Chapters 11 through 13 own the experiment design, artifacts, results, and
+- Chapters 10 through 12 own the experiment design, artifacts, results, and
   recommendations for their named workloads.
 - Appendices own volatile setup, protocol, configuration, tooling, compatibility,
   and artifact lookup material.
@@ -338,9 +338,9 @@ Planned file: `pages/1-mi355x-as-a-training-machine.md`
 - Hardware constants sheet
 - Forward links to precision, sharding, kernels, and case studies
 
-### Chapter 2 — What `jax.jit` runs on ROCm
+### Chapter 2 — Lowering `jax.jit` on ROCm
 
-Planned file: `pages/2-what-jax-jit-runs-on-rocm.md`
+Planned file: `pages/2-lowering-jax-jit-on-rocm.md`
 
 - JAX transformations used by the book
   - PyTrees
@@ -400,9 +400,9 @@ Planned file: `pages/2-what-jax-jit-runs-on-rocm.md`
   - source-file tours move to Appendix D
   - exhaustive compiler-pass catalogues remain external
 
-### Chapter 3 — Predicting one training step
+### Chapter 3 — Predicting and measuring one training step
 
-Planned file: `pages/3-predicting-one-training-step.md`
+Planned file: `pages/3-predicting-and-measuring-one-training-step.md`
 
 - Scaling Book recap links
   - rooflines
@@ -464,10 +464,6 @@ Planned file: `pages/3-predicting-one-training-step.md`
   - observed result slot
   - reconciliation notes
 
-### Chapter 4 — Measuring and explaining a training step
-
-Planned file: `pages/4-measuring-and-explaining-a-training-step.md`
-
 - Measurement contract
   - hardware manifest
   - container and repository commits
@@ -524,9 +520,9 @@ Planned file: `pages/4-measuring-and-explaining-a-training-step.md`
 
 ## Part II — JAX Performance Features on ROCm
 
-### Chapter 5 — Precision as a training decision
+### Chapter 4 — Training in mixed precision
 
-Planned file: `pages/5-precision-as-a-training-decision.md`
+Planned file: `pages/4-training-in-mixed-precision.md`
 
 - Per-tensor precision rather than one global dtype
 - Tensor roles
@@ -575,9 +571,9 @@ Planned file: `pages/5-precision-as-a-training-decision.md`
 - Versioned support table
 - Inputs to the Llama 70B case study
 
-### Chapter 6 — Making the model fit
+### Chapter 5 — Making the model fit
 
-Planned file: `pages/6-making-the-model-fit.md`
+Planned file: `pages/5-making-the-model-fit.md`
 
 - Capacity before speed
 - Persistent state
@@ -605,9 +601,9 @@ Planned file: `pages/6-making-the-model-fit.md`
 - Memory decision procedure
 - Inputs to the Llama 7B and Llama 70B case studies
 
-### Chapter 7 — From JAX shardings to a training mesh
+### Chapter 6 — JAX shardings to a training mesh
 
-Planned file: `pages/7-from-jax-shardings-to-a-training-mesh.md`
+Planned file: `pages/6-jax-shardings-to-a-training-mesh.md`
 
 - Concise sharding recap
   - global versus local arrays
@@ -656,9 +652,9 @@ Planned file: `pages/7-from-jax-shardings-to-a-training-mesh.md`
 - Concrete mesh decision procedure
 - Inputs to all distributed case studies
 
-### Chapter 8 — Kernels reachable from JAX
+### Chapter 7 — A map of kernel backends on JAX
 
-Planned file: `pages/8-kernels-reachable-from-jax.md`
+Planned file: `pages/7-a-map-of-kernel-backends-on-jax.md`
 
 - Kernel-selection model
   - XLA-generated kernel
@@ -697,9 +693,9 @@ Planned file: `pages/8-kernels-reachable-from-jax.md`
 - Versioned reachability table
 - Inputs to the Llama 7B and Mixtral case studies
 
-### Chapter 9 — Mixture-of-Experts on MI355X
+### Chapter 8 — Mixture-of-Experts on MI355X
 
-Planned file: `pages/9-mixture-of-experts-on-mi355x.md`
+Planned file: `pages/8-mixture-of-experts-on-mi355x.md`
 
 - Dense versus sparse accounting
 - Router
@@ -739,9 +735,9 @@ Planned file: `pages/9-mixture-of-experts-on-mi355x.md`
 - MoE decision procedure
 - Inputs to the Mixtral case study
 
-### Chapter 10 — Compiler, runtime, and RCCL controls
+### Chapter 9 — Compiler, runtime, and RCCL controls
 
-Planned file: `pages/10-compiler-runtime-and-rccl-controls.md`
+Planned file: `pages/9-compiler-runtime-and-rccl-controls.md`
 
 - Flag initialization order
 - Controlled flag-sweep method
@@ -767,9 +763,9 @@ Planned file: `pages/10-compiler-runtime-and-rccl-controls.md`
 
 ## Part III — Case Studies: Expectations and Results
 
-### Chapter 11 — Llama 7B: exposing the complete stack
+### Chapter 10 — Llama 7B: exposing the complete stack
 
-Planned file: `pages/11-llama-7b-exposing-the-complete-stack.md`
+Planned file: `pages/10-llama-7b-exposing-the-complete-stack.md`
 
 - Status and artifact-completeness banner
 - Chapter contract and frozen invariants
@@ -813,9 +809,9 @@ Planned file: `pages/11-llama-7b-exposing-the-complete-stack.md`
   - checkpointing
   - multi-node execution
 
-### Chapter 12 — Llama 2 70B: mixed precision training
+### Chapter 11 — Llama 2 70B: mixed precision training
 
-Planned file: `pages/12-llama-2-70b-mixed-precision-training.md`
+Planned file: `pages/11-llama-2-70b-mixed-precision-training.md`
 
 - Status and artifact-completeness banner
 - Chapter contract and frozen invariants
@@ -866,9 +862,9 @@ Planned file: `pages/12-llama-2-70b-mixed-precision-training.md`
   - profile artifacts
   - convergence plot and exact provenance
 
-### Chapter 13 — Mixtral 8x22B: sharding meshes and MoE optimizations
+### Chapter 12 — Mixtral 8x22B: sharding meshes and MoE optimizations
 
-Planned file: `pages/13-mixtral-8x22b-sharding-meshes-and-moe-optimizations.md`
+Planned file: `pages/12-mixtral-8x22b-sharding-meshes-and-moe-optimizations.md`
 
 - Status and artifact-completeness banner
 - Chapter contract and frozen invariants
@@ -1012,7 +1008,7 @@ Planned file: `pages/f-case-study-artifact-schema.md`
 
 ### 4.1 Configuration or mechanism chapter
 
-Use this order for Chapters 1 through 10:
+Use this order for Chapters 1 through 9:
 
 1. Decision the reader needs to make.
 2. Prerequisite recap and Scaling Book link.
@@ -1033,7 +1029,7 @@ with generic prose.
 
 ### 4.2 Measured case-study chapter
 
-Use this order for Chapters 11 through 13:
+Use this order for Chapters 10 through 12:
 
 1. Status banner: measured, partially measured, or blocked.
 2. Decision and chapter contract.
@@ -1104,18 +1100,17 @@ scale-your-amd/
 │   └── structure-v3.md
 ├── pages/
 │   ├── 1-mi355x-as-a-training-machine.md
-│   ├── 2-what-jax-jit-runs-on-rocm.md
-│   ├── 3-predicting-one-training-step.md
-│   ├── 4-measuring-and-explaining-a-training-step.md
-│   ├── 5-precision-as-a-training-decision.md
-│   ├── 6-making-the-model-fit.md
-│   ├── 7-from-jax-shardings-to-a-training-mesh.md
-│   ├── 8-kernels-reachable-from-jax.md
-│   ├── 9-mixture-of-experts-on-mi355x.md
-│   ├── 10-compiler-runtime-and-rccl-controls.md
-│   ├── 11-llama-7b-exposing-the-complete-stack.md
-│   ├── 12-llama-2-70b-mixed-precision-training.md
-│   ├── 13-mixtral-8x22b-sharding-meshes-and-moe-optimizations.md
+│   ├── 2-lowering-jax-jit-on-rocm.md
+│   ├── 3-predicting-and-measuring-one-training-step.md
+│   ├── 4-training-in-mixed-precision.md
+│   ├── 5-making-the-model-fit.md
+│   ├── 6-jax-shardings-to-a-training-mesh.md
+│   ├── 7-a-map-of-kernel-backends-on-jax.md
+│   ├── 8-mixture-of-experts-on-mi355x.md
+│   ├── 9-compiler-runtime-and-rccl-controls.md
+│   ├── 10-llama-7b-exposing-the-complete-stack.md
+│   ├── 11-llama-2-70b-mixed-precision-training.md
+│   ├── 12-mixtral-8x22b-sharding-meshes-and-moe-optimizations.md
 │   ├── a-reproducible-mi355x-environment.md
 │   ├── b-measurement-and-convergence-protocol.md
 │   ├── c-configuration-quick-reference.md
@@ -1163,11 +1158,11 @@ references, checksums, and enough metadata to audit every published number.
 
 ### 5.1 Completed page migration
 
-- `index.md`, Chapters 1 through 13, and Appendices A through F now use the paths
+- `index.md`, Chapters 1 through 12, and Appendices A through F now use the paths
   listed above.
 - The former `pages/3-dl-methods.md` is preserved as
   `pages/archive/v2-3-dl-methods.md`.
-- The former Chapter 5 through 8 stubs were replaced by the renumbered case-study
+- The former Chapter 4 through 7 stubs were replaced by the renumbered case-study
   drafts.
 - Archived appendix sources remain under `pages/archive/`; active appendices contain
   the MI355X revisions.
@@ -1183,7 +1178,7 @@ serving scope, stale support claims, and old chapter-number assumptions before r
 
 - Reuse compact explanations of compute, memory, and communication bounds in
   Chapter 3.
-- Reuse profiler-oriented roofline material in Chapter 4 or Appendix D.
+- Reuse profiler-oriented roofline material in Chapter 3 or Appendix D.
 - Do not recreate a standalone generic roofline chapter.
 - Replace every hardware constant with a cited MI355X value.
 
@@ -1197,30 +1192,30 @@ serving scope, stale support claims, and old chapter-number assumptions before r
 
 ### `pages/archive/3-profiling.md`
 
-- Reuse tooling limitations, command patterns, and profiler signatures in Chapter 4
+- Reuse tooling limitations, command patterns, and profiler signatures in Chapter 3
   and Appendix D.
 - Recheck all zero-field, counter, and XProf limitations on the pinned stack.
-- Prefer the tighter active `pages/4-measuring-and-explaining-a-training-step.md` structure when material overlaps.
+- Prefer the tighter active `pages/3-predicting-and-measuring-one-training-step.md` structure when material overlaps.
 
 ### `pages/archive/4-sharding.md`
 
 - Reuse notation, collective-cost examples, sharded matmul cases, and parallelism
-  mechanics in Chapters 3 and 7.
+  mechanics in Chapters 3 and 6.
 - Link to the Scaling Book for full generic derivations.
 - Replace MI300X topology assumptions with the MI355X eight-GPU topology.
-- Move implementation recipes into the MaxText field sections of Chapter 7.
+- Move implementation recipes into the MaxText field sections of Chapter 6.
 
 ### `pages/archive/5-transformers.md`
 
 - Reuse parameter, FLOP, activation, and MoE accounting examples in Chapter 3.
-- Reuse only compact architectural context in Chapters 5 and 9.
+- Reuse only compact architectural context in Chapters 4 and 8.
 - Do not repeat a general Transformer tutorial.
 - Recalculate all examples for Llama 7B, Llama 70B, and Mixtral 8x22B.
 
 ### `pages/archive/6-training.md`
 
 - Reuse parallelism, rematerialization, gradient accumulation, and optimizer-state
-  material in Chapters 6 and 7.
+  material in Chapters 5 and 6.
 - Split conceptual sharding from measured MaxText recommendations.
 - Remove unsupported multi-node implications.
 - Revalidate all configuration fields.
@@ -1228,19 +1223,19 @@ serving scope, stale support claims, and old chapter-number assumptions before r
 ### `pages/archive/7-moe.md`
 
 - Reuse routing, imbalance, capacity, expert implementation, and AllToAll material in
-  Chapter 9.
-- Move model-specific observations into Chapter 13.
+  Chapter 8.
+- Move model-specific observations into Chapter 12.
 - Recheck grouped-kernel and ragged-collective support on the pinned stack.
 
 ### `pages/archive/8-getting-to-roofline.md`
 
-- Reuse the cheapest-first diagnosis sequence in Chapter 4.
-- Reuse worked performance-gap patterns in Chapters 8 and 10.
+- Reuse the cheapest-first diagnosis sequence in Chapter 3.
+- Reuse worked performance-gap patterns in Chapters 7 and 9.
 - Remove broad tuning advice that has no exercised MI355X control or evidence.
 
 ### `pages/archive/9-llama.md`
 
-- Use as background for the structure of Chapters 11 and 12.
+- Use as background for the structure of Chapters 10 and 11.
 - Do not carry MI300X results into the MI355X case studies.
 - Preserve useful prediction-versus-measurement framing after updating the workload.
 
@@ -1277,8 +1272,8 @@ serving scope, stale support claims, and old chapter-number assumptions before r
 ### Existing active pages
 
 - `pages/1-mi355x-as-a-training-machine.md` is the primary source for Chapter 1.
-- `pages/2-what-jax-jit-runs-on-rocm.md` is the primary source for Chapter 2.
-- `pages/4-measuring-and-explaining-a-training-step.md` is the primary source for Chapter 4.
+- `pages/2-lowering-jax-jit-on-rocm.md` is the primary source for Chapter 2.
+- `pages/3-predicting-and-measuring-one-training-step.md` is the primary source for Chapter 3.
 - The current Llama and Mixtral pages provide intent and notes, while the experiment
   repositories and captured artifacts provide evidence.
 
@@ -1364,40 +1359,39 @@ v26.6 result bundle exists.
 - Chapter 0 has no dependency.
 - Chapter 1 has no chapter dependency.
 - Chapter 2 assumes Chapter 1's device and memory vocabulary.
-- Chapter 3 assumes Chapter 1's constants and links to generic Scaling Book math.
-- Chapter 4 assumes Chapters 2 and 3.
-- Chapter 5 assumes Chapters 1 through 4.
-- Chapter 6 assumes Chapters 1 through 4 and previews Chapter 7 where state sharding
+- Chapter 3 assumes Chapters 1 and 2.
+- Chapter 4 assumes Chapters 1 through 3.
+- Chapter 5 assumes Chapters 1 through 3 and previews Chapter 6 where state sharding
   affects capacity.
+- Chapter 6 assumes Chapters 1 through 3.
 - Chapter 7 assumes Chapters 1 through 4.
-- Chapter 8 assumes Chapters 1, 2, and 4.
-- Chapter 9 assumes Chapters 3, 4, 7, and 8.
-- Chapter 10 assumes Chapters 2, 4, 7, 8, and 9.
-- Chapter 11 assumes Chapters 1 through 8 and Chapter 10.
-- Chapter 12 assumes Chapters 1 through 8 and Chapter 10.
-- Chapter 13 assumes Chapters 1 through 10.
+- Chapter 8 assumes Chapters 3, 6, and 7.
+- Chapter 9 assumes Chapters 2, 3, 6, 7, and 8.
+- Chapter 10 assumes Chapters 1 through 7 and Chapter 9.
+- Chapter 11 assumes Chapters 1 through 7 and Chapter 9.
+- Chapter 12 assumes Chapters 1 through 9.
 - Appendix A supports every measured chapter.
-- Appendix B is normative for Chapters 4 and 11 through 13.
-- Appendix C is generated from the controls established in Chapters 5 through 10.
-- Appendix D supports Chapters 2, 4, 8, and every case study.
-- Appendix E collects failures from Chapters 2, 5, 8, 9, 10, and 11 through 13.
-- Appendix F is the evidence index for Chapters 11 through 13.
+- Appendix B is normative for Chapter 3 and Chapters 10 through 12.
+- Appendix C is generated from the controls established in Chapters 4 through 9.
+- Appendix D supports Chapters 2, 3, 7, and every case study.
+- Appendix E collects failures from Chapters 2, 4, 7, 8, 9, and 10 through 12.
+- Appendix F is the evidence index for Chapters 10 through 12.
 
 ### 8.2 Authoring dependencies
 
-Reading order and writing order differ. Chapters 5 through 10 appear before the case
+Reading order and writing order differ. Chapters 4 through 9 appear before the case
 studies, but their recommendations must be grounded in case-study measurements.
 
 - Chapter 1 requires corrected and cited MI355X constants.
 - Chapter 2 requires a pinned software stack and path-verification examples.
-- Chapter 3 requires frozen case-study workload ledgers.
-- Chapter 4 requires Appendix B's protocol and Appendix F's artifact contract.
-- Chapters 5, 6, and 8 require Llama 7B or Llama 70B artifacts.
-- Chapters 7, 9, and 10 require Mixtral artifacts for MoE and collective
+- Chapter 3 requires frozen case-study workload ledgers, Appendix B's protocol,
+  and Appendix F's artifact contract.
+- Chapters 4, 5, and 7 require Llama 7B or Llama 70B artifacts.
+- Chapters 6, 8, and 9 require Mixtral artifacts for MoE and collective
   recommendations.
-- Chapters 11 through 13 require Chapters 1 through 4 for vocabulary and method, but
+- Chapters 10 through 12 require Chapters 1 through 3 for vocabulary and method, but
   their measured sections should be drafted before final recommendations in
-  Chapters 5 through 10.
+  Chapters 4 through 9.
 
 ### 8.3 Repository dependencies
 
@@ -1416,7 +1410,7 @@ studies, but their recommendations must be grounded in case-study measurements.
 ### Phase 0 — Review this roadmap (complete)
 
 1. Check the outline against MI355X-only and training-only scope.
-2. Check Chapters 11 through 13 against the current experiment repositories.
+2. Check Chapters 10 through 12 against the current experiment repositories.
 3. Remove sections without a mechanism, control, evidence source, or prerequisite role.
 4. Confirm the exact file map and archive destinations.
 5. Approve the roadmap before active-page migration.
@@ -1425,8 +1419,8 @@ studies, but their recommendations must be grounded in case-study measurements.
 
 1. Preserve `pages/3-dl-methods.md` at
    `pages/archive/v2-3-dl-methods.md`.
-2. Rename the three current case-study pages to Chapters 11, 12, and 13.
-3. Create empty, front-matter-complete skeletons for Chapters 3 and 5 through 10.
+2. Rename the three current case-study pages to Chapters 10, 11, and 12.
+3. Create empty, front-matter-complete skeletons for Chapters 3 through 9.
 4. Create active appendix skeletons A through F.
 5. Update `index.md`, all previous/next links, section numbers, and navigation.
 6. Build the site and check every route.
@@ -1441,7 +1435,7 @@ studies, but their recommendations must be grounded in case-study measurements.
 
 ### Phase 3 — Draft foundations
 
-Draft Chapters 1 through 4 in order:
+Draft Chapters 1 through 3 in order:
 
 1. correct hardware constants and topology;
 2. pin the software path and failure vocabulary;
@@ -1462,7 +1456,7 @@ claims that already have complete evidence.
 
 ### Phase 5 — Draft configuration chapters
 
-Use case-study evidence to complete Chapters 5 through 10:
+Use case-study evidence to complete Chapters 4 through 9:
 
 1. precision;
 2. memory;
@@ -1475,7 +1469,7 @@ Each recommendation should point to the case-study evidence that supports it.
 
 ### Phase 6 — Complete case-study narratives
 
-Finish Chapters 11 through 13 with:
+Finish Chapters 10 through 12 with:
 
 - analytical-versus-measured reconciliation;
 - negative results;
@@ -1525,57 +1519,54 @@ Chapter 3:
 
 - frozen workload ledgers for all three case studies;
 - checked FLOP, memory, and communication arithmetic;
-- one reusable worksheet with consistent units.
-
-Chapter 4:
-
+- one reusable worksheet with consistent units;
 - final warmup, synchronization, repetition, and statistic policy;
 - documented profiler commands on the pinned stack;
 - verified XProf and counter limitations;
 - artifact bundle schema.
 
-Chapter 5:
+Chapter 4:
 
 - complete Llama 70B train-step outputs;
 - backend-path proof for each precision arm;
 - publication-ready convergence plot and provenance;
 - versioned support and fallback records.
 
-Chapter 6:
+Chapter 5:
 
 - comparable Llama 7B rematerialization memory and timing outputs;
 - Llama 70B expected-versus-observed memory records;
 - evidence for donation, scan, and policy interactions.
 
-Chapter 7:
+Chapter 6:
 
 - MI355X RCCL message-size and participant-count evidence;
 - HLO replica-group examples;
 - Mixtral mesh-sweep results;
 - explicit single-node versus future scale-out boundary.
 
-Chapter 8:
+Chapter 7:
 
 - forward and backward path checks for every attention route;
 - kernel names or custom-call proof;
 - correctness comparisons;
 - dated support state for Pallas, Triton, TE, and JAX-AITER paths.
 
-Chapter 9:
+Chapter 8:
 
 - Mixtral v26.6 expert-path results;
 - tokens-per-expert, padding or drop, GEMM-efficiency, and AllToAll diagnostics;
 - verified GroupedGEMM dtype restriction;
 - evidence for the fallback ranking.
 
-Chapter 10:
+Chapter 9:
 
 - before-and-after results for every recommended flag;
 - effective-flag capture;
 - deprecation and no-op checks;
 - numerical-hazard reproductions where applicable.
 
-Chapter 11:
+Chapter 10:
 
 - consolidated Llama 7B result bundle;
 - comparable raw-JAX and MaxText runs;
@@ -1583,7 +1574,7 @@ Chapter 11:
 - one-GPU and FSDP-8 rematerialization artifacts;
 - HLO and profile correlation.
 
-Chapter 12:
+Chapter 11:
 
 - FP32 train-step timing;
 - post-patch MXFP8 timing;
@@ -1594,7 +1585,7 @@ Chapter 12:
 The one-billion-token convergence experiment itself is complete. The blockers above
 concern publication and auditability, not whether the experiment ran.
 
-Chapter 13:
+Chapter 12:
 
 - all v26.6 result artifacts;
 - mesh-sweep metrics;

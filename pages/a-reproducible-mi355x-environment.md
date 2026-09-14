@@ -6,8 +6,8 @@ date: 2026-09-13
 
 section_label: "Appendix A"
 
-previous_section_url: "/pages/13-mixtral-8x22b-sharding-meshes-and-moe-optimizations"
-previous_section_name: "Chapter 13: Sharding Meshes and MoE Optimizations"
+previous_section_url: "/pages/12-mixtral-8x22b-sharding-meshes-and-moe-optimizations"
+previous_section_name: "Chapter 12: Sharding Meshes and MoE Optimizations"
 
 next_section_url: "/pages/b-measurement-and-convergence-protocol"
 next_section_name: "Appendix B: Protocol"

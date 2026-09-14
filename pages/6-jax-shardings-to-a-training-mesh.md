@@ -1,16 +1,16 @@
 ---
 layout: distill
-title: "From JAX Shardings to a Training Mesh"
+title: "JAX Shardings to a Training Mesh"
 description: "How named JAX shardings become collectives, how to place training parallelism on one eight-GPU MI355X node, and how to verify the compiled result."
 date: 2026-09-13
 
-section_number: 7
+section_number: 6
 
-previous_section_url: "/pages/6-making-the-model-fit"
-previous_section_name: "Chapter 6: Making the Model Fit"
+previous_section_url: "/pages/5-making-the-model-fit"
+previous_section_name: "Chapter 5: Making the Model Fit"
 
-next_section_url: "/pages/8-kernels-reachable-from-jax"
-next_section_name: "Chapter 8: Kernels Reachable from JAX"
+next_section_url: "/pages/7-a-map-of-kernel-backends-on-jax"
+next_section_name: "Chapter 7: A Map of Kernel Backends on JAX"
 
 authors:
   - name: Clarke Chong
@@ -49,7 +49,7 @@ first. They derive the general rules. This chapter keeps only the notation and d
 needed to configure JAX and MaxText on MI355X.
 
 [Chapter 1]({{ '/pages/1-mi355x-as-a-training-machine' | relative_url }}) supplies the topology, and
-[Chapter 6]({{ '/pages/6-making-the-model-fit' | relative_url }}) supplies the state and activation
+[Chapter 5]({{ '/pages/5-making-the-model-fit' | relative_url }}) supplies the state and activation
 ledgers. A mesh is acceptable only if it fits in memory, preserves tensor divisibility,
 and puts its frequent collectives on suitable links.
 
@@ -644,7 +644,7 @@ Record:
 
 ### 2. Choose axes required for memory
 
-Use the Chapter 6 ledger.
+Use the Chapter 5 ledger.
 
 - Add the minimum FSDP degree that makes persistent state fit.
 - Add TP only if weight or activation sharding is still needed and local GEMMs remain

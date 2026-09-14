@@ -9,8 +9,8 @@ section_number: 1
 previous_section_url: "/"
 previous_section_name: "Chapter 0: Intro"
 
-next_section_url: "/pages/2-what-jax-jit-runs-on-rocm"
-next_section_name: "Chapter 2: What jax.jit Runs on ROCm"
+next_section_url: "/pages/2-lowering-jax-jit-on-rocm"
+next_section_name: "Chapter 2: Lowering jax.jit on ROCm"
 
 authors:
   - name: Clarke Chong
@@ -787,19 +787,19 @@ named.
 
 ## Where these constants reappear
 
-- [Chapter 2]({{ '/pages/2-what-jax-jit-runs-on-rocm' | relative_url }}) follows a `jax.jit`
+- [Chapter 2]({{ '/pages/2-lowering-jax-jit-on-rocm' | relative_url }}) follows a `jax.jit`
   computation from StableHLO to `gfx950` code and identifies whether GEMMs reach
   MFMA library kernels.
-- [Chapter 3]({{ '/pages/3-predicting-one-training-step' | relative_url }}) uses 288 GB, 8 TB/s,
+- [Chapter 3]({{ '/pages/3-predicting-and-measuring-one-training-step' | relative_url }}) uses 288 GB, 8 TB/s,
   2.5166 PFLOP/s, and 76.8 GB/s per direction to derive memory, compute, and
   communication bounds for training parallelism.
-- [Chapter 4]({{ '/pages/4-measuring-and-explaining-a-training-step' | relative_url }}) checks those analytical
+- [Chapter 3]({{ '/pages/3-predicting-and-measuring-one-training-step' | relative_url }}) checks those analytical
   bounds against clocks, kernels, counters, and collective traces.
-- The [Llama 7B]({{ '/pages/11-llama-7b-exposing-the-complete-stack' | relative_url }}) case separates raw JAX
+- The [Llama 7B]({{ '/pages/10-llama-7b-exposing-the-complete-stack' | relative_url }}) case separates raw JAX
   execution from optimized attention routes.
-- The [Llama 70B]({{ '/pages/12-llama-2-70b-mixed-precision-training' | relative_url }}) case tests BF16,
+- The [Llama 70B]({{ '/pages/11-llama-2-70b-mixed-precision-training' | relative_url }}) case tests BF16,
   FP8, MXFP8, and MXFP4 while treating convergence as a guardrail.
-- The [Mixtral 8x22B]({{ '/pages/13-mixtral-8x22b-sharding-meshes-and-moe-optimizations' | relative_url }}) case places
+- The [Mixtral 8x22B]({{ '/pages/12-mixtral-8x22b-sharding-meshes-and-moe-optimizations' | relative_url }}) case places
   expert traffic inside the eight-GPU xGMI domain and defines the measurement
   needed to quantify AllToAll exposure.
 
@@ -844,4 +844,4 @@ Primary software-facing and format sources:
 - [AMD Instinct MI3XX cluster reference design](https://instinct.docs.amd.com/projects/MI3XX-reference/latest/).
   Non-normative NIC, RoCEv2, tree, rail, and hybrid scale-out designs.
 
-<h3 markdown=1 class="next-section">Next: [how JAX reaches this hardware]({{ '/pages/2-what-jax-jit-runs-on-rocm' | relative_url }}).</h3>
+<h3 markdown=1 class="next-section">Next: [how JAX reaches this hardware]({{ '/pages/2-lowering-jax-jit-on-rocm' | relative_url }}).</h3>

@@ -1,6 +1,6 @@
 ---
 layout: distill
-title: "What jax.jit Runs on ROCm"
+title: "Lowering jax.jit on ROCm"
 description: "The ROCm stack, HLO, and the XLA compiler path from a jax.jit to a HIP executable."
 date: 2026-09-10
 
@@ -9,8 +9,8 @@ section_number: 2
 previous_section_url: "/pages/1-mi355x-as-a-training-machine"
 previous_section_name: "Chapter 1: Hardware"
 
-next_section_url: "/pages/3-predicting-one-training-step"
-next_section_name: "Chapter 3: Cost Model"
+next_section_url: "/pages/3-predicting-and-measuring-one-training-step"
+next_section_name: "Chapter 3: Predicting and Measuring One Training Step"
 
 authors:
   - name: Clarke Chong
@@ -581,7 +581,7 @@ Two experiment routes illustrate the full proof:
   loaded. Forward and backward JAX-AITER targets in optimized HLO prove FFI
   lowering. The AITER or CK dispatch names prove the kernel route.
 
-Chapter 4 applies this ladder to traces and counters. Later kernel and flag chapters
+Chapter 3 applies this ladder to traces and counters. Later kernel and flag chapters
 own route-specific selection controls; this chapter owns the evidence that a control
 had an effect.
 

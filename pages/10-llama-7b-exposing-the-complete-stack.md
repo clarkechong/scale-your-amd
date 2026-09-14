@@ -4,13 +4,13 @@ title: "Llama 7B: Exposing the Complete Stack"
 description: "A fixed Llama 2 7B training step implemented in raw JAX and MaxText, then varied across precision, attention, rematerialization, and FSDP."
 date: 2026-09-13
 
-section_number: 11
+section_number: 10
 
-previous_section_url: "/pages/10-compiler-runtime-and-rccl-controls"
-previous_section_name: "Chapter 10: Compiler, Runtime, and RCCL Controls"
+previous_section_url: "/pages/9-compiler-runtime-and-rccl-controls"
+previous_section_name: "Chapter 9: Compiler, Runtime, and RCCL Controls"
 
-next_section_url: "/pages/12-llama-2-70b-mixed-precision-training"
-next_section_name: "Chapter 12: Llama 70B"
+next_section_url: "/pages/11-llama-2-70b-mixed-precision-training"
+next_section_name: "Chapter 11: Llama 70B"
 
 authors:
   - name: Clarke Chong

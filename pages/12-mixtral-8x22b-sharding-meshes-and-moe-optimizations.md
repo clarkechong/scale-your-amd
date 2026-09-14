@@ -4,10 +4,10 @@ title: "Mixtral 8x22B: Sharding Meshes and MoE Optimizations"
 description: "A one-node MI355X case study of FSDP and expert parallelism, MoE routing, ragged collectives, GroupedGEMM, and latency hiding."
 date: 2026-09-13
 
-section_number: 13
+section_number: 12
 
-previous_section_url: "/pages/12-llama-2-70b-mixed-precision-training"
-previous_section_name: "Chapter 12: Mixed Precision Training"
+previous_section_url: "/pages/11-llama-2-70b-mixed-precision-training"
+previous_section_name: "Chapter 11: Mixed Precision Training"
 
 next_section_url: "/pages/a-reproducible-mi355x-environment"
 next_section_name: "Appendix A: Environment"
@@ -39,11 +39,10 @@ toc:
 > achieved-result field is therefore marked **BLOCKED**. The analytical ledgers
 > are predictions, not substitutes for a run.
 
-**Depends on:** [Chapter 3]({{ '/pages/3-predicting-one-training-step' | relative_url }}) for the
-training-step ledger, [Chapter 4]({{ '/pages/4-measuring-and-explaining-a-training-step' | relative_url }}) for the
-measurement contract, [Chapter 7]({{ '/pages/7-from-jax-shardings-to-a-training-mesh' | relative_url }}) for HLO
-collectives, [Chapter 8]({{ '/pages/8-kernels-reachable-from-jax' | relative_url }}) for kernel
-attribution, and [Chapter 9]({{ '/pages/9-mixture-of-experts-on-mi355x' | relative_url }}) for MoE routing.
+**Depends on:** [Chapter 3]({{ '/pages/3-predicting-and-measuring-one-training-step' | relative_url }}) for the
+training-step ledger and measurement contract, [Chapter 6]({{ '/pages/6-jax-shardings-to-a-training-mesh' | relative_url }}) for HLO
+collectives, [Chapter 7]({{ '/pages/7-a-map-of-kernel-backends-on-jax' | relative_url }}) for kernel
+attribution, and [Chapter 8]({{ '/pages/8-mixture-of-experts-on-mi355x' | relative_url }}) for MoE routing.
 
 The decision in this case study is narrower than “what is the fastest Mixtral
 configuration?” The eight runs answer three controlled questions:

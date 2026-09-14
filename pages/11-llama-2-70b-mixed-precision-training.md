@@ -4,13 +4,13 @@ title: "Llama 2 70B: Mixed Precision Training"
 description: "A throughput-first precision study of Llama 2 70B on eight MI355X GPUs, with FSDP memory accounting and a one-billion-token convergence guardrail."
 date: 2026-09-13
 
-section_number: 12
+section_number: 11
 
-previous_section_url: "/pages/11-llama-7b-exposing-the-complete-stack"
-previous_section_name: "Chapter 11: Llama 7B"
+previous_section_url: "/pages/10-llama-7b-exposing-the-complete-stack"
+previous_section_name: "Chapter 10: Llama 7B"
 
-next_section_url: "/pages/13-mixtral-8x22b-sharding-meshes-and-moe-optimizations"
-next_section_name: "Chapter 13: Mixtral 8x22B"
+next_section_url: "/pages/12-mixtral-8x22b-sharding-meshes-and-moe-optimizations"
+next_section_name: "Chapter 12: Mixtral 8x22B"
 
 authors:
   - name: Clarke Chong

@@ -39,7 +39,7 @@ thing not picked up automatically; restart the server after those.
 `index.md` at the repository root is the landing page. Every chapter is one Markdown
 file in `pages/`, prefixed with its chapter number so the file tree reads in book
 order: `1-mi355x-as-a-training-machine.md` through
-`13-mixtral-8x22b-sharding-meshes-and-moe-optimizations.md`. Six lettered
+`12-mixtral-8x22b-sharding-meshes-and-moe-optimizations.md`. Six lettered
 appendices follow. Each filename uses the page title after its ordering prefix.
 The filename is part of the URL, so renaming a file means updating every link to it.
 Each file needs YAML front matter with `layout: distill`; without that delimiter
@@ -62,7 +62,7 @@ Copy any file in `pages/` as a starting point and set the front matter:
 - `section_number` is the chapter number shown under the title. Appendices set
   `section_label` instead (`"Appendix A"`), which the layout uses in its place.
 - `previous_section_url` / `next_section_url` are **site-root-relative** paths such
-  as `/pages/9-mixture-of-experts-on-mi355x`, and `previous_section_name` /
+  as `/pages/8-mixture-of-experts-on-mi355x`, and `previous_section_name` /
   `next_section_name` are their labels. The layout pipes the URLs through
   `relative_url`, so they pick up
   `baseurl` automatically and work from any directory depth. These drive both the
@@ -86,8 +86,8 @@ Copy any file in `pages/` as a starting point and set the front matter:
 
 Inside the body you can use:
 
-- `[text]({{ '/pages/9-mixture-of-experts-on-mi355x' | relative_url }})` for an
-  internal link. A bare `/pages/9-mixture-of-experts-on-mi355x` drops `baseurl`
+- `[text]({{ '/pages/8-mixture-of-experts-on-mi355x' | relative_url }})` for an
+  internal link. A bare `/pages/8-mixture-of-experts-on-mi355x` drops `baseurl`
   and 404s on the deployed site. Keep Liquid out of
   Markdown table cells: it renders before kramdown so it does work, but the pipe in
   a filter reads like a cell delimiter and the next person to edit the table will
