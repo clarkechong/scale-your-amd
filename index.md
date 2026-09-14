@@ -10,7 +10,7 @@ section_number: 0
 previous_section_url: ""
 previous_section_name: "Chapter 0: Intro"
 
-next_section_url: "/pages/1-hardware"
+next_section_url: "/pages/1-mi355x-as-a-training-machine"
 next_section_name: "Chapter 1: Hardware"
 
 authors:
@@ -23,10 +23,9 @@ toc:
   - name: "Reader and Prerequisites"
   - name: "Reading Paths"
   - name: "Versioning and Attribution"
-  - name: "Part I: The MI355X Execution Contract"
-  - name: "Part II: The Configuration Surface"
-  - name: "Part III: Case Studies and Measurement Plans"
-  - name: "Part IV: Future Multi-node Work"
+  - name: "Part I: The JAX Stack on ROCm using MI355X"
+  - name: "Part II: JAX Performance Features on ROCm"
+  - name: "Part III: Case Studies: Expectations and Results"
   - name: "Appendices"
 ---
 
@@ -51,8 +50,8 @@ software path is JAX, XLA, ROCm, and MaxText. The main subject is pre-training
 throughput. Validation loss is used as a guardrail when a performance feature changes
 numerics.
 
-Multi-node MI355X operation is a future acceptance specification. No current
-chapter presents a multi-node performance result.
+The current book covers one MI355X or one eight-GPU MI355X node. It does not
+present multi-node performance results.
 
 The book does not cover production serving. For KV-cache economics, continuous
 batching, speculative decoding, and serving-engine design, use the inference chapters
@@ -113,74 +112,64 @@ The book reuses concepts and, where noted, adapted material from the MIT-license
 JAX Scaling Book. Citations accompany reused derivations and figures. AMD, JAX,
 OpenXLA, and OCP specifications are cited where their facts are used.
 
-## Part I: The MI355X Execution Contract
+## Part I: The JAX Stack on ROCm using MI355X
 
-1. [**MI355X as a Training Machine**]({{ '/pages/1-hardware' | relative_url }})
+1. [**MI355X as a Training Machine**]({{ '/pages/1-mi355x-as-a-training-machine' | relative_url }})
    explains CDNA4, wave-level MFMA, the memory hierarchy, native low-precision
    formats, partition modes, and the eight-GPU Infinity Fabric topology.
-2. [**What `jax.jit` Runs on ROCm**]({{ '/pages/2-software' | relative_url }})
+2. [**What `jax.jit` Runs on ROCm**]({{ '/pages/2-what-jax-jit-runs-on-rocm' | relative_url }})
    follows a training step from Python through StableHLO and XLA to ROCm libraries,
    generated kernels, FFI calls, and the HIP runtime.
-3. [**Predicting One Training Step**]({{ '/pages/3-cost-model' | relative_url }})
+3. [**Predicting One Training Step**]({{ '/pages/3-predicting-one-training-step' | relative_url }})
    defines the compute, memory, and communication ledgers used by every experiment.
-4. [**Measuring and Explaining a Training Step**]({{ '/pages/4-profiling' | relative_url }})
+4. [**Measuring and Explaining a Training Step**]({{ '/pages/4-measuring-and-explaining-a-training-step' | relative_url }})
    defines the benchmark protocol and the path from XProf to HLO, `rocprofv3`, and
    hardware counters.
 
-## Part II: The Configuration Surface
+## Part II: JAX Performance Features on ROCm
 
-5. [**Precision as a Training Decision**]({{ '/pages/5-precision' | relative_url }})
+5. [**Precision as a Training Decision**]({{ '/pages/5-precision-as-a-training-decision' | relative_url }})
    covers BF16, FP16, FP8, MXFP8, MXFP6, and MXFP4 as per-tensor training recipes.
-6. [**Making the Model Fit**]({{ '/pages/6-memory' | relative_url }}) covers
+6. [**Making the Model Fit**]({{ '/pages/6-making-the-model-fit' | relative_url }}) covers
    activation memory, optimizer state, donation, scanned layers, rematerialization,
    gradient accumulation, and sharded initialization.
-7. [**From JAX Shardings to a Training Mesh**]({{ '/pages/7-sharding' | relative_url }})
+7. [**From JAX Shardings to a Training Mesh**]({{ '/pages/7-from-jax-shardings-to-a-training-mesh' | relative_url }})
    connects `Mesh`, `PartitionSpec`, and Shardy to RCCL traffic and MaxText
    parallelism fields.
-8. [**Kernels Reachable from JAX**]({{ '/pages/8-kernels' | relative_url }})
+8. [**Kernels Reachable from JAX**]({{ '/pages/8-kernels-reachable-from-jax' | relative_url }})
    compares the dense GEMM, attention, and fused-kernel paths that are available on
    ROCm and shows how to confirm which path ran.
-9. [**Mixture-of-Experts on MI355X**]({{ '/pages/9-moe' | relative_url }}) covers
+9. [**Mixture-of-Experts on MI355X**]({{ '/pages/9-mixture-of-experts-on-mi355x' | relative_url }}) covers
    routing, capacity, dropping, dropless execution, expert kernels, all-to-all
    dispatch, and expert parallelism.
-10. [**Compiler, Runtime, and RCCL Controls**]({{ '/pages/10-flags' | relative_url }})
+10. [**Compiler, Runtime, and RCCL Controls**]({{ '/pages/10-compiler-runtime-and-rccl-controls' | relative_url }})
     covers the flags used by the experiments, including autotuning, collective
     combining, latency hiding, command buffers, and RCCL controls.
 
-## Part III: Case Studies and Measurement Plans
+## Part III: Case Studies: Expectations and Results
 
-11. [**Llama 7B: Exposing the Complete Stack**]({{ '/pages/11-llama7b' | relative_url }})
+11. [**Llama 7B: Exposing the Complete Stack**]({{ '/pages/11-llama-7b-exposing-the-complete-stack' | relative_url }})
     starts with a training-only Flax implementation. The source defines comparisons between raw JAX and
     MaxText, four attention paths, three rematerialization policies, and single-GPU
     with FSDP-8 execution. A consolidated v26.6 result bundle is still blocked.
-12. [**Llama 70B: Dense Low-Precision Training**]({{ '/pages/12-llama70b' | relative_url }})
+12. [**Llama 2 70B: Mixed Precision Training**]({{ '/pages/12-llama-2-70b-mixed-precision-training' | relative_url }})
     defines FP32, BF16, FP16, FP8, MXFP8, and MXFP4 arms under FSDP-8. Historical
     timing observations require a controlled rerun; convergence provenance is
     blocked.
-13. [**Mixtral 8x22B: Topology Meets Sparse Kernels**]({{ '/pages/13-mixtral8-22b' | relative_url }})
+13. [**Mixtral 8x22B: Sharding Meshes and MoE Optimizations**]({{ '/pages/13-mixtral-8x22b-sharding-meshes-and-moe-optimizations' | relative_url }})
     defines FSDP and expert-parallel mesh, expert-path, and latency-hiding sweeps.
     No v26.6 performance result exists yet.
 
 Case-study sections without captured artifacts are marked as blocked. Planned
 measurements are not presented as results.
 
-## Part IV: Future Multi-node Work
-
-14. [**Operating Multi-node MI355X Training**]({{ '/pages/14-multinode' | relative_url }})
-    specifies the launch, topology, data, checkpoint, restart, and scaling evidence
-    required for multi-node claims.
-15. [**Future Capstone: DeepSeek V3**]({{ '/pages/15-deepseek-v3' | relative_url }})
-    defines the model ledger, mesh choices, component tests, and acceptance criteria
-    for a later multi-node study. It contains no frontier-performance claim before
-    those measurements exist.
-
 ## Appendices
 
-- [**Appendix A: Reproducible Environment**]({{ '/pages/a-appendix-install' | relative_url }})
-- [**Appendix B: Measurement Protocol**]({{ '/pages/b-appendix-protocol' | relative_url }})
-- [**Appendix C: Configuration Reference**]({{ '/pages/c-appendix-config' | relative_url }})
-- [**Appendix D: Profiler and HLO Cookbook**]({{ '/pages/d-appendix-tooling' | relative_url }})
-- [**Appendix E: Compatibility and Negative Results**]({{ '/pages/e-appendix-compatibility' | relative_url }})
-- [**Appendix F: Case-study Artifacts**]({{ '/pages/f-appendix-artifacts' | relative_url }})
+- [**Appendix A: Reproducible Environment**]({{ '/pages/a-reproducible-mi355x-environment' | relative_url }})
+- [**Appendix B: Measurement Protocol**]({{ '/pages/b-measurement-and-convergence-protocol' | relative_url }})
+- [**Appendix C: Configuration Reference**]({{ '/pages/c-configuration-quick-reference' | relative_url }})
+- [**Appendix D: Profiler and HLO Cookbook**]({{ '/pages/d-profiler-and-hlo-cookbook' | relative_url }})
+- [**Appendix E: Compatibility and Negative Results**]({{ '/pages/e-compatibility-and-negative-results' | relative_url }})
+- [**Appendix F: Case-study Artifacts**]({{ '/pages/f-case-study-artifact-schema' | relative_url }})
 
-<h3 markdown=1 class="next-section">Next: [Chapter 1, MI355X as a Training Machine]({{ '/pages/1-hardware' | relative_url }}).</h3>
+<h3 markdown=1 class="next-section">Next: [Chapter 1, MI355X as a Training Machine]({{ '/pages/1-mi355x-as-a-training-machine' | relative_url }}).</h3>

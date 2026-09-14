@@ -6,10 +6,10 @@ date: 2026-09-13
 
 section_label: "Appendix E"
 
-previous_section_url: "/pages/d-appendix-tooling"
+previous_section_url: "/pages/d-profiler-and-hlo-cookbook"
 previous_section_name: "Appendix D: Profiling"
 
-next_section_url: "/pages/f-appendix-artifacts"
+next_section_url: "/pages/f-case-study-artifact-schema"
 next_section_name: "Appendix F: Artifacts"
 
 authors:

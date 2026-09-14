@@ -188,7 +188,6 @@ This book is authoritative for:
 - JAX-reachable dense, attention, and MoE kernels;
 - negative results, compatibility records, and retest status;
 - the Llama 7B, Llama 70B, and Mixtral 8x22B case studies;
-- future acceptance gates for multi-node training and DeepSeek V3.
 
 ### 2.3 Boundary by chapter
 
@@ -201,8 +200,6 @@ This book is authoritative for:
   They may link to generic parallelism or numerical background.
 - Chapters 11 through 13 own the experiment design, artifacts, results, and
   recommendations for their named workloads.
-- Chapters 14 and 15 own future test specifications. They do not own performance
-  conclusions until their acceptance gates are met.
 - Appendices own volatile setup, protocol, configuration, tooling, compatibility,
   and artifact lookup material.
 
@@ -254,11 +251,11 @@ Planned file: `index.md`
 - Versioning and retest policy
 - Attribution and MIT reuse
 
-## Part I — The MI355X execution contract
+## Part I — The JAX Stack on ROCm using MI355X
 
 ### Chapter 1 — MI355X as a training machine
 
-Planned file: `pages/1-hardware.md`
+Planned file: `pages/1-mi355x-as-a-training-machine.md`
 
 - Device identity
   - CDNA4
@@ -343,7 +340,7 @@ Planned file: `pages/1-hardware.md`
 
 ### Chapter 2 — What `jax.jit` runs on ROCm
 
-Planned file: `pages/2-software.md`
+Planned file: `pages/2-what-jax-jit-runs-on-rocm.md`
 
 - JAX transformations used by the book
   - PyTrees
@@ -405,7 +402,7 @@ Planned file: `pages/2-software.md`
 
 ### Chapter 3 — Predicting one training step
 
-Planned file: `pages/3-cost-model.md`
+Planned file: `pages/3-predicting-one-training-step.md`
 
 - Scaling Book recap links
   - rooflines
@@ -469,7 +466,7 @@ Planned file: `pages/3-cost-model.md`
 
 ### Chapter 4 — Measuring and explaining a training step
 
-Planned file: `pages/4-profiling.md`
+Planned file: `pages/4-measuring-and-explaining-a-training-step.md`
 
 - Measurement contract
   - hardware manifest
@@ -525,11 +522,11 @@ Planned file: `pages/4-profiling.md`
 - Reference boundary
   - full tool UI tours move to Appendix D
 
-## Part II — The MI355X configuration surface
+## Part II — JAX Performance Features on ROCm
 
 ### Chapter 5 — Precision as a training decision
 
-Planned file: `pages/5-precision.md`
+Planned file: `pages/5-precision-as-a-training-decision.md`
 
 - Per-tensor precision rather than one global dtype
 - Tensor roles
@@ -580,7 +577,7 @@ Planned file: `pages/5-precision.md`
 
 ### Chapter 6 — Making the model fit
 
-Planned file: `pages/6-memory.md`
+Planned file: `pages/6-making-the-model-fit.md`
 
 - Capacity before speed
 - Persistent state
@@ -610,7 +607,7 @@ Planned file: `pages/6-memory.md`
 
 ### Chapter 7 — From JAX shardings to a training mesh
 
-Planned file: `pages/7-sharding.md`
+Planned file: `pages/7-from-jax-shardings-to-a-training-mesh.md`
 
 - Concise sharding recap
   - global versus local arrays
@@ -661,7 +658,7 @@ Planned file: `pages/7-sharding.md`
 
 ### Chapter 8 — Kernels reachable from JAX
 
-Planned file: `pages/8-kernels.md`
+Planned file: `pages/8-kernels-reachable-from-jax.md`
 
 - Kernel-selection model
   - XLA-generated kernel
@@ -702,7 +699,7 @@ Planned file: `pages/8-kernels.md`
 
 ### Chapter 9 — Mixture-of-Experts on MI355X
 
-Planned file: `pages/9-moe.md`
+Planned file: `pages/9-mixture-of-experts-on-mi355x.md`
 
 - Dense versus sparse accounting
 - Router
@@ -740,11 +737,11 @@ Planned file: `pages/9-moe.md`
   - exposed AllToAll time
 - Kernel-availability cross-reference
 - MoE decision procedure
-- Inputs to the Mixtral case and future DeepSeek work
+- Inputs to the Mixtral case study
 
 ### Chapter 10 — Compiler, runtime, and RCCL controls
 
-Planned file: `pages/10-flags.md`
+Planned file: `pages/10-compiler-runtime-and-rccl-controls.md`
 
 - Flag initialization order
 - Controlled flag-sweep method
@@ -768,11 +765,11 @@ Planned file: `pages/10-flags.md`
   - include controls required to reproduce or explain a case
   - move unused flag catalogues to external documentation
 
-## Part III — Progressive measured case studies
+## Part III — Case Studies: Expectations and Results
 
 ### Chapter 11 — Llama 7B: exposing the complete stack
 
-Planned file: `pages/11-llama7b.md`
+Planned file: `pages/11-llama-7b-exposing-the-complete-stack.md`
 
 - Status and artifact-completeness banner
 - Chapter contract and frozen invariants
@@ -816,9 +813,9 @@ Planned file: `pages/11-llama7b.md`
   - checkpointing
   - multi-node execution
 
-### Chapter 12 — Llama 70B: dense low-precision training
+### Chapter 12 — Llama 2 70B: mixed precision training
 
-Planned file: `pages/12-llama70b.md`
+Planned file: `pages/12-llama-2-70b-mixed-precision-training.md`
 
 - Status and artifact-completeness banner
 - Chapter contract and frozen invariants
@@ -869,9 +866,9 @@ Planned file: `pages/12-llama70b.md`
   - profile artifacts
   - convergence plot and exact provenance
 
-### Chapter 13 — Mixtral 8x22B: topology meets sparse kernels
+### Chapter 13 — Mixtral 8x22B: sharding meshes and MoE optimizations
 
-Planned file: `pages/13-mixtral8-22b.md`
+Planned file: `pages/13-mixtral-8x22b-sharding-meshes-and-moe-optimizations.md`
 
 - Status and artifact-completeness banner
 - Chapter contract and frozen invariants
@@ -916,64 +913,11 @@ Planned file: `pages/13-mixtral8-22b.md`
 - Explicit blocker
   - no v26.6 result artifacts are available yet
 
-## Part IV — Future multi-node work
-
-### Chapter 14 — Operating multi-node MI355X training
-
-Planned file: `pages/14-multinode.md`
-
-Status: future specification. Do not present multi-node performance claims until all
-acceptance gates in section 10.4 pass.
-
-- Scope and evidence-status banner
-- Multi-process JAX initialization
-- Physical mesh construction
-- GPU and NIC affinity
-- Rail-aware placement
-- Replica-group verification
-- Dataset sharding
-- Checkpointing and resume
-- Monitoring and failure taxonomy
-- One-node, two-node, and multi-node scaling protocol
-- Tokens/s/GPU and total throughput
-- Scaling efficiency
-- Availability-adjusted throughput
-- Required failure and recovery evidence
-
-### Chapter 15 — Future capstone: DeepSeek V3
-
-Planned file: `pages/15-deepseek-v3.md`
-
-Status: future acceptance specification, not a completed fourth case study. Do not
-claim frontier performance or completed DeepSeek V3 training.
-
-- Scope and evidence-status banner
-- Model acceptance target
-- Multi-head latent attention ledger
-- Shared and routed expert ledger
-- Multi-token prediction ledger
-- Core-model versus checkpoint parameter totals
-- Router precision and balance
-- Intra-node EP and TP allocation
-- Cross-node DP, FSDP, and PP allocation
-- Component gates
-  - attention forward and backward correctness
-  - routed-expert correctness
-  - kernel-path proof
-  - memory fit
-  - checkpoint save and restore
-- One-node correctness gate
-- Multi-node correctness gate
-- Scaling-curve gate
-- Convergence smoke-test gate
-- Required artifact bundle
-- Final fallback recipe
-
 ## Appendices
 
 ### Appendix A — Reproducible MI355X environment
 
-Planned file: `pages/a-appendix-install.md`
+Planned file: `pages/a-reproducible-mi355x-environment.md`
 
 - hardware and partition-mode checks;
 - container identity;
@@ -987,7 +931,7 @@ Planned file: `pages/a-appendix-install.md`
 
 ### Appendix B — Measurement and convergence protocol
 
-Planned file: `pages/b-appendix-protocol.md`
+Planned file: `pages/b-measurement-and-convergence-protocol.md`
 
 - frozen workload fields;
 - warmup and compilation separation;
@@ -1007,7 +951,7 @@ Planned file: `pages/b-appendix-protocol.md`
 
 ### Appendix C — Configuration quick reference
 
-Planned file: `pages/c-appendix-config.md`
+Planned file: `pages/c-configuration-quick-reference.md`
 
 - MaxText fields;
 - JAX configuration;
@@ -1021,7 +965,7 @@ Planned file: `pages/c-appendix-config.md`
 
 ### Appendix D — Profiler and HLO cookbook
 
-Planned file: `pages/d-appendix-tooling.md`
+Planned file: `pages/d-profiler-and-hlo-cookbook.md`
 
 - exact tool commands;
 - XProf views;
@@ -1036,7 +980,7 @@ Planned file: `pages/d-appendix-tooling.md`
 
 ### Appendix E — Compatibility and negative-results register
 
-Planned file: `pages/e-appendix-compatibility.md`
+Planned file: `pages/e-compatibility-and-negative-results.md`
 
 - feature and requested path;
 - pinned environment;
@@ -1049,7 +993,7 @@ Planned file: `pages/e-appendix-compatibility.md`
 
 ### Appendix F — Case-study artifacts
 
-Planned file: `pages/f-appendix-artifacts.md`
+Planned file: `pages/f-case-study-artifact-schema.md`
 
 - artifact schema;
 - manifest validation rules;
@@ -1159,27 +1103,25 @@ scale-your-amd/
 │   ├── structure.md
 │   └── structure-v3.md
 ├── pages/
-│   ├── 1-hardware.md
-│   ├── 2-software.md
-│   ├── 3-cost-model.md
-│   ├── 4-profiling.md
-│   ├── 5-precision.md
-│   ├── 6-memory.md
-│   ├── 7-sharding.md
-│   ├── 8-kernels.md
-│   ├── 9-moe.md
-│   ├── 10-flags.md
-│   ├── 11-llama7b.md
-│   ├── 12-llama70b.md
-│   ├── 13-mixtral8-22b.md
-│   ├── 14-multinode.md
-│   ├── 15-deepseek-v3.md
-│   ├── a-appendix-install.md
-│   ├── b-appendix-protocol.md
-│   ├── c-appendix-config.md
-│   ├── d-appendix-tooling.md
-│   ├── e-appendix-compatibility.md
-│   ├── f-appendix-artifacts.md
+│   ├── 1-mi355x-as-a-training-machine.md
+│   ├── 2-what-jax-jit-runs-on-rocm.md
+│   ├── 3-predicting-one-training-step.md
+│   ├── 4-measuring-and-explaining-a-training-step.md
+│   ├── 5-precision-as-a-training-decision.md
+│   ├── 6-making-the-model-fit.md
+│   ├── 7-from-jax-shardings-to-a-training-mesh.md
+│   ├── 8-kernels-reachable-from-jax.md
+│   ├── 9-mixture-of-experts-on-mi355x.md
+│   ├── 10-compiler-runtime-and-rccl-controls.md
+│   ├── 11-llama-7b-exposing-the-complete-stack.md
+│   ├── 12-llama-2-70b-mixed-precision-training.md
+│   ├── 13-mixtral-8x22b-sharding-meshes-and-moe-optimizations.md
+│   ├── a-reproducible-mi355x-environment.md
+│   ├── b-measurement-and-convergence-protocol.md
+│   ├── c-configuration-quick-reference.md
+│   ├── d-profiler-and-hlo-cookbook.md
+│   ├── e-compatibility-and-negative-results.md
+│   ├── f-case-study-artifact-schema.md
 │   └── archive/
 │       ├── index.md
 │       ├── 1-rooflines.md
@@ -1221,12 +1163,12 @@ references, checksums, and enough metadata to audit every published number.
 
 ### 5.1 Completed page migration
 
-- `index.md`, Chapters 1 through 15, and Appendices A through F now use the paths
+- `index.md`, Chapters 1 through 13, and Appendices A through F now use the paths
   listed above.
 - The former `pages/3-dl-methods.md` is preserved as
   `pages/archive/v2-3-dl-methods.md`.
 - The former Chapter 5 through 8 stubs were replaced by the renumbered case-study
-  and future chapter drafts.
+  drafts.
 - Archived appendix sources remain under `pages/archive/`; active appendices contain
   the MI355X revisions.
 - Front matter, previous/next links, section numbers, index navigation, TOC anchors,
@@ -1258,7 +1200,7 @@ serving scope, stale support claims, and old chapter-number assumptions before r
 - Reuse tooling limitations, command patterns, and profiler signatures in Chapter 4
   and Appendix D.
 - Recheck all zero-field, counter, and XProf limitations on the pinned stack.
-- Prefer the tighter active `pages/4-profiling.md` structure when material overlaps.
+- Prefer the tighter active `pages/4-measuring-and-explaining-a-training-step.md` structure when material overlaps.
 
 ### `pages/archive/4-sharding.md`
 
@@ -1304,8 +1246,8 @@ serving scope, stale support claims, and old chapter-number assumptions before r
 
 ### `pages/archive/10-deepseek.md`
 
-- Reuse model-ledger and MoE acceptance ideas in Chapter 15.
-- Do not reuse old measurements as DeepSeek V3 evidence.
+- Keep the model-ledger and MoE acceptance material archived for possible future use.
+- Do not reuse old measurements as new performance evidence.
 - Mark every unexecuted path as future.
 
 ### `pages/archive/11-inference.md` and `pages/archive/12-serving.md`
@@ -1322,23 +1264,23 @@ serving scope, stale support claims, and old chapter-number assumptions before r
 
 ### `pages/archive/a-appendix-install.md`
 
-- Use as the starting point for `pages/a-appendix-install.md`.
+- Use as the starting point for `pages/a-reproducible-mi355x-environment.md`.
 - Replace the environment matrix with the pinned MI355X stack.
 - Add commit, patch, topology, and smoke-test requirements.
 
 ### `pages/archive/b-appendix-protocol.md`
 
-- Use as the starting point for `pages/b-appendix-protocol.md`.
+- Use as the starting point for `pages/b-measurement-and-convergence-protocol.md`.
 - Make tokens/s/GPU the primary output.
 - Add artifact-manifest, convergence, and protocol-exception rules.
 
 ### Existing active pages
 
-- `pages/1-hardware.md` is the primary source for Chapter 1.
-- `pages/2-software.md` is the primary source for Chapter 2.
-- `pages/4-profiling.md` is the primary source for Chapter 4.
-- The current Llama, Mixtral, and DeepSeek pages provide intent and notes, while the
-  experiment repositories and captured artifacts provide evidence.
+- `pages/1-mi355x-as-a-training-machine.md` is the primary source for Chapter 1.
+- `pages/2-what-jax-jit-runs-on-rocm.md` is the primary source for Chapter 2.
+- `pages/4-measuring-and-explaining-a-training-step.md` is the primary source for Chapter 4.
+- The current Llama and Mixtral pages provide intent and notes, while the experiment
+  repositories and captured artifacts provide evidence.
 
 ## 7. Experiment-repository ownership
 
@@ -1434,14 +1376,12 @@ v26.6 result bundle exists.
 - Chapter 11 assumes Chapters 1 through 8 and Chapter 10.
 - Chapter 12 assumes Chapters 1 through 8 and Chapter 10.
 - Chapter 13 assumes Chapters 1 through 10.
-- Chapter 14 assumes Chapters 1 through 4, 7, and 10.
-- Chapter 15 assumes Chapters 3, 5 through 10, 13, and 14.
 - Appendix A supports every measured chapter.
-- Appendix B is normative for Chapters 4 and 11 through 15.
+- Appendix B is normative for Chapters 4 and 11 through 13.
 - Appendix C is generated from the controls established in Chapters 5 through 10.
 - Appendix D supports Chapters 2, 4, 8, and every case study.
-- Appendix E collects failures from Chapters 2, 5, 8, 9, 10, and 11 through 15.
-- Appendix F is the evidence index for Chapters 11 through 15.
+- Appendix E collects failures from Chapters 2, 5, 8, 9, 10, and 11 through 13.
+- Appendix F is the evidence index for Chapters 11 through 13.
 
 ### 8.2 Authoring dependencies
 
@@ -1458,15 +1398,11 @@ studies, but their recommendations must be grounded in case-study measurements.
 - Chapters 11 through 13 require Chapters 1 through 4 for vocabulary and method, but
   their measured sections should be drafted before final recommendations in
   Chapters 5 through 10.
-- Chapter 14 requires access to at least two MI355X nodes and a multi-node artifact
-  bundle.
-- Chapter 15 requires Chapter 14's verified operating path plus DeepSeek component
-  and convergence evidence.
 
 ### 8.3 Repository dependencies
 
 - Do not change active navigation before roadmap review.
-- Freeze `pages/b-appendix-protocol.md` and the artifact schema before promoting
+- Freeze `pages/b-measurement-and-convergence-protocol.md` and the artifact schema before promoting
   planned results to `[measured]`.
 - Every active page needs final front matter and previous/next links.
 - `index.md` must link only to files created in the skeleton migration.
@@ -1489,8 +1425,8 @@ studies, but their recommendations must be grounded in case-study measurements.
 
 1. Preserve `pages/3-dl-methods.md` at
    `pages/archive/v2-3-dl-methods.md`.
-2. Rename the four current case/future pages to Chapters 11, 12, 13, and 15.
-3. Create empty, front-matter-complete skeletons for Chapters 3, 5 through 10, and 14.
+2. Rename the three current case-study pages to Chapters 11, 12, and 13.
+3. Create empty, front-matter-complete skeletons for Chapters 3 and 5 through 10.
 4. Create active appendix skeletons A through F.
 5. Update `index.md`, all previous/next links, section numbers, and navigation.
 6. Build the site and check every route.
@@ -1555,11 +1491,6 @@ Finish Chapters 11 through 13 with:
 4. Move detailed tool recipes into Appendix D.
 5. Populate Appendix E from recorded failures.
 6. Validate every Appendix F artifact link and checksum.
-
-### Phase 8 — Future work
-
-Do not start result prose for Chapters 14 and 15 until their acceptance gates pass.
-Their specifications may be improved earlier, but must remain visibly future-facing.
 
 ## 10. Evidence and artifact blockers
 
@@ -1672,23 +1603,6 @@ Chapter 13:
 - router and collective diagnostics;
 - HLO and kernel attribution.
 
-Chapter 14:
-
-- access to multiple MI355X nodes;
-- physical network and NIC topology;
-- launch, checkpoint, recovery, and monitoring evidence;
-- one-node, two-node, and larger scaling runs.
-
-Chapter 15:
-
-- a fixed DeepSeek V3 workload;
-- working MLA and routed-expert paths;
-- one-node component and correctness artifacts;
-- multi-node execution from Chapter 14;
-- scaling curve;
-- convergence smoke test;
-- complete artifact bundle.
-
 ### 10.3 Case-study publication states
 
 - Llama 7B: implementation sources exist; publication waits on a consolidated,
@@ -1698,48 +1612,6 @@ Chapter 15:
 - Llama 70B convergence study: completed through approximately one billion tokens;
   publication waits on plot and provenance packaging.
 - Mixtral 8x22B: blocked because v26.6 result artifacts do not yet exist.
-- DeepSeek V3: future specification only.
-
-### 10.4 Multi-node acceptance gates
-
-Chapter 14 may change from `future` to `measured` only when all of these exist:
-
-1. hardware and network manifest for at least two MI355X nodes;
-2. repeatable multi-process JAX launch;
-3. verified physical mesh, GPU/NIC affinity, and replica groups;
-4. deterministic dataset sharding;
-5. successful checkpoint, failure, and resume test;
-6. one-node baseline under the same workload;
-7. two-node measurement;
-8. at least one larger-node measurement if the chapter makes a multi-node scaling
-   claim beyond two nodes;
-9. tokens/s/GPU, total throughput, scaling efficiency, and exposed communication;
-10. validated artifacts under Appendix B and Appendix F.
-
-Until then, Chapter 14 may contain cited topology guidance and analytical predictions,
-but every unmeasured statement must be marked accordingly.
-
-### 10.5 DeepSeek V3 acceptance gates
-
-Chapter 15 remains an acceptance specification until all of these pass:
-
-1. fixed model, sequence, batch, optimizer, and precision contract;
-2. MLA forward and backward correctness;
-3. shared and routed expert correctness;
-4. multi-token prediction parameters, loss, gradients, and checkpoint state;
-5. proof of attention, expert, and collective kernel paths;
-6. reduced-model one-node correctness and operations tests;
-7. checkpoint save and restore;
-8. multi-node correctness using Chapter 14's accepted operating path;
-9. full-model fit at the first ledger-supported allocation;
-10. full-model performance measurements;
-11. scaling curve with tokens/s/GPU as the primary metric;
-12. convergence smoke test;
-13. complete artifact manifest;
-14. documented fallback recipe.
-
-Passing component tests does not make DeepSeek V3 a completed case study. It becomes
-one only after the end-to-end gates pass.
 
 ## 11. Roadmap completion criteria
 
@@ -1756,5 +1628,3 @@ The v3 migration is complete when:
 - every measured number resolves to a validated artifact manifest;
 - negative results and fallbacks are indexed;
 - Mixtral remains blocked until its v26.6 artifacts exist;
-- multi-node and DeepSeek V3 remain explicitly future-facing until their acceptance
-  gates pass.

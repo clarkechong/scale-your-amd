@@ -6,7 +6,7 @@ date: 2026-09-13
 
 section_label: "Appendix F"
 
-previous_section_url: "/pages/e-appendix-compatibility"
+previous_section_url: "/pages/e-compatibility-and-negative-results"
 previous_section_name: "Appendix E: Compatibility"
 
 next_section_url: ""

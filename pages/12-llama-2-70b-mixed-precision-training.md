@@ -1,15 +1,15 @@
 ---
 layout: distill
-title: "Llama 2 70B: Dense Low-Precision Training"
+title: "Llama 2 70B: Mixed Precision Training"
 description: "A throughput-first precision study of Llama 2 70B on eight MI355X GPUs, with FSDP memory accounting and a one-billion-token convergence guardrail."
 date: 2026-09-13
 
 section_number: 12
 
-previous_section_url: "/pages/11-llama7b"
+previous_section_url: "/pages/11-llama-7b-exposing-the-complete-stack"
 previous_section_name: "Chapter 11: Llama 7B"
 
-next_section_url: "/pages/13-mixtral8-22b"
+next_section_url: "/pages/13-mixtral-8x22b-sharding-meshes-and-moe-optimizations"
 next_section_name: "Chapter 13: Mixtral 8x22B"
 
 authors:

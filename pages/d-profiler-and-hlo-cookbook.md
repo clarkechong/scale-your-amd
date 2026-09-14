@@ -6,10 +6,10 @@ date: 2026-09-13
 
 section_label: "Appendix D"
 
-previous_section_url: "/pages/c-appendix-config"
+previous_section_url: "/pages/c-configuration-quick-reference"
 previous_section_name: "Appendix C: Configuration"
 
-next_section_url: "/pages/e-appendix-compatibility"
+next_section_url: "/pages/e-compatibility-and-negative-results"
 next_section_name: "Appendix E: Compatibility"
 
 authors:
@@ -207,5 +207,5 @@ For a mesh claim, triangulate:
 7. Use counters for the remaining kernel-level gap.
 8. Recheck loss, gradients, and convergence whenever numerics changed.
 
-Record the first failed check in [Appendix E]({{ '/pages/e-appendix-compatibility' |
+Record the first failed check in [Appendix E]({{ '/pages/e-compatibility-and-negative-results' |
 relative_url }}) before applying a workaround.

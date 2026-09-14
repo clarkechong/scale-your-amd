@@ -6,10 +6,10 @@ date: 2026-09-13
 
 section_label: "Appendix A"
 
-previous_section_url: "/pages/15-deepseek-v3"
-previous_section_name: "Chapter 15: DeepSeek V3"
+previous_section_url: "/pages/13-mixtral-8x22b-sharding-meshes-and-moe-optimizations"
+previous_section_name: "Chapter 13: Sharding Meshes and MoE Optimizations"
 
-next_section_url: "/pages/b-appendix-protocol"
+next_section_url: "/pages/b-measurement-and-convergence-protocol"
 next_section_name: "Appendix B: Protocol"
 
 authors:
@@ -174,7 +174,7 @@ OUTPUT_ROOT
 ```
 
 Changing one of these paths changes the source tree in use. Record its commit and dirty diff
-in [Appendix F]({{ '/pages/f-appendix-artifacts' | relative_url }}).
+in [Appendix F]({{ '/pages/f-case-study-artifact-schema' | relative_url }}).
 
 ## Compatibility Sources
 
@@ -186,4 +186,4 @@ Use AMD's live matrices instead of copying a fast-rotting table:
 - [ROCm JAX containers](https://hub.docker.com/r/rocm/jax-training/tags)
 
 Record observed mismatches and workarounds in
-[Appendix E]({{ '/pages/e-appendix-compatibility' | relative_url }}).
+[Appendix E]({{ '/pages/e-compatibility-and-negative-results' | relative_url }}).

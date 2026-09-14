@@ -6,10 +6,10 @@ date: 2026-09-13
 
 section_number: 6
 
-previous_section_url: "/pages/5-precision"
+previous_section_url: "/pages/5-precision-as-a-training-decision"
 previous_section_name: "Chapter 5: Precision as a Training Decision"
 
-next_section_url: "/pages/7-sharding"
+next_section_url: "/pages/7-from-jax-shardings-to-a-training-mesh"
 next_section_name: "Chapter 7: Sharding"
 
 authors:

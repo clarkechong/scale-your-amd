@@ -6,10 +6,10 @@ date: 2026-09-13
 
 section_label: "Appendix B"
 
-previous_section_url: "/pages/a-appendix-install"
+previous_section_url: "/pages/a-reproducible-mi355x-environment"
 previous_section_name: "Appendix A: Environment"
 
-next_section_url: "/pages/c-appendix-config"
+next_section_url: "/pages/c-configuration-quick-reference"
 next_section_name: "Appendix C: Configuration"
 
 authors:
@@ -33,7 +33,7 @@ toc:
 - **[analytical]**: derived from stated shapes, algorithms, or published specifications; no
   hardware run is implied.
 - **[measured]**: produced by this project with a complete
-  [Appendix F]({{ '/pages/f-appendix-artifacts' | relative_url }}) bundle.
+  [Appendix F]({{ '/pages/f-case-study-artifact-schema' | relative_url }}) bundle.
 - **[cited]**: produced by another named source. The citation must identify the stack,
   workload, and method well enough to judge comparability.
 

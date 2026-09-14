@@ -6,10 +6,10 @@ date: 2026-09-13
 
 section_number: 8
 
-previous_section_url: "/pages/7-sharding"
+previous_section_url: "/pages/7-from-jax-shardings-to-a-training-mesh"
 previous_section_name: "Chapter 7: Sharding"
 
-next_section_url: "/pages/9-moe"
+next_section_url: "/pages/9-mixture-of-experts-on-mi355x"
 next_section_name: "Chapter 9: Mixture of Experts"
 
 authors:
@@ -478,4 +478,4 @@ trace, workspace, memory, and tokens/s/GPU artifacts for the exact shape.
 - [JAX-AITER](https://github.com/ROCm/jax-aiter)
 - [Tokamax](https://github.com/openxla/tokamax)
 
-<h3 markdown=1 class="next-section">Next: [Mixture of Experts]({{ '/pages/9-moe' | relative_url }}).</h3>
+<h3 markdown=1 class="next-section">Next: [Mixture of Experts]({{ '/pages/9-mixture-of-experts-on-mi355x' | relative_url }}).</h3>

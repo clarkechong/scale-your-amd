@@ -6,10 +6,10 @@ date: 2026-09-13
 
 section_label: "Appendix C"
 
-previous_section_url: "/pages/b-appendix-protocol"
+previous_section_url: "/pages/b-measurement-and-convergence-protocol"
 previous_section_name: "Appendix B: Protocol"
 
-next_section_url: "/pages/d-appendix-tooling"
+next_section_url: "/pages/d-profiler-and-hlo-cookbook"
 next_section_name: "Appendix D: Profiling"
 
 authors:
@@ -182,8 +182,8 @@ compare their tokens/s with a real-data run without measuring the input cost.
 | `dump_hlo` | HLO dump selector |
 | `jax_cache_dir` | Persistent JAX compilation cache |
 
-The current single-node timing and convergence configs disable checkpointing. Chapter 14
-must add and validate save/restore settings before multi-node results are accepted.
+The current single-node timing and convergence configs disable checkpointing.
+Any future multi-node study must add and validate save and restore settings.
 
 ## XLA Flags
 

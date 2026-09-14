@@ -6,10 +6,10 @@ date: 2026-09-13
 
 section_number: 11
 
-previous_section_url: "/pages/10-flags"
+previous_section_url: "/pages/10-compiler-runtime-and-rccl-controls"
 previous_section_name: "Chapter 10: Compiler, Runtime, and RCCL Controls"
 
-next_section_url: "/pages/12-llama70b"
+next_section_url: "/pages/12-llama-2-70b-mixed-precision-training"
 next_section_name: "Chapter 12: Llama 70B"
 
 authors:

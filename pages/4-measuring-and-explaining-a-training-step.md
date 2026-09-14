@@ -6,10 +6,10 @@ date: 2026-09-13
 
 section_number: 4
 
-previous_section_url: "/pages/3-cost-model"
+previous_section_url: "/pages/3-predicting-one-training-step"
 previous_section_name: "Chapter 3: Predicting One Training Step"
 
-next_section_url: "/pages/5-precision"
+next_section_url: "/pages/5-precision-as-a-training-decision"
 next_section_name: "Chapter 5: Precision as a Training Decision"
 
 authors:

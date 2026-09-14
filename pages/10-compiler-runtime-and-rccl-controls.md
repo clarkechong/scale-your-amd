@@ -6,10 +6,10 @@ date: 2026-09-13
 
 section_number: 10
 
-previous_section_url: "/pages/9-moe"
+previous_section_url: "/pages/9-mixture-of-experts-on-mi355x"
 previous_section_name: "Chapter 9: Mixture of Experts"
 
-next_section_url: "/pages/11-llama7b"
+next_section_url: "/pages/11-llama-7b-exposing-the-complete-stack"
 next_section_name: "Chapter 11: Llama 7B"
 
 authors:
@@ -500,8 +500,8 @@ groups. No forced minimum belongs in the baseline; consider it only when a trace
 shows that a partial-participant collective is the bottleneck.
 
 Transport-forcing controls are excluded here. The one-node cases have no evidence
-that overriding automatic peer transport helps, and multi-node affinity belongs
-to Chapter 14.
+that overriding automatic peer transport helps. Multi-node affinity is outside
+the current scope.
 
 ## MI355X Hazards
 
@@ -733,4 +733,4 @@ and change one control only after a profile identifies its mechanism.
 - [RCCL usage tips](https://rocm.docs.amd.com/projects/rccl/en/latest/how-to/rccl-usage-tips.html)
 - [Current XLA debug-option definitions](https://github.com/openxla/xla/blob/main/xla/xla.proto)
 
-<h3 markdown=1 class="next-section">Next: [Llama 7B]({{ '/pages/11-llama7b' | relative_url }}).</h3>
+<h3 markdown=1 class="next-section">Next: [Llama 7B]({{ '/pages/11-llama-7b-exposing-the-complete-stack' | relative_url }}).</h3>

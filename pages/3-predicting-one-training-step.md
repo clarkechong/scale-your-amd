@@ -6,10 +6,10 @@ date: 2026-09-13
 
 section_number: 3
 
-previous_section_url: "/pages/2-software"
+previous_section_url: "/pages/2-what-jax-jit-runs-on-rocm"
 previous_section_name: "Chapter 2: What jax.jit Runs on ROCm"
 
-next_section_url: "/pages/4-profiling"
+next_section_url: "/pages/4-measuring-and-explaining-a-training-step"
 next_section_name: "Chapter 4: Profiling"
 
 authors:

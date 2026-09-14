@@ -6,10 +6,10 @@ date: 2026-09-13
 
 section_number: 5
 
-previous_section_url: "/pages/4-profiling"
+previous_section_url: "/pages/4-measuring-and-explaining-a-training-step"
 previous_section_name: "Chapter 4: Profiling"
 
-next_section_url: "/pages/6-memory"
+next_section_url: "/pages/6-making-the-model-fit"
 next_section_name: "Chapter 6: Making the Model Fit"
 
 authors:

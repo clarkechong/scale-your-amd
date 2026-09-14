@@ -6,10 +6,10 @@ date: 2026-09-10
 
 section_number: 2
 
-previous_section_url: "/pages/1-hardware"
+previous_section_url: "/pages/1-mi355x-as-a-training-machine"
 previous_section_name: "Chapter 1: Hardware"
 
-next_section_url: "/pages/3-cost-model"
+next_section_url: "/pages/3-predicting-one-training-step"
 next_section_name: "Chapter 3: Cost Model"
 
 authors:

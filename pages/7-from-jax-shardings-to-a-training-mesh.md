@@ -6,10 +6,10 @@ date: 2026-09-13
 
 section_number: 7
 
-previous_section_url: "/pages/6-memory"
+previous_section_url: "/pages/6-making-the-model-fit"
 previous_section_name: "Chapter 6: Making the Model Fit"
 
-next_section_url: "/pages/8-kernels"
+next_section_url: "/pages/8-kernels-reachable-from-jax"
 next_section_name: "Chapter 8: Kernels Reachable from JAX"
 
 authors:
@@ -48,16 +48,15 @@ and
 first. They derive the general rules. This chapter keeps only the notation and decisions
 needed to configure JAX and MaxText on MI355X.
 
-[Chapter 1]({{ '/pages/1-hardware' | relative_url }}) supplies the topology, and
-[Chapter 6]({{ '/pages/6-memory' | relative_url }}) supplies the state and activation
+[Chapter 1]({{ '/pages/1-mi355x-as-a-training-machine' | relative_url }}) supplies the topology, and
+[Chapter 6]({{ '/pages/6-making-the-model-fit' | relative_url }}) supplies the state and activation
 ledgers. A mesh is acceptable only if it fits in memory, preserves tensor divisibility,
 and puts its frequent collectives on suitable links.
 
-The hardware discussion here covers one eight-GPU MI355X node. Multi-node placement is
-analytical until the work in
-[Chapter 14]({{ '/pages/14-multinode' | relative_url }}) is completed. There is no
-MI355X RCCL benchmark bundle in the current experiment repositories, so this chapter
-does not reuse the archived MI300X bandwidth or overlap measurements.
+The hardware discussion here covers one eight-GPU MI355X node. Multi-node placement
+is outside the current evidence scope. There is no MI355X RCCL benchmark bundle in
+the current experiment repositories, so this chapter does not reuse the archived
+MI300X bandwidth or overlap measurements.
 
 Evidence labels have their literal meanings:
 
@@ -675,11 +674,11 @@ Reject candidates that fail tensor, head, expert, layer, or batch divisibility.
 
 ### 5. Place frequent communication locally
 
-Keep TP, EP, and usually CP within the eight-GPU node. In a future multi-node mesh,
-Chapter 14 will test DP, FSDP, and PP as candidate cross-node axes. Map global
-device IDs to host/GPU coordinates before testing them. Axis names and reshape
-order alone are insufficient proof, and this chapter does not select a cross-node
-axis without those measurements.
+Keep TP, EP, and usually CP within the eight-GPU node. A future multi-node study
+would need to test DP, FSDP, and PP as candidate cross-node axes. Map global device
+IDs to host/GPU coordinates before testing them. Axis names and reshape order alone
+are insufficient proof, and this chapter does not select a cross-node axis without
+those measurements.
 
 ### 6. List the collective messages
 

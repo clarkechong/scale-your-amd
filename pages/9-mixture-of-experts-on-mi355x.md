@@ -6,10 +6,10 @@ date: 2026-09-13
 
 section_number: 9
 
-previous_section_url: "/pages/8-kernels"
+previous_section_url: "/pages/8-kernels-reachable-from-jax"
 previous_section_name: "Chapter 8: Kernels Reachable from JAX"
 
-next_section_url: "/pages/10-flags"
+next_section_url: "/pages/10-compiler-runtime-and-rccl-controls"
 next_section_name: "Chapter 10: Compiler Runtime and RCCL Controls"
 
 authors:
@@ -196,7 +196,7 @@ requirements: loss scaling and overflow checks become part of the experiment.
 
 The local MaxText branch contains a JAX-AITER MXFP4 fused-MoE forward path. It is marked
 inference-only and has no training VJP. It is not one of the four training paths below.
-[Chapter 8]({{ '/pages/8-kernels' | relative_url }}) owns the current
+[Chapter 8]({{ '/pages/8-kernels-reachable-from-jax' | relative_url }}) owns the current
 kernel-reachability table, including this forward-only exception.
 
 ## Load Balance and Imbalance
@@ -331,7 +331,7 @@ The last two have the same JAX-level sparse algorithm and differ in the XLA lowe
 defaults select `sparse_matmul=true` and `megablox=true`; those defaults are not a
 statement that the Megablox TPU-oriented kernel is the correct MI355X path. On this
 ROCm experiment, `megablox=false` is deliberate.
-[Chapter 8]({{ '/pages/8-kernels' | relative_url }}) explains how to prove the kernel
+[Chapter 8]({{ '/pages/8-kernels-reachable-from-jax' | relative_url }}) explains how to prove the kernel
 that was actually reached.
 
 ### Dense Masked
@@ -463,7 +463,7 @@ Megablox and Tokamax are additional `jax.lax.ragged_dot`-style backends in upstr
 MaxText's decision tree, while the local JAX-AITER branch has a forward-only fused
 MXFP4 MoE path. They do not create additional validated MI355X training paths here.
 Their platform, dtype, gradient, and workspace restrictions belong to
-[Chapter 8]({{ '/pages/8-kernels' | relative_url }}).
+[Chapter 8]({{ '/pages/8-kernels-reachable-from-jax' | relative_url }}).
 
 ## The Grouped GEMM Win Condition
 
@@ -591,7 +591,7 @@ The current sparse experiment adds:
 The `unsupported` prefix is important. This is a versioned experiment, not a stable
 XLA contract. Preserve the effective flag string with every result, check the HLO for
 `ragged-all-to-all`, and check the trace for the intended one-shot lowering.
-[Chapter 10]({{ '/pages/10-flags' | relative_url }}) covers controlled flag sweeps and
+[Chapter 10]({{ '/pages/10-compiler-runtime-and-rccl-controls' | relative_url }}) covers controlled flag sweeps and
 initialization order.
 
 MaxText also has `use_ring_of_experts`. In v26.6 this replaces the pair of AllToAll
@@ -684,11 +684,9 @@ count alone.
 
 Keep the EP axis inside the MI355X full mesh. Extending EP across nodes sends
 data-dependent activation traffic through the scale-out network for every routed layer.
-The book has no MI355X multi-node MoE measurement yet;
-[Chapter 14]({{ '/pages/14-multinode' | relative_url }}) defines the future acceptance
-test. Its first hypotheses are data parallelism, FSDP, or pipeline parallelism
-across nodes with `dcn_expert_parallelism=1`. These are not recommendations until
-the multi-node tests exist.
+The book has no MI355X multi-node MoE measurements. Data parallelism, FSDP, or
+pipeline parallelism across nodes with `dcn_expert_parallelism=1` remain untested
+hypotheses rather than recommendations.
 
 Within one node:
 
@@ -851,8 +849,8 @@ If any of those invariants change, label the comparison accordingly.
 
 11. **Prove the kernel and collective path.** A config value is an intention. The HLO,
     custom-call target, kernel name, and trace are the evidence. Use
-    [Chapter 8]({{ '/pages/8-kernels' | relative_url }}) for kernel reachability and
-    [Chapter 10]({{ '/pages/10-flags' | relative_url }}) for the flags.
+    [Chapter 8]({{ '/pages/8-kernels-reachable-from-jax' | relative_url }}) for kernel reachability and
+    [Chapter 10]({{ '/pages/10-compiler-runtime-and-rccl-controls' | relative_url }}) for the flags.
 
 12. **Publish the four diagnostics with tokens/s/GPU.** A result without routing
     histogram, drop or padding rate, expert efficiency, and exposed collective time is
@@ -901,7 +899,7 @@ permanent ROCm guarantees:
 
 These blockers are intentionally narrow. The model accounting, required diagnostics,
 config mapping, and acceptance test are usable now.
-[Chapter 13]({{ '/pages/13-mixtral8-22b' | relative_url }}) will fill the result slots
+[Chapter 13]({{ '/pages/13-mixtral-8x22b-sharding-meshes-and-moe-optimizations' | relative_url }}) will fill the result slots
 once the MI355X artifacts exist.
 
 **Recommendation status: BLOCKED.** Fixed-capacity one-hot, dense masked,
