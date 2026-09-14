@@ -1,277 +1,587 @@
 ---
 layout: distill
-title: "Profiling"
-description: "Roofline analysis, XProf, rocprofv3, rocprof-compute, and rocgdb, from a train_step down to a single kernel."
-date: 2026-09-10
+title: "Measuring and Explaining a Training Step"
+description: "A reproducible measurement contract and escalation path from tokens/s/GPU to HLO, kernels, counters, and multi-level rooflines."
+date: 2026-09-13
 
 section_number: 4
 
-previous_section_url: "/pages/3-dl-methods"
-previous_section_name: "Chapter 3: Deep Learning Methods"
+previous_section_url: "/pages/3-cost-model"
+previous_section_name: "Chapter 3: Predicting One Training Step"
 
-next_section_url: "/pages/5-llama7b"
-next_section_name: "Chapter 5: Llama 7B"
+next_section_url: "/pages/5-precision"
+next_section_name: "Chapter 5: Precision as a Training Decision"
 
 authors:
   - name: Clarke Chong
     url: "https://github.com/clarkechong"
 
 toc:
-  - name: "Roofline Analysis"
-  - name: "JAX and ROCm Profiling Tool Stack"
-    subsections:
-      - name: "Trace Analysis with XProf"
-      - name: "Trace Analysis with rocprofv3 and ROCTx range markers"
-      - name: "Hardware Counter Analysis with rocprof-compute"
-  - name: "Debugging with rocgdb"
-  - name: "End-to-End Performance"
----
-## Roofline Analysis
-
-TODO
-
-- theoretical roofline first: peak FLOP/s per datatype and peak HBM bandwidth, both from the hardware chapter
-- the ridge point, ie. the FLOPs per byte you need to saturate the Matrix Cores (288 for BF16 on MI355X)
-- arithmetic intensity worked for two cases: a large matmul (compute-bound) and an elementwise chain (bandwidth-bound)
-- how the datatype moves the answer: fp32 vs bf16 vs fp8/MXFP4 raise the compute ceiling but not the HBM ceiling, so the ridge point moves right
-- memory-bound vs compute-bound as a decision rather than a label: reuse, fusion and tiling in one case, larger tiles and better MFMA patterns in the other
-- theoretical vs empirical roofline, ie. why a measured HBM line lands well below spec, using the `rocprof-compute` roofline below
-- multi-level rooflines (LDS, L1, L2, Infinity Cache) and what a single HBM line hides about cache reuse
-- one worked example carried end to end: predict, measure, state whether the model held
-
-START:
-
-Roofline analysis is a useful top-level analysis methods for high performance computing workloads. It measures the achieved hardware utilization (FLOPS) of the workload in proportion to its peak theoretical value. Roofline analysis can be applied hierarchically. For example, lets consider an XLA module `train_step` as the top-level workload we want to analyze. If we perform roofline analysis on this module and find it operates far below the roofline, we can decompose it into ops, then into kernels, and perform roofline analysis at each level. The goal is to identify specific optimisation opportunities and target improvement efforts accordingly.
-
-So how does roofline analysis work?
-
-First we should understand that a workload tends to be either compute bound or memory bound, hence any roofline value should be determined by a combination of these two factors. We already know from Section 1 (Hardware) that the GPU spec provides peak FLOPS and peak HBM bandwidth. We quantify this balance using the concept of Arithmetic Intensity (AI), measured in FLOPs per byte. In other words, how much computation is performed per byte of data moved to or from memory.
-
-Lets understand this through 2 example workloadS: 1) a `memcopy` kernel which simply moves data over HBM with no calculations, and 2) a large GEMM kernel.
-
-We should expect the `memcopy` kernel to be memory-bound as the kernel will saturate the HBM bandwidth and this is the limiting factor. The speed of this kernel is determined solely by the peak HBM bandwidth. From the perspective of AI, FLOPs per byte, this kernel has 0 FLOPs per byte of data moved. But remember our end metric is hardware utilization in terms of FLOPS. Hence, a `memcopy` kernel that inherently performs no FLOPs, has a roofline value of 0 FLOPs!
-
-Now consider the large GEMM kernel. For a square GEMM, the FLOPs complexity is O(n^3), and the memory traffic complexity is O(n^2). Which means AI for a square GEMM is O(n). For our hypothetical large N, we have a large AI and are compute bound. Here, our roofline value in FLOPs is the peak FLOPs of the GPU. 
-
- where the time complexity grows O(N^2) or O(N^3) for a batched GEMM. At large N these kernels tend towards being purely compute bound, in which case the roofline is the peak FLOPs of the hardware. Here, the speed of this kernel is determined by the peak FLOPs for the datatype being used.
- increasing the peak FLOPS (for that datatype specifically) increases the kernel speed. we have N^2 or N^3 flops per byte (a very large arithmetic intensity for large GEMMs!). 
-
-In other words, the AI determines which roofline applies to our workload. 
-
-<roofline diagram: higher AI means we are bound by peak FLOPS (right side of the ridge point), low AI means we are bound by the HBM bandwidth. >
-
-- notice the labelled ridge point. 
-- to the left of this we are memory bound. as the AI increases from 0, the roofline for that workload is the max theoretical flops required by the workload. flops/byte(AI) * bytes/s = flop/s. up until this value saturates to the hardware ceiling (which happens at the ridge point and hence flattens out) this increases linearly with AI
-- to the right of the ridge point we are flat at peak flops of the hardware
-- at the ridge point we are at the exact peak of the hardware without saturating. any more AI and we are limited by peak flops compute, and any less we are bound by HBM bandwidth
-
-this makes sense but we also know from 1-hardware that we have differnet flops per datatype AND different mem bandwidth per HBM vs l1 cache vs within node infinity fabric bandwidth.
-
-how does this affect the roofline? lower FP formats have higher max FLOPS throughput so they require more flops/byte to saturate. the ridge point moves right relative to AI.
-
-how about memory bandwidths? within-node has a lower memory bandwidth. (less bytes/s). Since memory is slower, you need a higher arithmetic intensity before compute becomes the bottleneck.
-
-<visual diagram: conveyer belt -> matrix unit>
-1. memory bound: slow conveyer belt, matrix unit is instantly churning through, no backlog
-2. compute bound: rapid conveyer belt, matrix unit cant process faster than data arriving. 2
-3. ridge point: matched speed, data arrives on conveyer belt at same rate matrix unit processes it.
-4. AI: 0 AI means matrix unit spends 0 time processing (passes straight through). increase AI means matrix unit spends more time (more processing, more FLOPS) per unit of data.
-knobs: HBM speed, peak FLOPS, AI of workload
-
-so what are the takeaways? the final thing that affects your actual final FLOPs (utilization) are 
-1. how well your kernel performs relative to its AI roofline (of course, in reality we arent always hitting the theoretical peak of our workload due to execution factors such as: cache misses due to mem access patterns, ... ETC LIST MORE)
-2. the design of the algorithm in terms of AI itself (if you can improve the AI of an algorithm to push it to to compute bound region, overall flops increases) but this is not always possible eg. a memcopy kernel inherently has no compute. but a chain of low AI operations can be FUSED together into one larger AI (and hence greater roofline) kernel (KERNEL FUSION!), or an algorithm can inherently have better access patterns (tiling, data reuse).
-
-
-see <https://jax-ml.github.io/scaling-book/roofline/> for a more concrete mathematical view now that you have a baseline understanding. this walks thorugh a computed example for particular kernels.
-
-but remember, roofline analysis is just one component of profiling. it can identify which kernels are performing relatively poorly but it doesnt tell you why. For that you need to look into the trace/timeline of actual GPU events and even hardware counters which preserve details about actually achieved hardware utilization.
-
+  - name: "Measurement Contract"
+  - name: "Artifact Bundle"
+  - name: "XProf"
+  - name: "rocprofv3"
+  - name: "rocprof-compute"
+  - name: "From HLO to a Kernel"
+  - name: "Multi-Level Rooflines"
+  - name: "Triage Order"
+  - name: "Reporting Template"
 ---
 
-## JAX and ROCm Profiling Tool Stack
+Profiling starts with one synchronized number: tokens/s/GPU for a fixed workload.
+The tools in this chapter explain that number. They do not replace it.
 
-there are different profiling tools for working at different abstraction levels. for example at early stage profiling (still identifying phase), framework level profiler is ideal. ideally we would liek unified profiler to see from jax level to kernel level (which xprof would like to be) but current limitations means that low level kernel details (such as what?) are not visible to jax profiler. so we use jax profiler for high level roofline analysis and trace identification, and as we identify items down the stack we go to lower level profiling tools. 
+Use four separate runs:
 
-<diagram here showing stack: python, framework(jax), framework(xla){hlo modules}{hlo ops}, kernel library, gpu stream, and showing where each profiler operates in the stack>
+1. a clean timing run;
+2. an XProf trace for framework and HLO attribution;
+3. a `rocprofv3` trace for ROCm runtime, kernel, memory-copy, and RCCL events;
+4. a counter run with `rocprofv3` or `rocprof-compute`.
 
+Counter collection and tracing perturb execution. Never take the headline step time
+from a counter run.
 
-### Trace Analysis with XProf
+Tool semantics linked to JAX, XProf, or ROCm documentation are **[cited]**.
+Commands and settings taken from the experiment repositories are **[source]**.
+This chapter contains no **[measured]** MI355X profiler result. Archived gfx942
+observations and untested gfx950 fields are identified as unverified where they
+appear.
 
-XProf is visualizer for the JAX profiler. Capture with `jax.profiler`:
+## Measurement Contract
+
+### Freeze the workload
+
+A comparison is valid only if these fields match:
+
+- model configuration and parameter count;
+- sequence length and packing behavior;
+- microbatch per GPU and gradient accumulation;
+- global tokens per optimizer update;
+- optimizer and rematerialization policy;
+- attention and MoE semantics;
+- synthetic or real data;
+- device count, mesh, and partition mode.
+
+For precision experiments, keep the input tokens and optimizer recipe fixed. For
+MoE experiments, also keep routing inputs fixed and report dropped or padded tokens.
+If a configuration must change to fit, describe the comparison as a different
+workload.
+
+### Record the machine and software
+
+Store the raw output of:
+
+```bash
+date -Iseconds
+rocminfo
+amd-smi static
+python3 - <<'PY'
+import jax, jaxlib
+print("jax", jax.__version__)
+print("jaxlib", jaxlib.__version__)
+print("backend", jax.default_backend())
+print("devices", jax.devices())
+PY
+```
+
+Also record:
+
+- the full container tag and image digest;
+- ROCm, JAX ROCm plugin, PJRT, RCCL, XProf, and profiler versions;
+- `git rev-parse HEAD` for MaxText and every patched dependency;
+- `git status --porcelain=v1` for each source tree;
+- a retained patch plus `git diff --binary | sha256sum` when a tree is dirty;
+- the experiment-repository commit;
+- `HIP_VISIBLE_DEVICES`, `JAX_PLATFORMS`, `XLA_FLAGS`, memory-fraction settings,
+  and profiler-specific variables;
+- the compute and memory partition modes;
+- power, clock, and temperature samples during the measured interval.
+
+Do not dump the complete environment into a public artifact. It can contain tokens
+and credentials. Save an allowlist of performance-related variables.
+
+The three experiment repositories declare the mutable tag
+`docker.io/rocm/jax-training:maxtext-v26.6`. The Llama 7B plan requests JAX,
+JAXLIB, ROCm plugin, and PJRT 0.11.0. Record the image digest and what the
+process actually imports rather than treating those declarations as pins.
+
+### Separate compile, warmup, and measurement
+
+The first execution can compile and autotune. Relevant XLA flags normally
+participate in JAX's compilation-cache key. Reuse risk remains when a custom
+implementation omits state from its key, a shared directory contains stale
+artifacts, or a dependency changes without changing the recorded signature. State
+whether the cache is cold, warm, or disabled and do not share one writable cache
+across unlike experiment cohorts.
+
+The checked-in experiments run 30 steps and reserve the first 10 for warmup. For
+the clean timing run:
+
+- launch each arm in a fresh process;
+- discard steps 0 through 9;
+- retain every later synchronized step time;
+- report the median as the headline;
+- report a dispersion measure such as p10–p90 or median absolute deviation;
+- keep the raw samples.
+
+Raw JAX timing must block:
 
 ```python
-import jax
+for _ in range(10):
+    state, loss = train_step(state, batch)
+    jax.block_until_ready((state, loss))
 
-with jax.profiler.trace("/tmp/trace"):
-    for _ in range(5):
-        train_step(...)
+times = []
+for _ in range(20):
+    start = time.perf_counter()
+    state, loss = train_step(state, batch)
+    jax.block_until_ready((state, loss))
+    times.append(time.perf_counter() - start)
 ```
 
-```bash
-xprof --logdir /tmp/trace
+Time one optimizer update. If gradient accumulation is two, the interval includes
+both microbatches and the optimizer update.
+
+### Keep timing and profiling independent
+
+Use the same config, flags, data, and warmed step in every run, but do not expect
+profiler wall time to equal clean-run wall time.
+
+| Run | Use its time? | Purpose |
+|---|---|---|
+| Clean timing | Yes | Step time and tokens/s/GPU |
+| XProf trace | No | Host/device timeline, HLO attribution, memory views |
+| `rocprofv3` trace | No | Runtime calls, dispatches, copies, RCCL, kernel metadata |
+| PMC or `rocprof-compute` | No | Counters, cache traffic, MFMA activity, empirical roofline |
+
+Synthetic reused data isolates the compiled train step. It does not test the input
+pipeline. Real data is required for convergence and end-to-end input throughput.
+Label both.
+
+## Artifact Bundle
+
+One run should be inspectable without the original machine. Appendix F defines the
+normative directory and schema. Its top level is:
+
+```text
+artifacts/<case_id>/<run_id>/
+├── manifest.yaml
+├── run-contract.yaml
+├── checksums.sha256
+├── config/
+├── hardware/
+├── data/
+├── logs/
+├── results/
+├── ledgers/
+├── components/
+├── monitoring/
+├── hlo/
+├── profiles/
+├── checkpoints/
+└── fallback/
 ```
 
-You get an `.xplane.pb` as the native output format, with a lossy timeline-only trace `.gz.json` which can be fed into Perfetto or other generic trace viewers.
+`manifest.yaml` identifies which files came from the clean timing run and which
+came from instrumented runs. Its `omissions` list records missing artifacts and
+reasons. Preserve raw profiler databases; CSV summaries are derived data.
 
-The `.xplane.pb` is formatted as such:
+The bundle does not need every directory for every experiment. A timing-only result
+still needs the manifest, resolved config, flags, versions, raw steps, and summary.
 
-![]({{ '/pages/img/what-is-an-xspace.png' | relative_url }})
+## XProf
 
-- **XSpace** is the entire trace/capture.
-- **XPlane** is one device or host component within it, e.g. `/device:GPU:0` or `/host:CPU`. An 8 GPU node would contain 8 GPU XPlanes + 1 host XPlane
-- **XLane** is a lane within the plane. A GPU XPlane will typically contain a `Stream` lane which records stream-level events (ie. actual kernels that ran), along with framework-level lanes which correlate a framework-level op down to its stream-level event.
-- **XEvent** is an event on the lane: a kernel dispatch, an op, an API call.
-- **XStats** are the key/value pairs hanging off an event. It contains metadata, e.g. `correlation_id`, `hlo_op`, `hlo_module`, and `kernel_details` carrying `regs`, `grid`, `block` and `occ_pct`.
+XProf reads the trace produced by JAX and retains the most useful automatic bridge
+between JAX scopes, HLO operations, and GPU kernels.
 
-The correlation between framework-level ops (JAX, XLA) to their GPU kernels is the main benefit of profiling through XLA as oppose to profiling with proprietary AMD tools such as `rocprof`. However, AMDs proprietary profiling tools will likely provide a more detailed and accurate result especially from a lower-level perspective (FLOPs, utilization, roofline)
+### Capture
 
-XProf offers various tools which are best used for a top-level profiling view:
+Warm up before opening the trace:
 
-- `trace_viewer` for the timeline, ie. what ran when, on which stream, and what overlapped
-- `op_profile` and `framework_op_stats` for time by op, and `hlo_stats` for the same by HLO instruction
-- `memory_profile` and `memory_viewer` for allocation over time and the peak-memory breakdown
-- `kernel_stats` for per-kernel duration and launch geometry
-- `graph_viewer` for the HLO graph, which is the same DAG we dumped earlier
-
-So, use XProf for the timeline, for op and HLO attribution, and for memory. For accurate and precise FLOPS/hardware utilization metrics per a specific identified kernel, you should use `rocprof` or `rocprof-compute`.
-
----
-
-### Trace Analysis with rocprofv3 and ROCTx range markers
-
-`rocprofv3` sits a layer below XProf. On its own, it knows nothing about the framework level (HLO or JAX), only about the ROCm runtime and the device.
-
-!! ROCTx range markers allow manual ranges to be inserted and rocprof will autocorrelate these roctx into the trace (--kernel-rename to align kernel with range, otherwise range is seperate timeline). however this has to be done manually! There is work in progress to bring automatic roctx range attribution to XLA (ie patch xla ops/modules as roctx ranges so they can be picked up by rocprof).
-
-```bash
-rocprofv3 <collection-modes> -- <command-to-profile>
-```
-
-It collects device-side timelines (traces) and, separately, hardware counters via `--pmc`. Tracing has individual types:
-
-- `--kernel-trace` kernel dispatches
-- `--memory-copy-trace` / `--memory-allocation-trace` copies and allocations (address, size, agent)
-- `--marker-trace` Marker (ROCTx) ranges
-- `--hip-runtime-trace` the HIP API (`hip*`), `--hsa-core-trace` the HSA API (`hsa_*`)
-- `--rccl-trace` RCCL collectives
-- `--att`/`--advanced-thread-trace` instruction-level thread trace, separate and heavyweight
-
-and aggregate bundles:
-
-- `--hip-trace` HIP API only, ie. NOT kernels or memcpys
-- `-r`/`--runtime-trace` HIP runtime + marker + RCCL + memory ops + kernel dispatches
-- `-s`/`--sys-trace` everything, including the HSA API
-
-`-f` sets the output format independently of the collection mode:
-
-- `pftrace` a Perfetto trace, viewable at `ui.perfetto.dev`. Convenient but lossy: a flattened timeline that drops the relational schema, static kernel metadata and structured counters.
-- `csv` plain tables, one file per domain. `json` the same, structured.
-- `rocpd` a sqlite `.db`, the lossless form
-- `otf2` Open Trace Format 2, for HPC viewers such as Vampir or TAU
-
-You can pass several at once:
-
-```bash
-rocprofv3 --kernel-trace -f pftrace rocpd -d prof -o vadd_trace -- /tmp/vadd
-```
-
-![]({{ '/pages/img/rocprofv3-perfetto-trace.png' | relative_url }})
-
-There is also a `--stats` mode which aggregates the kernel trace into a `top_kernels` view in the sqlite output:
-
-```bash
-rocprofv3 --kernel-trace --stats -d /tmp/prof -o jaxcnn -- python3 cnn.py
-```
-
-A simple SQL query script:
 ```python
-import sqlite3, sys
+for _ in range(10):
+    state, loss = train_step(state, batch)
+    jax.block_until_ready((state, loss))
 
-for d, c, p, n in sqlite3.connect(sys.argv[1]).execute(
-    "SELECT total_duration,total_calls,percentage,name "
-    "FROM top_kernels ORDER BY total_duration DESC LIMIT 10"
-):
-    print(f"{d:10.0f} {c:7d} {p:6.1f}  {n[:60]}")
+jax.profiler.start_trace("/tmp/run/xprof")
+for step in range(5):
+    with jax.profiler.StepTraceAnnotation("train", step_num=step):
+        state, loss = train_step(state, batch)
+        jax.block_until_ready((state, loss))
+jax.profiler.stop_trace()
 ```
 
-![]({{ '/pages/img/rocprofv3-kernel-stats.png' | relative_url }})
+Five steps are usually enough to show repetition and overlap without producing an
+unwieldy trace. The Llama 7B profiling script follows this pattern with 10 warmup
+steps and a 5-step capture.
 
-See [AMD's rocprofv3 documentation](https://rocm.docs.amd.com/projects/rocprofiler-sdk/en/latest/how-to/using-rocprofv3.html) for further reading
-
----
-
-### Hardware Counter Analysis with rocprof-compute
-
-Hardware counters give the most accurate and detailed breakdown of a specific kernels execution. `rocprof-compute` collects them and derives micro-architectural metrics: cache hit rates, occupancy, an empirical roofline, and speed-of-light against peak.
-
-Three subcommands:
+Open the result:
 
 ```bash
-rocprof-compute profile -n vadd -- /tmp/vadd          # run the workload, collect base counters
-rocprof-compute analyze -p workloads/vadd/MI300X_A1   # derive metrics into CLI tables
+xprof --logdir=/tmp/run/xprof --port=6006
 ```
 
-INSERT DIAGRAM EG. KERNEL -(PROFILE)-> GENERATE BASE COUNTER DATA -(ANALYZE)-> FEW DATA TO MANY DERIVED METRICS
+JAX normally writes an `.xplane.pb` plus a timeline-oriented
+`.trace.json.gz`. Preserve the XPlane file. The JSON trace is convenient for
+Perfetto but does not retain every relationship used by XProf.
 
-- `profile` replays the workload many times to collect every counter set, and writes a workload directory: `pmc_perf.csv` holds the merged counters that `analyze` reads, alongside `sysinfo.csv` and the raw per-pass output.
-- `analyze` derives the metrics. Add `-b` to select only the sections you want, and `--gui` for a dash app on `localhost:8050` instead of text tables.
+### Read the data model
 
-CLI table:
-![]({{ '/pages/img/rocprof-compute-cli.png' | relative_url }})
+- **XSpace** is the complete capture.
+- **XPlane** represents a host or device.
+- **XLane** is one stream or framework lane within a plane.
+- **XEvent** is an operation, runtime call, or kernel dispatch.
+- **XStat** attaches metadata such as HLO op name, correlation ID, launch geometry,
+  or kernel details.
 
-GUI:
-![]({{ '/pages/img/rocprof-compute-speed-of-light.png' | relative_url }})
-![]({{ '/pages/img/rocprof-compute-workflow.png' | relative_url }})
-![]({{ '/pages/img/rocprof-compute-roofline.png' | relative_url }})
+Use the views in this order:
 
-Notice the roofline model here is more detailed than the XProf equivalent. 
+1. **Trace Viewer:** find idle gaps, synchronization, overlap, and repeated steps.
+2. **Op Profile and HLO Stats:** identify scopes and HLO operations with the most
+   self-time.
+3. **Kernel Stats:** identify kernel families, durations, occurrences, and launch
+   geometry.
+4. **Memory Viewer/Profile:** find the peak interval and largest live buffers.
+5. **Graph Viewer:** inspect producers, consumers, and fusion boundaries around one
+   selected HLO op.
 
-See [AMD's rocprof-compute documentation](https://rocm.docs.amd.com/projects/rocprofiler-compute/en/latest/how-to/use.html) for further reading.
+Add `jax.named_scope` around stable model components such as `attention`,
+`mlp/up_proj`, and `optimizer`. A trace cannot reliably recover a source-level name
+that the program never supplied.
 
----
+### Validate fields on ROCm
 
-## Debugging with rocgdb
+Archived XProf 2.23 captures on gfx942 showed missing device step grouping, an
+unsupported AMD compute ceiling in the roofline view, zeros for some occupancy and
+register fields, and multi-device op times summed across devices. These observations
+are not measurements of the current gfx950/v26.6 stack.
 
-`rocgdb` is ROCm's fork of gdb. It debugs host x86 and additionally understands AMDGPU device code, exposing wavefronts as threads and adding `info agents` / `info queues` / `info dispatches`.
+Treat an implausible zero as missing data until the XPlane or a ROCm profiler
+corroborates it. Never convert summed device time directly into step wall time.
 
-Take note of two different workflows you may run into:
+> **BLOCKED (current-tool audit):** the repositories do not yet contain a checked-in
+> gfx950/v26.6 XPlane field audit. Revalidate the archived limitations before
+> describing any one of them as current.
 
-- If you are debugging issues within XLA, e.g. debugging the effect of an XLA flag, or the lowering of an op, you will be working with a host-side regular python traceback.
-    - The binary needs debug symbols, ie. a debug build rather than the release wheel, and the system needs to be dumping core files if you want to work from a crash after the fact rather than under the debugger.
-    
-- If you are debugging device-side (GPU) execution behaviour, you will see the device-side thread stack in gdb.
-    - For device-side debugging, breakpoints inside a kernel need that kernel compiled with `-ggdb`, after which `info threads` lists wavefronts and you can step through GCN. That is realistic for a HIP kernel you wrote and much less so for an XLA-generated fusion, which is generated, fused and optimised before it ever reaches the device. Counter tools do the device-side work instead.
+## rocprofv3
 
-<need images and examples of each, either create faulty gpu execution intentionally and debug>
+`rocprofv3` observes the ROCm runtime and device below XLA. It has richer ROCm
+events and kernel metadata than XProf, but it does not automatically know the HLO
+or Python source that caused a dispatch.
 
-You can also debug with the logs:
+### Timeline capture
+
+Wrap the unchanged experiment command:
 
 ```bash
-TF_CPP_MIN_LOG_LEVEL=0 TF_CPP_MAX_VLOG_LEVEL=2 python3 train.py
+rocprofv3 \
+  --kernel-trace \
+  --memory-copy-trace \
+  --marker-trace \
+  --rccl-trace \
+  --stats \
+  -f rocpd pftrace \
+  -d /tmp/run/rocprof \
+  -o train-step \
+  -- python3 scripts/train_step/bf16.py
 ```
 
-- `TF_CPP_MIN_LOG_LEVEL` is the lowest severity to print, `0` for everything down to INFO, `2` for ERROR and FATAL only
-- `TF_CPP_MAX_VLOG_LEVEL` is verbosity of the debug stream, `0` none, `2` a great deal, including per-pass and per-module timing
+Use the exact `rocprofv3` path shipped in the container if it is not on `PATH`. The
+experiment READMEs locate it under the ROCm SDK Python package.
 
-![]({{ '/pages/img/xla-vlog-unimplemented.png' | relative_url }})
+- `rocpd` is the lossless SQLite form used for queries and later re-analysis.
+- `pftrace` opens directly in Perfetto and is useful for visual inspection.
+- `--runtime-trace` adds a broad runtime bundle when HIP/HSA launch behavior is the
+  question.
+- `--kernel-include-regex` narrows a follow-up capture to a known kernel family.
 
-See [AMD's ROCgdb documentation](https://rocm.docs.amd.com/projects/ROCgdb/en/latest/how-to/quick-start.html) for further reading.
+Example:
 
----
+```bash
+rocprofv3 --kernel-include-regex "Cijk_" --kernel-trace --stats \
+  -d /tmp/run/rocprof-gemm -o gemm -- python3 train.py
+```
 
-## End-to-End Performance
+List generated tables from SQLite's `sqlite_master`; rocprofiler table names can
+carry a session-specific suffix.
 
-START:
+### ROCTx ranges
 
-ultimately the end goal with profiling is to identify where improvement opportunities are in relation to the objective we are optimizing for. here we focus on LLMs.
-often the focus is tokens/sec (a measure of end to end latency), or max memory usage (so that a model can actually train on a system).
+Use ROCTx to mark one optimizer update or a small number of stable phases. Capture
+them with `--marker-trace`. Match range names to `jax.named_scope` names where
+possible, but remember that they are independent annotations. Do not assume XLA
+automatically emits an ROCTx range for every HLO operation.
 
-- tokens/sec as the headline, defined per-GPU and per-node so that it scales, plus samples/sec for non-LLM work
-- MFU, ie. measured throughput against the datatype's roofline from the first chapter, and why it is the honest version of "utilisation"
-- peak memory against the 288GB budget: parameters, optimiser state, activations, and where the buffer-assignment plan and the memory viewer disagree with the napkin figure
-- achieved HBM bandwidth against 8TB/s, per kernel and aggregated over a step
-- collective time as a fraction of step time, and how much of it is overlapped rather than exposed, which is where the scale-up/scale-out ladder from the first chapter starts to bite
-- compile time and autotuning cost, amortised over the length of the run
-- convergence: loss against a reference curve, and why a faster step that changes numerics is not a win
-- a reporting checklist, ie. hardware, ROCm and JAX versions, XLA flags, batch and sharding config, and which numbers were measured against which were computed
+The raw Llama 7B runner demonstrates another useful technique: call
+`roctxProfilerPause` before the loop, resume for one warmed step, then pause again.
+This keeps initialization and unrelated steps out of a counter capture.
+
+### Hardware counters
+
+First inspect counters available on the installed version:
+
+```bash
+rocprofv3 --list-avail
+```
+
+Then collect one compatible group per run:
+
+```bash
+rocprofv3 --kernel-trace \
+  --pmc "SQ_WAVES GRBM_GUI_ACTIVE SQ_BUSY_CYCLES SQ_INSTS_VALU_MFMA_MOPS_BF16" \
+  -- python3 model/train.py configs/jax.yml
+```
+
+Counter names and legal groupings vary by architecture and profiler release. The
+Llama 7B repository stores its intended groups in `configs/pmc/rocm.txt`.
+
+PMC collection can serialize dispatches and may replay work. Its trace is evidence
+about the selected kernels and counters, not overlap or step throughput.
+
+## rocprof-compute
+
+Use `rocprof-compute` after the trace has identified a small workload or kernel
+family worth deeper analysis. It collects base counters, often through multiple
+replays, then derives cache, occupancy, speed-of-light, and roofline metrics.
+
+```bash
+PROFILE_DIR=/tmp/rocprof-compute/llama7b-step
+rocprof-compute profile --output-directory "$PROFILE_DIR" -- \
+  python3 model/train.py configs/jax.yml
+
+rocprof-compute analyze --path "$PROFILE_DIR"
+```
+
+Restrict the command to one warmed step when possible. A complete 30-step training
+process multiplied by many counter passes is expensive and hard to interpret.
+
+The workload directory contains raw pass output, `pmc_perf.csv`, and system
+information. Preserve the complete directory. Use:
+
+```bash
+rocprof-compute analyze --path "$PROFILE_DIR" --experimental --gui
+```
+
+The GUI flag changed across releases. Check `rocprof-compute analyze --help` in
+the recorded container; older versions may accept `--gui` without
+`--experimental`.
+
+for the interactive view, or select only the needed analysis blocks for a text
+report. The useful outputs are:
+
+- achieved FLOP rate and matrix-instruction activity;
+- HBM and cache traffic;
+- cache hit rates;
+- wave and occupancy limits;
+- LDS, register, and scratch pressure;
+- empirical roofline position.
+
+Do not compare the replayed profile's elapsed time with the clean timing run.
+
+## From HLO to a Kernel
+
+The reliable correlation starts at the framework and moves downward.
+
+### 1. Name the source operation
+
+```python
+with jax.named_scope("mlp/up_proj"):
+    hidden = inputs @ w_up
+```
+
+### 2. Dump the compiled program
+
+Set dump flags before importing JAX:
+
+```bash
+export XLA_FLAGS="$XLA_FLAGS \
+  --xla_dump_to=/tmp/run/hlo \
+  --xla_dump_hlo_as_text"
+python3 train.py
+```
+
+Keep the optimized HLO, debug options, and buffer assignment. The effective
+`.debug_options` file is evidence that the intended flags reached the module.
+
+### 3. Select the expensive event in XProf
+
+From Kernel Stats, record:
+
+- complete kernel name;
+- HLO/op name;
+- duration and occurrence count;
+- device and stream;
+- grid and workgroup shape;
+- the exact captured step.
+
+Search the optimized HLO for the op name. Read the operation's shape, operands,
+layout, custom-call target, backend config, and fusion body.
+
+On ROCm, some XLA compatibility strings retain CUDA-oriented names. A custom-call
+target containing `cublas` is not proof that an NVIDIA library ran. The loaded code
+object, kernel family, and ROCm trace settle the backend path.
+
+### 4. Follow source metadata
+
+When present, HLO metadata carries an `op_name` and `stack_frame_id`. Follow the
+stack-frame ID through the dump's `StackFrames`, `FileLocations`, `FunctionNames`,
+and `FileNames` tables to the Python line.
+
+A fusion's metadata may name only one contributing operation. Inspect the
+computation referenced by `calls=` before assigning the whole fusion to that name.
+An activation may also disappear into a library GEMM epilogue, in which case the
+backend config is the evidence.
+
+### 5. Hand the kernel to ROCm tools
+
+Re-run the same warmed step under `rocprofv3`, filtered by the kernel family. Confirm
+the shape, scope, and selected kernel again: autotuning or cache state can choose a
+different kernel in a fresh process.
+
+The correlation chain is:
+
+```text
+Python scope
+  -> HLO metadata and stack frame
+  -> XProf kernel event
+  -> ROCm kernel dispatch
+  -> rocprof-compute counters and roofline
+```
+
+XProf supplies the automatic HLO bridge. ROCTx supplies manually chosen phase
+boundaries in the ROCm trace. They complement each other.
+
+## Multi-Level Rooflines
+
+One HBM roofline cannot distinguish cache reuse from HBM traffic. For each memory
+level `m`, compute a separate intensity:
+
+```text
+I_m = FLOPs / bytes_crossing_level_m
+P_m = min(compute_peak, I_m * bandwidth_m)
+```
+
+Useful levels on MI355X are registers/LDS, L1, per-XCD L2, Infinity Cache, HBM, xGMI,
+and the scale-out network. Do not reuse one byte count at every level. Each boundary
+needs its own counters or a clearly labelled analytical lower bound.
+
+Use three scopes:
+
+1. **Kernel:** counters can place one dispatch against cache and HBM ceilings.
+2. **HLO or named component:** aggregate only kernels that implement that component,
+   and account for fusion.
+3. **Training step:** compare useful model FLOPs with wall time, peak HBM, and
+   exposed communication. Preserve overlap rather than summing all device-kernel
+   durations.
+
+The theoretical BF16/HBM line uses the Chapter 3 constants:
+
+```text
+compute peak = 2.5166 PFLOP/s
+HBM peak     = 8 TB/s
+ridge point  = 315 FLOP/byte
+```
+
+An empirical roofline substitutes sustained compute and measured bandwidth from the
+same machine state. It must not quietly mix a boost-clock compute ceiling with a
+replay-derived bandwidth.
+
+> **BLOCKED — MI355X cache-level rooflines.** Add cache-level bandwidth ceilings
+> only with a checked-in `rocprof-compute` bundle. No current experiment
+> repository contains those measurements.
+
+## Triage Order
+
+Work down this list and stop when the gap is explained.
+
+1. **Validate the comparison.** Confirm tokens/update, model config, data semantics,
+   device count, precision, remat, and synchronization.
+2. **Check device occupancy over time.** Long gaps between device kernels while the
+   host is active indicate input or host starvation.
+3. **Check compilation and recompilation.** Separate compile time, inspect cache
+   state, and look for repeated compilation or autotuning.
+4. **Verify sharding.** Read local shapes and HLO replica groups. Unexpected
+   AllGather, AllReduce, or AllToAll operations can dominate a step while every
+   individual kernel remains healthy.
+5. **Verify the backend path.** Confirm that GEMM, attention, and MoE operations
+   reached the intended library or FFI kernel. Look for casts and slow fallbacks.
+6. **Check HBM pressure.** Compare arithmetic intensity and measured HBM traffic
+   with the 315 FLOP/byte BF16 ridge. Inspect fusion and temporary traffic.
+7. **Check communication.** Compare message bytes with bandwidth at that message
+   size, then measure the exposed portion. A long collective that is fully hidden
+   is not the first target.
+8. **Check MFMA efficiency.** For the dominant GEMMs, compare shape, tile count,
+   MFMA activity, LDS/register limits, and achieved FLOP rate. Low occupancy alone
+   is not proof of a problem.
+9. **Check numerical behavior.** Compare loss and finite-value checks with the
+   reference. Faster invalid steps do not count.
+
+This order keeps kernel-level investigation behind cheaper checks for invalid
+workloads, idle devices, wrong shardings, and fallbacks.
+
+## Reporting Template
+
+Every case-study result should include this block or an equivalent machine-readable
+manifest:
+
+```text
+Result:
+  evidence: [analytical] | [measured] | [cited]
+  claim:
+
+Workload:
+  model and parameter count:
+  sequence length and packing:
+  microbatch/GPU:
+  gradient accumulation:
+  global tokens/update:
+  data: synthetic-reused | real
+  optimizer, remat, attention, MoE:
+
+System:
+  GPU count and partition mode:
+  topology:
+  container and digest:
+  ROCm, JAX, plugin/PJRT, RCCL, XProf:
+  MaxText and dependency commits:
+  XLA_FLAGS and relevant environment:
+
+Protocol:
+  fresh process:
+  cache state:
+  warmup steps:
+  measured steps:
+  synchronization:
+  statistic and dispersion:
+  clock/power handling:
+
+Primary:
+  median seconds/update:
+  tokens/s/GPU:
+
+Diagnostics:
+  model-FLOP convention and MFU:
+  measured or estimated peak HBM:
+  dominant HLO scopes/kernels:
+  collective time and exposed fraction:
+  compile/autotuning time:
+  validation-loss guardrail:
+
+Artifacts:
+  bundle path:
+  missing files and reason:
+
+Interpretation:
+  predicted bound:
+  observed bound:
+  gap explained by:
+  next controlled change:
+```
+
+References:
+
+- [JAX profiling documentation](https://docs.jax.dev/en/latest/profiling.html)
+- [XProf](https://github.com/openxla/xprof)
+- [ROCm Systems Profiler and rocprofv3](https://rocm.docs.amd.com/projects/rocprofiler-sdk/en/latest/)
+- [ROCm Compute Profiler](https://rocm.docs.amd.com/projects/rocprofiler-compute/en/latest/)
+- [JAX Scaling Book: Rooflines](https://jax-ml.github.io/scaling-book/roofline/)

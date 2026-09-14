@@ -1,6 +1,12 @@
-# How To Scale Your Model with AMD
+# Training on MI355X with JAX and ROCm
 
 A Distill-style Jekyll site, published at https://clarkechong.github.io/scale-your-amd.
+
+The book is a self-contained companion to
+[How To Scale Your Model](https://jax-ml.github.io/scaling-book). It focuses on
+MI355X training through JAX, XLA, ROCm, and MaxText. Generic derivations are kept
+short; the main material is AMD-specific execution behavior, configuration, and
+case studies whose measured and blocked sections are identified explicitly.
 
 The theme is a trimmed-down version of the one behind
 [How To Scale Your Model](https://jax-ml.github.io/scaling-book), which itself uses
@@ -31,23 +37,21 @@ thing not picked up automatically; restart the server after those.
 ## Layout
 
 `index.md` at the repository root is the landing page. Every chapter is one Markdown
-file in `pages/`, **prefixed with its chapter number** so the file tree reads in book
-order: `1-hardware.md` through `8-deepseek-v3.md`. The prefix is part of the URL, so
-renaming a file means updating every link to it. Each file needs YAML front matter with
-`layout: distill`; without that delimiter Jekyll copies the `.md` through verbatim and
-the page is served as raw Markdown.
+file in `pages/`, prefixed with its chapter number so the file tree reads in book
+order: `1-hardware.md` through `15-deepseek-v3.md`. Six lettered appendices follow.
+The prefix is part of the URL, so renaming a file means updating every link to it.
+Each file needs YAML front matter with `layout: distill`; without that delimiter
+Jekyll copies the `.md` through verbatim and the page is served as raw Markdown.
 
 The previous draft lives under `pages/archive/` and is not linked from the landing page.
 
 ```bash
-grep -rn 'BLOCKED' pages/     # remaining work, by section
+rg -n 'BLOCKED' pages --glob '!archive/**'
 ```
 
-`docs/structure.md` is the roadmap the chapters are written against, and it is the
-document to argue with about what a chapter should contain.
-`docs/writing-notes.md` is the review document for the drafting pass: the blockers in
-dependency order, the derivations worth checking, and where the roadmap turned out to
-be wrong.
+`docs/structure-v3.md` is the roadmap the chapters are written against. It defines
+chapter ownership, evidence requirements, artifact blockers, and the migration order.
+The older structure documents remain as planning history.
 
 ## Adding or editing a chapter
 

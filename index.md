@@ -1,8 +1,8 @@
 ---
 layout: distill
-title: "How To Scale Your Model with AMD"
-subtitle: "A Systems View of LLMs on AMD GPUs"
-description: "Given a model and some number of MI355X-class GPUs, how do I run it in JAX so that adding GPUs adds throughput?"
+title: "Training on MI355X with JAX and ROCm"
+subtitle: "An AMD Companion to How To Scale Your Model"
+description: "How MI355X hardware, ROCm kernels, JAX compilation, and MaxText configuration affect training throughput."
 date: 2026-09-10
 
 section_number: 0
@@ -18,148 +18,169 @@ authors:
     url: "https://github.com/clarkechong"
 
 toc:
-  - name: Hardware
-  - name: Software
-  - name: DL (Performance) Theory
-  - name: Analysis
-  - name: "Case Study 1: Training Llama 7B in JAX (No MaxText)"
-  - name: "Case Study 2: Training Llama 70B in JAX (MaxText)"
-  - name: "Case Study 3: Mixtral 8x22B (MaxText) (Sharded MoE)"
-  - name: "Case Study 4: DeepSeek V3 (needs multinode)"
+  - name: "What This Book Covers"
+  - name: "How Claims Are Supported"
+  - name: "Reader and Prerequisites"
+  - name: "Reading Paths"
+  - name: "Versioning and Attribution"
+  - name: "Part I: The MI355X Execution Contract"
+  - name: "Part II: The Configuration Surface"
+  - name: "Part III: Case Studies and Measurement Plans"
+  - name: "Part IV: Future Multi-node Work"
+  - name: "Appendices"
 ---
 
-**One sentence: given a model and some number of MI355X-class GPUs, how do I run it
-in JAX so that adding GPUs adds throughput?** The chapters below are the path through
-that question, from a single GPU up to a multi-node frontier run.
+The [JAX Scaling Book](https://jax-ml.github.io/scaling-book/) already gives a
+careful treatment of rooflines, Transformer accounting, sharded matrix
+multiplication, and training parallelism. This book uses the same foundation for a
+narrower question:
 
-## Hardware
+> Given a fixed training workload on MI355X, which JAX and MaxText configuration
+> produces the most tokens per second per GPU without changing the learning
+> behaviour?
 
-[Chapter 1: Hardware]({{ '/pages/1-hardware' | relative_url }}).
+The answer depends on details that a hardware-independent treatment cannot settle:
+which ROCm kernel XLA selects, which low-precision paths carry gradients, how Shardy
+maps logical axes onto an eight-GPU baseboard, and whether a nominally supported
+feature runs quickly on the declared software stack.
 
-- Single GPU architecture
-- Heterogeneous systems (host, device)
-- Node architecture and topology (NVLink, InfiniFabric), extended to multinode (RDMA)
+## What This Book Covers
 
-## Software
+The current evidence scope is one MI355X or one eight-GPU MI355X UBB 2.0 node. The
+software path is JAX, XLA, ROCm, and MaxText. The main subject is pre-training
+throughput. Validation loss is used as a guardrail when a performance feature changes
+numerics.
 
-[Chapter 2: Software]({{ '/pages/2-software' | relative_url }}).
+Multi-node MI355X operation is a future acceptance specification. No current
+chapter presents a multi-node performance result.
 
-- XLA compiler (debug, lgas.cc), HLO, LLVM
-- Backends:
-  - hipBLAS
-  - cuBLAS
-  - Triton
-  - XLA own HIP codegen?
-  - Fusion
-  - RCCL
-- AITER
+The book does not cover production serving. For KV-cache economics, continuous
+batching, speculative decoding, and serving-engine design, use the inference chapters
+of the Scaling Book and the documentation for vLLM or SGLang.
 
-## DL (Performance) Theory
+Generic theory is repeated only when it is needed to understand an AMD result. Each
+recap links to the fuller derivation in the Scaling Book, substitutes MI355X
+constants, and then moves to the JAX or MaxText control that the reader can use.
 
-[Chapter 3: Deep Learning Methods]({{ '/pages/3-dl-methods' | relative_url }}).
+## How Claims Are Supported
 
-- Transformers, MoE
-- Shardy
-  - Distributed methods:
-    - DDP
-    - FSDP (sharding)
-    - TP
-    - Collectives
-  - Shardy is the framework/infra to implement sharding strategies in JAX
-  - It is what generates the collectives
-  - Example:
-    - Specify sharding config in Shardy
-    - Generate collectives
-- Attention
-  - Flash Attention
-  - (Paged) KV Cache
-  - Multi Query Attention
-  - Grouped Query Attention
-- Checkpointing
-  - `jax.checkpoint = jax.remat = rematerialisation`
-  - Instead of storing activations, recompute them in another forward pass
-  - Trade memory for compute
+Results use four labels:
 
-## Analysis
+- **`[source]`**: established by checked-in code, configuration, or a manifest.
+  It proves intent or implementation, not device execution.
+- **`[measured]`**: collected on the stated MI355X system and retained in a
+  complete Appendix F bundle.
+- **`[analytical]`**: calculated from model shapes or published hardware
+  specifications.
+- **`[cited]`**: supported by a named external specification, document, or
+  measurement.
 
-[Chapter 4: Profiling]({{ '/pages/4-profiling' | relative_url }}).
+Software support is dated and tied to exact versions. The status vocabulary is
+`available`, `experimental`, `unsupported`, `fallback`, `slow fallback`,
+`deprecated`, `no-op`, and `unverified`. Status is reported separately from the
+theoretical value of a feature.
 
-- Roofline Analysis
-  - Theoretical based first, e.g.
-  - Arithmetic intensity
-  - FLOPs
-  - Datatypes
-- trace analysis with XProf (cover XSpace `.pb` format)
-- trace analysis with `roofprofv3`
-- hardware counter analysis with `rocprof-compute`
-- debugging with `rocgdb`
-- end to end:
-  - Tokens/sec
-  - Roofline (utilisation)
-  - Peak memory usage (VRAM + bandwidth)
-  - Convergence time
+Tokens per second per GPU is the main performance metric. Step time, MFU, peak HBM,
+compile time, and exposed collective time explain that result. Precision comparisons
+also report validation loss. The Llama 70B experiment owner reports near-identical
+curves over approximately one billion nominal token positions, but the metrics,
+plot, and arm-to-run provenance are not yet available as a measured artifact.
 
-## Case Study 1: Training Llama 7B in JAX (No MaxText)
+## Reader and Prerequisites
 
-[Chapter 5: Training Llama 7B]({{ '/pages/5-llama7b' | relative_url }}).
+The intended reader knows Python, basic JAX, and the main Transformer blocks. The
+book introduces AMD hardware, the ROCm execution path, and the sharding and
+profiling details needed by the experiments. Readers who want the complete generic
+derivations should use the corresponding Scaling Book chapters linked throughout.
 
-### 1 GPU Fundamentals
+## Reading Paths
 
-### Back-of-the-Hand Peak Memory Calculation
+- For a first MI355X run, read Chapters 1 through 4, then the Llama 7B case.
+- For precision choices, read Chapters 3 through 6, Chapter 8, and the Llama 70B
+  case.
+- For distributed dense training, read Chapters 6, 7, 10, and 12.
+- For MoE training, read Chapters 7 through 10 and the Mixtral case.
+- For a performance problem, start with Chapter 4 and Appendix D.
+- For exact controls and known failures, use Appendices C and E.
 
-(7B in fp32 + Adam optimizer states in bf16)
+## Versioning and Attribution
 
-- If bf16, approx 7B × 2 bytes × 4 (optimizer) = 56 GB
-- But actually there is:
-  - fp32 (master) copy
-  - bf16 (working) copy of weights
-- fp32 used to store full-precision copy, downcast to bf16 for forward-pass compute
+Every software claim states the relevant version or commit and its verification
+date. A new ROCm, JAX, MaxText, Transformer Engine, or JAX-AITER release triggers
+retesting rather than silent carryover.
 
-### Expected Step Time Calculation
+The book reuses concepts and, where noted, adapted material from the MIT-licensed
+JAX Scaling Book. Citations accompany reused derivations and figures. AMD, JAX,
+OpenXLA, and OCP specifications are cited where their facts are used.
 
-- Quick estimate:
-  - Based on FLOPs?
-  - Based on links and bandwidth?
+## Part I: The MI355X Execution Contract
 
-## Case Study 2: Training Llama 70B in JAX (MaxText)
+1. [**MI355X as a Training Machine**]({{ '/pages/1-hardware' | relative_url }})
+   explains CDNA4, wave-level MFMA, the memory hierarchy, native low-precision
+   formats, partition modes, and the eight-GPU Infinity Fabric topology.
+2. [**What `jax.jit` Runs on ROCm**]({{ '/pages/2-software' | relative_url }})
+   follows a training step from Python through StableHLO and XLA to ROCm libraries,
+   generated kernels, FFI calls, and the HIP runtime.
+3. [**Predicting One Training Step**]({{ '/pages/3-cost-model' | relative_url }})
+   defines the compute, memory, and communication ledgers used by every experiment.
+4. [**Measuring and Explaining a Training Step**]({{ '/pages/4-profiling' | relative_url }})
+   defines the benchmark protocol and the path from XProf to HLO, `rocprofv3`, and
+   hardware counters.
 
-[Chapter 6: Training Llama 70B]({{ '/pages/6-llama70b' | relative_url }}).
+## Part II: The Configuration Surface
 
-### 8 GPU Large Dense Model
+5. [**Precision as a Training Decision**]({{ '/pages/5-precision' | relative_url }})
+   covers BF16, FP16, FP8, MXFP8, MXFP6, and MXFP4 as per-tensor training recipes.
+6. [**Making the Model Fit**]({{ '/pages/6-memory' | relative_url }}) covers
+   activation memory, optimizer state, donation, scanned layers, rematerialization,
+   gradient accumulation, and sharded initialization.
+7. [**From JAX Shardings to a Training Mesh**]({{ '/pages/7-sharding' | relative_url }})
+   connects `Mesh`, `PartitionSpec`, and Shardy to RCCL traffic and MaxText
+   parallelism fields.
+8. [**Kernels Reachable from JAX**]({{ '/pages/8-kernels' | relative_url }})
+   compares the dense GEMM, attention, and fused-kernel paths that are available on
+   ROCm and shows how to confirm which path ran.
+9. [**Mixture-of-Experts on MI355X**]({{ '/pages/9-moe' | relative_url }}) covers
+   routing, capacity, dropping, dropless execution, expert kernels, all-to-all
+   dispatch, and expert parallelism.
+10. [**Compiler, Runtime, and RCCL Controls**]({{ '/pages/10-flags' | relative_url }})
+    covers the flags used by the experiments, including autotuning, collective
+    combining, latency hiding, command buffers, and RCCL controls.
 
-### Peak Memory Usage
+## Part III: Case Studies and Measurement Plans
 
-- Again, quick calculation for peak memory usage
+11. [**Llama 7B: Exposing the Complete Stack**]({{ '/pages/11-llama7b' | relative_url }})
+    starts with a training-only Flax implementation. The source defines comparisons between raw JAX and
+    MaxText, four attention paths, three rematerialization policies, and single-GPU
+    with FSDP-8 execution. A consolidated v26.6 result bundle is still blocked.
+12. [**Llama 70B: Dense Low-Precision Training**]({{ '/pages/12-llama70b' | relative_url }})
+    defines FP32, BF16, FP16, FP8, MXFP8, and MXFP4 arms under FSDP-8. Historical
+    timing observations require a controlled rerun; convergence provenance is
+    blocked.
+13. [**Mixtral 8x22B: Topology Meets Sparse Kernels**]({{ '/pages/13-mixtral8-22b' | relative_url }})
+    defines FSDP and expert-parallel mesh, expert-path, and latency-hiding sweeps.
+    No v26.6 performance result exists yet.
 
-### Mixed Precision Training Showcase
+Case-study sections without captured artifacts are marked as blocked. Planned
+measurements are not presented as results.
 
-- fp32
-- fp16
-- bf16
-- fp8
-- mx-fp8
+## Part IV: Future Multi-node Work
 
-## Case Study 3: Mixtral 8x22B (MaxText) (Sharded MoE)
+14. [**Operating Multi-node MI355X Training**]({{ '/pages/14-multinode' | relative_url }})
+    specifies the launch, topology, data, checkpoint, restart, and scaling evidence
+    required for multi-node claims.
+15. [**Future Capstone: DeepSeek V3**]({{ '/pages/15-deepseek-v3' | relative_url }})
+    defines the model ledger, mesh choices, component tests, and acceptance criteria
+    for a later multi-node study. It contains no frontier-performance claim before
+    those measurements exist.
 
-[Chapter 7: Mixtral 8x22B]({{ '/pages/7-mixtral8-22b' | relative_url }}).
+## Appendices
 
-- requires FSDP + expert parallelism
+- [**Appendix A: Reproducible Environment**]({{ '/pages/a-appendix-install' | relative_url }})
+- [**Appendix B: Measurement Protocol**]({{ '/pages/b-appendix-protocol' | relative_url }})
+- [**Appendix C: Configuration Reference**]({{ '/pages/c-appendix-config' | relative_url }})
+- [**Appendix D: Profiler and HLO Cookbook**]({{ '/pages/d-appendix-tooling' | relative_url }})
+- [**Appendix E: Compatibility and Negative Results**]({{ '/pages/e-appendix-compatibility' | relative_url }})
+- [**Appendix F: Case-study Artifacts**]({{ '/pages/f-appendix-artifacts' | relative_url }})
 
-### MoE Communication Patterns
-
-- Group GEMM / ragged dot
-  - Token routing
-  - All-to-all collective
-
-### Kernels
-
-- Try out `jax-aiter` kernels
-
-## Case Study 4: DeepSeek V3 (needs multinode)
-
-[Chapter 8: DeepSeek V3]({{ '/pages/8-deepseek-v3' | relative_url }}).
-
-- Most complicated case
-- Focus on end-to-end showcase of frontier performance on MI355 node
-
-<h3 markdown=1 class="next-section">Without further ado, [here is Chapter 1 on hardware]({{ '/pages/1-hardware' | relative_url }}).</h3>
+<h3 markdown=1 class="next-section">Next: [Chapter 1, MI355X as a Training Machine]({{ '/pages/1-hardware' | relative_url }}).</h3>
