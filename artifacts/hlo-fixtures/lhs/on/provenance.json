@@ -1,0 +1,28 @@
+{
+  "additional_artifacts": {},
+  "command": [
+    "/opt/venv/bin/python3",
+    "-m",
+    "bench.hlo_feature_fixtures",
+    "lhs",
+    "on"
+  ],
+  "environment": {
+    "HIP_VISIBLE_DEVICES": "0,1,2,3,4,5,6,7",
+    "JAX_PLATFORMS": "rocm",
+    "XLA_FLAGS": "--xla_dump_to=/tmp/hlo-lhs-on-gnpz9nxb --xla_dump_hlo_as_text --xla_dump_hlo_as_dot --xla_gpu_enable_latency_hiding_scheduler=true",
+    "XLA_PYTHON_CLIENT_PREALLOCATE": "false"
+  },
+  "feature": "lhs",
+  "fixture_module": "lhs_on",
+  "kind": "explanatory-hlo-fixture",
+  "measured": false,
+  "raw_dot": "module_0000.jit_lhs_on.gfx950_gpu_after_optimizations.dot",
+  "raw_text": "module_0000.jit_lhs_on.gfx950_gpu_after_optimizations.txt",
+  "rendered_svg": "pages/img/hlo-lhs-on.svg",
+  "renderer": "literal scheduled-HLO entry excerpt",
+  "retained_stage": "gfx950_gpu_after_optimizations",
+  "stderr": "",
+  "stdout": "compiled fixture=lhs variant=on backend=gpu devices=8\nRCCL version : 2.30.4-HEAD:2b22ab0\nHIP version  : 7.14.60850-0000000\nROCm version : 7.14.0.0-9999-2b22ab01\nHostname     : smci355-ccs-aus-m15-29\nLibrccl path : /opt/venv/lib/python3.12/site-packages/jax_plugins/xla_rocm7/../../_rocm_sdk_libraries/lib/librccl.so.1",
+  "variant": "on"
+}

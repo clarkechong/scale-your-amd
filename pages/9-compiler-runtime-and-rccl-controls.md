@@ -22,7 +22,13 @@ toc:
   - name: "The Case-Study Baseline"
   - name: "Autotuning and Caches"
   - name: "Latency Hiding, Streams, and Memory"
+    subsections:
+      - name: "Read LHS in Scheduled HLO"
   - name: "Collective Combining, Pipelining, and Reordering"
+    subsections:
+      - name: "Combining"
+      - name: "Pipelining"
+      - name: "Reordering and Code Motion"
   - name: "Command Buffers"
   - name: "Triton GEMM Selection"
   - name: "RCCL Controls"
@@ -241,9 +247,24 @@ Do not combine a cache-policy change with an autotune-level change.
 --xla_gpu_enable_latency_hiding_scheduler=true
 ```
 
-**[cited]** XLA exposes eligible collectives as asynchronous start/done forms;
-LHS schedules independent compute between those points. It can reduce exposed
-communication, but longer-lived buffers can increase peak memory.
+Do not attribute every collective or every start/done pair to LHS. The stages are
+separate:
+
+1. Shardy or another partitioner inserts the semantic AllGather, AllReduce,
+   ReduceScatter, or other communication required by the per-device program.
+2. A later asynchronous-collective conversion may split an eligible collective
+   into start and done instructions.
+3. The latency-hiding scheduler chooses a legal order and can move independent
+   compute between start and done. It does not necessarily insert either the
+   semantic collective or its asynchronous form.
+
+This ordering follows the compiler path in
+[Chapter 2]({{ '/pages/2-lowering-jax-jit-on-rocm' | relative_url }}#reading-a-compiler-delta).
+**[cited]**
+LHS can reduce exposed communication, but the resulting longer live ranges can
+increase peak memory. A start/done pair proves that an asynchronous representation
+is present, not that LHS created it; only the selected schedule can show whether
+LHS opened an overlap window.
 
 The Mixtral experiment contains the required first A/B:
 
@@ -254,8 +275,10 @@ comparison: same BF16 FSDP-1/EP-8 recipe with LHS=false
 
 No v26.6 result exists yet. The acceptance evidence is:
 
-- identical partitioned HLO apart from scheduling-related changes;
-- collective start/done pairs in scheduled HLO;
+- identical post-partition semantic HLO, including local shapes, collective count,
+  payloads, and replica groups;
+- the same asynchronous start/done set at the pre-schedule pass boundary;
+- a changed order, or an explicitly explained rematerialization, in scheduled HLO;
 - overlap visible on separate trace lanes;
 - unchanged loss and finite gradients;
 - tokens/s/GPU and peak HBM from unprofiled runs.
@@ -263,7 +286,51 @@ No v26.6 result exists yet. The acceptance evidence is:
 If the HLO has no asynchronous collective or no independent compute window, the
 flag has no mechanism to help.
 
-### Async stream priority
+### Read LHS in Scheduled HLO
+
+Read the dump for the scheduled GPU module, not only an optimized-HLO DAG. The
+following SVGs contain literal top-level operation lines, in file order, extracted
+from `is_scheduled=true` HLO produced by the matched eight-MI355X fixture in
+`bench/hlo_feature_fixtures.py`. The complete HLO and XLA DOT graph remain under
+`artifacts/hlo-fixtures/lhs/`; the SVG removes parameter declarations and nested
+fusion bodies only so the selected schedule is readable.
+
+{% include figure.liquid path="pages/img/hlo-lhs-off.svg" class="img-fluid" zoomable=true alt="Literal scheduled HLO operation sequence with latency hiding disabled" caption="Captured LHS-off schedule: `all-gather-start` is immediately followed by `all-gather-done`; the dependent GEMM and then the independent GEMM follow. Raw artifact: `artifacts/hlo-fixtures/lhs/off/`." %}
+
+{% include figure.liquid path="pages/img/hlo-lhs-on.svg" class="img-fluid" zoomable=true alt="Literal scheduled HLO operation sequence with latency hiding enabled" caption="Captured LHS-on schedule: the independent GEMM is placed after `all-gather-start` and before `all-gather-done`; the dependent GEMM follows. Raw artifact: `artifacts/hlo-fixtures/lhs/on/`." %}
+
+A DAG alone cannot prove this schedule. It expresses a partial order and may admit
+many topological orders; it can show that the GEMM is independent of the gather,
+but not which legal order XLA selected, which allocation slices remained live, or
+whether the runtime actually overlapped streams. Require all three artifacts:
+
+1. **Scheduled HLO** to prove the chosen instruction order and the operations
+   placed between collective start and done.
+2. **Buffer assignment** to prove the corresponding live ranges, aliases, reused
+   slices, and compiled peak.
+3. **A device trace** to prove the GEMM and RCCL work executed concurrently on the
+   expected lanes and shortened exposed collective time.
+
+The HLO dump and trace commands are in
+[Appendix D]({{ '/pages/d-profiler-and-hlo-cookbook' | relative_url }}#feature-comparison-bundles).
+In the
+LHS-on example, `%shard` and the asynchronous gather state or result must remain
+live from `%ag.start` through `%ag.done`, while GEMM operands and then `%gemm` are
+also live. Those overlapping intervals can prevent buffer reuse and raise the
+static peak or runtime high-water mark. Report the changed live intervals and
+bytes, not only total allocation, and reject the schedule if that longer lifetime
+exceeds the memory budget.
+
+Interpret this A/B only after checking collective combining. Several layer-local
+gathers can become one combined gather: that may reduce launch overhead, but it can
+also collapse several start/done intervals into one and remove the overlap windows
+where independent layer GEMMs would have fit. Before interpreting an LHS result,
+count collectives and record each payload size and replica group in optimized HLO,
+then match those operations to the trace. One large combined gather with no usable
+compute window is a combining outcome, not proof that LHS is ineffective in
+general.
+
+### Async Stream Priority
 
 ```bash
 --xla_gpu_enable_highest_priority_async_stream=true
@@ -278,7 +345,7 @@ amount of either. Sweep `true` versus `false` only when the trace shows an async
 communication stream and either collectives are delayed or compute is being
 starved. Keep LHS, queue count, and RCCL settings fixed.
 
-### HIP hardware queues
+### HIP Hardware Queues
 
 ```bash
 GPU_MAX_HW_QUEUES=2
@@ -292,7 +359,7 @@ Record the inherited value first. If queue count becomes an experiment, compare
 only values supported by the runtime and use a trace to show whether stream
 concurrency changed. More queues are not automatically more overlap.
 
-### Scheduler memory slop
+### Scheduler Memory Slop
 
 ```bash
 --xla_gpu_memory_limit_slop_factor=95
@@ -343,6 +410,14 @@ payload boundaries. For every arm, record:
 - exposed versus overlapped duration;
 - tokens/s/GPU.
 
+**Required before/after artifacts:** retain optimized HLO immediately before and
+after the collective-combiner pass, with operation count, operand/result bytes,
+dimensions, channel IDs, and replica groups; then retain scheduled HLO, buffer
+assignment, and a trace for each experiment arm. **Representation selection:** use
+optimized HLO to prove that combining changed the semantic collective set,
+scheduled HLO to read the chosen order and overlap windows, and the trace to measure
+the actual RCCL launches and overlap.
+
 The optional controls
 `xla_gpu_enable_all_gather_combine_by_dim` and
 `xla_gpu_enable_reduce_scatter_combine_by_dim` decide whether dimension matching
@@ -379,7 +454,15 @@ Pipelining is relevant only when the collective is in a suitable loop. Prove the
 transformation in HLO: a new flag with an unchanged graph is an observed no-effect
 for that workload.
 
-### Reordering and code motion
+**Required before/after artifacts:** retain HLO immediately before and after the
+named pipelining pass, including the full while-loop state and body, and identify
+the newly staged collective or changed start/done placement; retain scheduled HLO,
+buffer assignment, and a trace for both arms. **Representation selection:** use
+loop HLO to prove the pipeline rewrite, scheduled HLO and buffer assignment to
+prove order and live-range cost, and the trace to prove iteration-to-iteration
+overlap.
+
+### Reordering and Code Motion
 
 Two controls appear in upstream recommendations but are not general training
 defaults:
@@ -398,6 +481,14 @@ If a future HLO contains the matching pattern, compare before/after loop bodies,
 buffer lifetimes, and collective order. Collective reordering can deadlock when
 ranks disagree about launch order, so the compiler's control dependencies are part
 of correctness. Do not hand-force an order based only on a single-rank trace.
+
+**Required before/after artifacts:** retain HLO immediately before and after the
+named motion pass, preserving loop boundaries, channel IDs, replica groups, and
+control dependencies; retain each arm's scheduled HLO and a multi-rank trace of
+collective launch order. **Representation selection:** use loop HLO to prove code
+motion across a loop boundary, scheduled HLO to prove reordering within a
+computation, and the multi-rank trace to prove that every rank executed a compatible
+runtime order.
 
 ## Command Buffers
 

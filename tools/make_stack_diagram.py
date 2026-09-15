@@ -289,5 +289,101 @@ def jax_rocm_stack() -> Path:
     return path
 
 
+def rocm_device_stack() -> Path:
+    """Draw the short device-discovery stack used in the hardware chapter."""
+    stack = [
+        ("JAX Device  rocm:0", FRAMEWORK, "backend discovery"),
+        ("ROCm PJRT plugin", XLA, "device, buffer, executable API"),
+        ("XLA StreamExecutor", XLA, "streams, events, allocation"),
+        ("HIP runtime", ROCM, "runtime calls"),
+        ("ROCr / HSA runtime", ROCM, "queues, memory, code objects"),
+        ("amdgpu + KFD", EXECUTION, "kernel-driver submission"),
+        ("MI355X  (gfx950)", EXECUTION, ""),
+    ]
+    cx, w, h, pitch = 4.55, 3.40, 0.56, 1.02
+    top = 6.65
+
+    fig, ax = plt.subplots(figsize=(9.2, 6.2))
+
+    groups = [
+        (0, 2, "JAX / XLA", "#f7fbf8"),
+        (3, 4, "ROCm userspace", "#fdf9f1"),
+        (5, 5, "Linux kernel", "#fdf4f3"),
+        (6, 6, "Hardware", "#fdf4f3"),
+    ]
+    for first, last, label, fc in groups:
+        y_top = top - first * pitch + h / 2 + 0.17
+        y_bottom = top - last * pitch - h / 2 - 0.17
+        group(
+            ax,
+            cx - w / 2 - 0.24,
+            y_bottom,
+            cx + w / 2 + 0.24,
+            y_top,
+            label,
+            fc=fc,
+            label_side="outside-top",
+        )
+
+    for i, (name, palette, edge_label) in enumerate(stack):
+        cy = top - i * pitch
+        rbox(ax, cx, cy, w, h, name, palette, fontsize=9.0)
+        if i + 1 < len(stack):
+            arrow(
+                ax,
+                (cx, cy - h / 2),
+                (cx, top - (i + 1) * pitch + h / 2),
+                edge_label,
+            )
+
+    note_x, note_y, note_w, note_h = 8.60, 3.52, 2.70, 1.78
+    ax.add_patch(
+        FancyBboxPatch(
+            (note_x - note_w / 2, note_y - note_h / 2),
+            note_w,
+            note_h,
+            boxstyle="round,pad=0.08,rounding_size=0.08",
+            facecolor="#fcfcfc",
+            edgecolor="#8a8a8a",
+            linewidth=1.0,
+            zorder=3,
+        )
+    )
+    ax.text(
+        note_x,
+        note_y + 0.58,
+        "What changes enumeration",
+        ha="center",
+        va="center",
+        fontsize=8.5,
+        weight="bold",
+        zorder=4,
+    )
+    ax.text(
+        note_x,
+        note_y + 0.08,
+        "container device mapping\n"
+        "HIP_VISIBLE_DEVICES\n"
+        "SPX / DPX / QPX / CPX",
+        ha="center",
+        va="center",
+        fontsize=8.0,
+        linespacing=1.55,
+        zorder=4,
+    )
+    ax.set_xlim(1.75, 10.20)
+    ax.set_ylim(0.15, 7.25)
+    ax.set_aspect("equal")
+    ax.axis("off")
+    ax.set_title("The ROCm device stack", loc="left", fontsize=11.0)
+
+    OUT.mkdir(parents=True, exist_ok=True)
+    path = OUT / "rocm-device-stack.png"
+    fig.savefig(path, dpi=200, bbox_inches="tight", pad_inches=0.08)
+    plt.close(fig)
+    return path
+
+
 if __name__ == "__main__":
-    print(f"  wrote {jax_rocm_stack().relative_to(ROOT)}")
+    for output in (jax_rocm_stack(), rocm_device_stack()):
+        print(f"  wrote {output.relative_to(ROOT)}")

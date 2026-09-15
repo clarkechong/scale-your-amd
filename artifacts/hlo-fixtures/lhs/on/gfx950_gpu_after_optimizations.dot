@@ -1,0 +1,297 @@
+digraph G {
+rankdir = TB;
+compound = true;
+label = <<b>module_0000.jit_lhs_on.gfx950_gpu_after_optimizations<br/>Computation main.0_spmd<br/>ENTRY computation</b>>;
+labelloc = t;
+// Disable the tooltip.  Interestingly, "" doesn't work!
+tooltip = " ";
+// DOT graphs accept a stylesheet as a URI.  So naturally, an inline
+// stylesheet is a data URI!
+stylesheet=<
+  data:text/css,
+  @import url(https://fonts.googleapis.com/css?family=Roboto:400,700);
+  svg text {
+    font-family: 'Roboto';
+    font-size: 12px;
+  }
+
+    %23node10:hover ~ %23edge16 text { fill: %231976d2; }
+  %23node10:hover ~ %23edge16 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node10:hover ~ %23edge16 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node17:hover ~ %23edge16 text { fill: %23d32f2f; }
+  %23node17:hover ~ %23edge16 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node17:hover ~ %23edge16 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23clust2:hover ~ %23edge16 text { fill: %231976d2; }
+  %23clust2:hover ~ %23edge16 path { stroke: %231976d2; stroke-width: .2em; }
+  %23clust2:hover ~ %23edge16 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23clust4:hover ~ %23edge16 text { fill: %23d32f2f; }
+  %23clust4:hover ~ %23edge16 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23clust4:hover ~ %23edge16 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node7:hover ~ %23edge15 text { fill: %231976d2; }
+  %23node7:hover ~ %23edge15 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node7:hover ~ %23edge15 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node16:hover ~ %23edge15 text { fill: %23d32f2f; }
+  %23node16:hover ~ %23edge15 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node16:hover ~ %23edge15 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23clust1:hover ~ %23edge15 text { fill: %231976d2; }
+  %23clust1:hover ~ %23edge15 path { stroke: %231976d2; stroke-width: .2em; }
+  %23clust1:hover ~ %23edge15 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23clust4:hover ~ %23edge15 text { fill: %23d32f2f; }
+  %23clust4:hover ~ %23edge15 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23clust4:hover ~ %23edge15 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node14:hover ~ %23edge1 text { fill: %231976d2; }
+  %23node14:hover ~ %23edge1 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node14:hover ~ %23edge1 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node5:hover ~ %23edge1 text { fill: %23d32f2f; }
+  %23node5:hover ~ %23edge1 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node5:hover ~ %23edge1 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23clust1:hover ~ %23edge1 text { fill: %23d32f2f; }
+  %23clust1:hover ~ %23edge1 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23clust1:hover ~ %23edge1 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node17:hover ~ %23edge14 text { fill: %231976d2; }
+  %23node17:hover ~ %23edge14 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node17:hover ~ %23edge14 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node15:hover ~ %23edge14 text { fill: %23d32f2f; }
+  %23node15:hover ~ %23edge14 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node15:hover ~ %23edge14 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node4:hover ~ %23edge6 text { fill: %231976d2; }
+  %23node4:hover ~ %23edge6 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node4:hover ~ %23edge6 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node9:hover ~ %23edge6 text { fill: %23d32f2f; }
+  %23node9:hover ~ %23edge6 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node9:hover ~ %23edge6 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23clust2:hover ~ %23edge6 text { fill: %23d32f2f; }
+  %23clust2:hover ~ %23edge6 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23clust2:hover ~ %23edge6 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node2:hover ~ %23edge2 text { fill: %231976d2; }
+  %23node2:hover ~ %23edge2 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node2:hover ~ %23edge2 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node6:hover ~ %23edge2 text { fill: %23d32f2f; }
+  %23node6:hover ~ %23edge2 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node6:hover ~ %23edge2 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23clust1:hover ~ %23edge2 text { fill: %23d32f2f; }
+  %23clust1:hover ~ %23edge2 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23clust1:hover ~ %23edge2 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node5:hover ~ %23edge3 text { fill: %231976d2; }
+  %23node5:hover ~ %23edge3 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node5:hover ~ %23edge3 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node7:hover ~ %23edge3 text { fill: %23d32f2f; }
+  %23node7:hover ~ %23edge3 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node7:hover ~ %23edge3 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node6:hover ~ %23edge4 text { fill: %231976d2; }
+  %23node6:hover ~ %23edge4 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node6:hover ~ %23edge4 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node7:hover ~ %23edge4 text { fill: %23d32f2f; }
+  %23node7:hover ~ %23edge4 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node7:hover ~ %23edge4 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node1:hover ~ %23edge11 text { fill: %231976d2; }
+  %23node1:hover ~ %23edge11 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node1:hover ~ %23edge11 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node13:hover ~ %23edge11 text { fill: %23d32f2f; }
+  %23node13:hover ~ %23edge11 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node13:hover ~ %23edge11 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node15:hover ~ %23edge17 text { fill: %231976d2; }
+  %23node15:hover ~ %23edge17 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node15:hover ~ %23edge17 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node18:hover ~ %23edge17 text { fill: %23d32f2f; }
+  %23node18:hover ~ %23edge17 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node18:hover ~ %23edge17 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node16:hover ~ %23edge13 text { fill: %231976d2; }
+  %23node16:hover ~ %23edge13 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node16:hover ~ %23edge13 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node15:hover ~ %23edge13 text { fill: %23d32f2f; }
+  %23node15:hover ~ %23edge13 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node15:hover ~ %23edge13 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node8:hover ~ %23edge7 text { fill: %231976d2; }
+  %23node8:hover ~ %23edge7 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node8:hover ~ %23edge7 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node10:hover ~ %23edge7 text { fill: %23d32f2f; }
+  %23node10:hover ~ %23edge7 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node10:hover ~ %23edge7 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node3:hover ~ %23edge5 text { fill: %231976d2; }
+  %23node3:hover ~ %23edge5 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node3:hover ~ %23edge5 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node8:hover ~ %23edge5 text { fill: %23d32f2f; }
+  %23node8:hover ~ %23edge5 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node8:hover ~ %23edge5 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23clust2:hover ~ %23edge5 text { fill: %23d32f2f; }
+  %23clust2:hover ~ %23edge5 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23clust2:hover ~ %23edge5 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node9:hover ~ %23edge8 text { fill: %231976d2; }
+  %23node9:hover ~ %23edge8 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node9:hover ~ %23edge8 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node10:hover ~ %23edge8 text { fill: %23d32f2f; }
+  %23node10:hover ~ %23edge8 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node10:hover ~ %23edge8 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node12:hover ~ %23edge9 text { fill: %231976d2; }
+  %23node12:hover ~ %23edge9 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node12:hover ~ %23edge9 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node13:hover ~ %23edge9 text { fill: %23d32f2f; }
+  %23node13:hover ~ %23edge9 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node13:hover ~ %23edge9 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node13:hover ~ %23edge12 text { fill: %231976d2; }
+  %23node13:hover ~ %23edge12 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node13:hover ~ %23edge12 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node14:hover ~ %23edge12 text { fill: %23d32f2f; }
+  %23node14:hover ~ %23edge12 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node14:hover ~ %23edge12 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node11:hover ~ %23edge10 text { fill: %231976d2; }
+  %23node11:hover ~ %23edge10 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node11:hover ~ %23edge10 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node12:hover ~ %23edge10 text { fill: %23d32f2f; }
+  %23node12:hover ~ %23edge10 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node12:hover ~ %23edge10 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+>
+
+246922288 [label=<<b>Parameter 0</b><br/>sharding={devices=[8,1]&lt;=[8]}<br/>f16[256,128]{1,0}>, shape=rect, tooltip="x", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
+246558272 [label=<<b>Parameter 1</b><br/>sharding={replicated}<br/>f16[128,256]{1,0}>, shape=rect, tooltip="w", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
+246280960 [label=<<b>Parameter 2</b><br/>sharding={replicated}<br/>f16[2048,512]{1,0}>, shape=rect, tooltip="a", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
+248619616 [label=<<b>Parameter 3</b><br/>sharding={replicated}<br/>f16[512,256]{1,0}>, shape=rect, tooltip="b", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
+subgraph cluster_246653488 {
+style="rounded,filled,bold"; fillcolor="#f5f5f5"; color="#c2c2c2;"
+label = <Fused expression for <b>gemm_fusion_dot_general.6</b><br/>custom fusion<br/>kind=kCustom>;
+labelloc = t;
+tooltip = " ";
+246530752 [label=<<b>Parameter 0</b><br/>f16[2048,128]{1,0}>, shape=rect, tooltip="", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
+246653904 [label=<<b>Parameter 1</b><br/>f16[128,256]{1,0}>, shape=rect, tooltip="", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
+246873616 [label=<<b>dot_general.8</b><br/>lhs_contracting_dims={1}, rhs_contracting_dims={0}<br/>f16[2048,256]{1,0}>, shape=rect, tooltip="jit(lhs_on)/shard_map/dot_general
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:lhs_fixture.<locals>.lhs_body:230:20
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:lhs_fixture.<locals>.lhs_on:237:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:lhs_fixture:240:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="white", color="#003c8f", fillcolor="#1565c0"];
+
+}  // cluster_246653488
+
+subgraph cluster_245972528 {
+style="rounded,filled,bold"; fillcolor="#f5f5f5"; color="#c2c2c2;"
+label = <Fused expression for <b>gemm_fusion_dot_general.7</b><br/>custom fusion<br/>kind=kCustom>;
+labelloc = t;
+tooltip = " ";
+135933232 [label=<<b>Parameter 0</b><br/>f16[2048,512]{1,0}>, shape=rect, tooltip="", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
+248623872 [label=<<b>Parameter 1</b><br/>f16[512,256]{1,0}>, shape=rect, tooltip="", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
+247247024 [label=<<b>dot_general.9</b><br/>lhs_contracting_dims={1}, rhs_contracting_dims={0}<br/>f16[2048,256]{1,0}>, shape=rect, tooltip="jit(lhs_on)/shard_map/dot_general
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:lhs_fixture.<locals>.lhs_body:229:22
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:lhs_fixture.<locals>.lhs_on:237:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:lhs_fixture:240:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="white", color="#003c8f", fillcolor="#1565c0"];
+
+}  // cluster_245972528
+
+subgraph cluster_247023712 {
+style=rounded; color=black;
+label = <Subcomputation for <b>all-gather-start</b><br/>async_computation>;
+labelloc = t;
+tooltip = " ";
+246548048 [label=<<b>Parameter 0</b><br/>f16[256,128]{1,0}>, shape=rect, tooltip="", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
+246862928 [label=<<b>all_gather.3.1</b><br/>all-gather<br/>channel_id=1<br/>replica_groups=mesh['mesh'=8] {'mesh'}<br/>dimensions={0}<br/>use_global_device_ids=true<br/>f16[2048,128]{1,0}>, shape=rect, tooltip="jit(lhs_on)/shard_map/all_gather
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:lhs_fixture.<locals>.lhs_body:228:17
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:lhs_fixture.<locals>.lhs_on:237:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:lhs_fixture:240:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#8c7b75", fillcolor="#bcaaa4"];
+
+}  // cluster_247023712
+
+246644736 [label=<<b>all-gather-start</b><br/>async-start<br/>channel_id=1<br/>replica_groups=mesh['mesh'=8] {'mesh'}<br/>dimensions={0}<br/>use_global_device_ids=true<br/>((f16[256,128]{1,0}), f16[2048,128]{1,0})>, shape=rect, tooltip="jit(lhs_on)/shard_map/all_gather
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:lhs_fixture.<locals>.lhs_body:228:17
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:lhs_fixture.<locals>.lhs_on:237:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:lhs_fixture:240:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#8c7b75", fillcolor="#bcaaa4"];
+246912544 [label=<<b>all-gather-done</b><br/>async-done<br/>f16[2048,128]{1,0}>, shape=rect, tooltip="jit(lhs_on)/shard_map/all_gather
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:lhs_fixture.<locals>.lhs_body:228:17
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:lhs_fixture.<locals>.lhs_on:237:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:lhs_fixture:240:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#8c7b75", fillcolor="#bcaaa4"];
+subgraph cluster_245091408 {
+style="rounded,filled,bold"; fillcolor="#f5f5f5"; color="#c2c2c2;"
+label = <Fused expression for <b>wrapped_add</b><br/>loop fusion<br/>kind=kLoop>;
+labelloc = t;
+tooltip = " ";
+248653328 [label=<<b>add.3.1</b><br/>f16[2048,256]{1,0}>, shape=rect, tooltip="jit(lhs_on)/shard_map/add
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:lhs_fixture.<locals>.lhs_body:231:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:lhs_fixture.<locals>.lhs_on:237:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:lhs_fixture:240:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#9e9e9e", fillcolor="white"];
+248609824 [label=<<b>Parameter 0</b><br/>f16[2048,256]{1,0}>, shape=rect, tooltip="", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
+246871696 [label=<<b>Parameter 1</b><br/>f16[2048,256]{1,0}>, shape=rect, tooltip="", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
+
+}  // cluster_245091408
+
+cluster_249563712 [label=<ROOT>, shape=circle, tooltip=" ", style="filled", fontcolor="black", color="#8c7b75", fillcolor="#bcaaa4"];
+246912544 -> 246530752 [arrowhead=normal tooltip="all-gather-done -> parameter_0" ];
+246558272 -> 246653904 [arrowhead=normal tooltip="param.5 -> parameter_1" ];
+246530752 -> 246873616 [arrowhead=normal tooltip="parameter_0 -> dot_general.8"  headlabel="0", labeldistance=2];
+246653904 -> 246873616 [arrowhead=normal tooltip="parameter_1 -> dot_general.8"  headlabel="1", labeldistance=2];
+246280960 -> 135933232 [arrowhead=normal tooltip="param.6 -> parameter_0.1" ];
+248619616 -> 248623872 [arrowhead=normal tooltip="param.7 -> parameter_1.1" ];
+135933232 -> 247247024 [arrowhead=normal tooltip="parameter_0.1 -> dot_general.9"  headlabel="0", labeldistance=2];
+248623872 -> 247247024 [arrowhead=normal tooltip="parameter_1.1 -> dot_general.9"  headlabel="1", labeldistance=2];
+246862928 -> 246644736 [ltail="cluster_247023712", style="dashed" tooltip="async_computation -> all-gather-start"];
+246548048 -> 246862928 [arrowhead=normal tooltip="param_0 -> all_gather.3.1" ];
+246922288 -> 246644736 [arrowhead=normal tooltip="param.4 -> all-gather-start" ];
+246644736 -> 246912544 [arrowhead=normal tooltip="all-gather-start -> all-gather-done" ];
+248609824 -> 248653328 [arrowhead=normal tooltip="param_0.1 -> add.3.1"  headlabel="0", labeldistance=2];
+246871696 -> 248653328 [arrowhead=normal tooltip="param_1 -> add.3.1"  headlabel="1", labeldistance=2];
+246873616 -> 248609824 [arrowhead=normal tooltip="dot_general.8 -> param_0.1" ];
+247247024 -> 246871696 [arrowhead=normal tooltip="dot_general.9 -> param_1" ];
+248653328 -> cluster_249563712 [tooltip=" "];
+}

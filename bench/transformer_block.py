@@ -16,14 +16,16 @@ shows the broken Overview page before fixing it.
 
 from __future__ import annotations
 
+import ctypes
 import itertools
 import math
+import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from ._harness import MI300X, Run, base_parser, configure_environment
+from ._harness import MI355X, Run, base_parser, configure_environment
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
 
@@ -72,7 +74,7 @@ def build_parser():
         type=int,
         nargs="+",
         default=[512, 2048, 8192],
-        help="per-device tokens; Chapter 6's DP threshold is 2724",
+        help="per-device token counts",
     )
     p.add_argument("--seq-len", type=int, default=2048)
     p.add_argument(
@@ -86,6 +88,11 @@ def build_parser():
         "--no-annotate",
         action="store_true",
         help="drop StepTraceAnnotation, which breaks the Overview page on purpose",
+    )
+    p.add_argument(
+        "--roctx",
+        action="store_true",
+        help="place an ROCTx range around each synchronized train step",
     )
     p.add_argument(
         "--latency-hiding",
@@ -107,6 +114,52 @@ def build_parser():
         help="override any XLA flag, repeatable",
     )
     return p
+
+
+class RocTx:
+    """Minimal ROCTx bindings for selected-step profiling."""
+
+    def __init__(self) -> None:
+        candidates = (
+            os.environ.get("ROCTX_LIBRARY"),
+            "/opt/venv/lib/python3.12/site-packages/_rocm_sdk_core/lib/"
+            "librocprofiler-sdk-roctx.so.1",
+            "/opt/venv/lib/python3.12/site-packages/_rocm_sdk_devel/lib/"
+            "librocprofiler-sdk-roctx.so.1",
+            "librocprofiler-sdk-roctx.so.1",
+        )
+        error: OSError | None = None
+        for candidate in candidates:
+            if not candidate:
+                continue
+            try:
+                self.lib = ctypes.CDLL(candidate)
+                break
+            except OSError as exc:
+                error = exc
+        else:
+            raise RuntimeError("ROCTx library not found") from error
+
+        self.lib.roctxRangePushA.argtypes = [ctypes.c_char_p]
+        self.lib.roctxRangePushA.restype = ctypes.c_int
+        self.lib.roctxRangePop.argtypes = []
+        self.lib.roctxRangePop.restype = ctypes.c_int
+        for name in ("roctxProfilerPause", "roctxProfilerResume"):
+            fn = getattr(self.lib, name)
+            fn.argtypes = [ctypes.c_uint64]
+            fn.restype = ctypes.c_int
+
+    def push(self, label: str) -> None:
+        self.lib.roctxRangePushA(label.encode())
+
+    def pop(self) -> None:
+        self.lib.roctxRangePop()
+
+    def pause(self) -> None:
+        self.lib.roctxProfilerPause(0)
+
+    def resume(self) -> None:
+        self.lib.roctxProfilerResume(0)
 
 
 def init_params(cfg: BlockConfig, layers: int, dtype: Any, key: Any) -> dict[str, Any]:
@@ -283,7 +336,16 @@ def main() -> int:
     for override in args.xla:
         key, _, value = override.partition("=")
         flags[key.lstrip("-")] = value
-    configure_environment(xla_flags=flags or None)
+    configure_environment(
+        xla_flags=flags or None,
+        env={"JAX_PLATFORMS": os.environ.get("JAX_PLATFORMS", "rocm")},
+    )
+
+    selected_profile = os.environ.get("ROCPROF_SELECTED_STEP")
+    selected_profile_step = int(selected_profile) if selected_profile is not None else None
+    roctx = RocTx() if args.roctx or selected_profile_step is not None else None
+    if selected_profile_step is not None:
+        roctx.pause()
 
     import jax
     import jax.numpy as jnp
@@ -310,7 +372,13 @@ def main() -> int:
     _, x_sharding, w_shardings = shardings(args.strategy, mesh, cfg)
 
     tag = args.tag or f"{args.strategy}{'' if annotate else '-noannot'}"
-    with Run("transformer-block", tag=tag, root=args.root, freeze=not args.no_freeze) as run:
+    with Run(
+        "transformer-block",
+        tag=tag,
+        root=args.root,
+        constants=MI355X,
+        freeze=not args.no_freeze,
+    ) as run:
         run.note("strategy", args.strategy)
         run.note("devices", n)
         run.note("config", cfg.__dict__)
@@ -318,6 +386,8 @@ def main() -> int:
         run.note("layers", args.layers)
         run.note("seq_len", args.seq_len)
         run.note("annotated", annotate)
+        run.note("roctx", args.roctx)
+        run.note("rocprof_selected_step", selected_profile_step)
         run.note("latency_hiding_override", args.latency_hiding)
         if args.strategy == "pp":
             run.note("microbatches", args.microbatches)
@@ -367,14 +437,43 @@ def main() -> int:
             )
 
             step = jax.jit(train_step, donate_argnums=(0, 1))
+            compiled = step.lower(carried["p"], carried["st"], x).compile()
+            memory = compiled.memory_analysis()
+            compiled_memory = (
+                {
+                    name: getattr(memory, name)
+                    for name in (
+                        "argument_size_in_bytes",
+                        "output_size_in_bytes",
+                        "temp_size_in_bytes",
+                        "alias_size_in_bytes",
+                        "host_temp_size_in_bytes",
+                    )
+                }
+                if memory is not None
+                else {}
+            )
+            run.note(f"compiled_memory_{tokens}_tokens", compiled_memory)
             counter = itertools.count()
+            profile_counter = itertools.count()
 
-            def fn(xx=x, jitted=step, c=carried):
+            def fn(xx=x, jitted=compiled, c=carried):
+                profile_step = next(profile_counter)
+                selected = selected_profile_step is not None and profile_step == selected_profile_step
+                if selected:
+                    roctx.resume()
+                if roctx is not None and (args.roctx or selected):
+                    roctx.push("transformer_block/train_step")
                 if annotate:
                     with jax.profiler.StepTraceAnnotation("train", step_num=next(counter)):
                         out = jitted(c["p"], c["st"], xx)
                 else:
                     out = jitted(c["p"], c["st"], xx)
+                if roctx is not None and (args.roctx or selected):
+                    jax.block_until_ready(out)
+                    roctx.pop()
+                if selected:
+                    roctx.pause()
                 c["p"], c["st"] = out[1], out[2]
                 return out
 
@@ -396,9 +495,9 @@ def main() -> int:
                     "seq_len": seq,
                 },
             )
-            mfu = (step_flops / m.median_s) / (n * MI300X["bf16_flops"])
+            mfu = (step_flops / m.median_s) / (n * MI355X["bf16_flops"])
             m.meta["mfu"] = mfu
-            print(f"    MFU {mfu:.1%} of {n} x 1307 TFLOP/s")
+            print(f"    MFU {mfu:.1%} of {n} x 2516.6 TFLOP/s")
 
             if args.trace:
                 paths = find_xplanes(m.meta["trace_dir"])
@@ -429,10 +528,14 @@ def main() -> int:
                 m.meta["overlap"] = overlap
                 phases = phase_breakdown(paths)
                 m.meta["phases"] = phases
-                print(
-                    f"    overlap: {overlap['hidden_fraction']:.1%} of collective time has "
-                    f"compute underneath it, {overlap['exposed_s'] * 1e3:.0f} ms exposed"
-                )
+                hidden_fraction = overlap.get("hidden_fraction")
+                if hidden_fraction is None:
+                    print("    overlap: no collective intervals")
+                else:
+                    print(
+                        f"    overlap: {hidden_fraction:.1%} of collective time has "
+                        f"compute underneath it, {overlap['exposed_s'] * 1e3:.0f} ms exposed"
+                    )
                 print(
                     "    phases: "
                     + "  ".join(f"{k} {v:.1%}" for k, v in phases["shares"].items() if v > 0.001)

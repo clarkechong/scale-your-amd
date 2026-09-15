@@ -1,0 +1,98 @@
+{
+  "workload": "transformer-block",
+  "tag": "ch3-baseline-gpu0",
+  "finished_at": "2026-09-14T16:46:50.222066+00:00",
+  "wall_seconds": 7.682133674621582,
+  "protocol": {
+    "warmup": 10,
+    "repeats": 20,
+    "statistic": "median"
+  },
+  "constants": {
+    "cus": 256,
+    "clock_ghz": 2.4,
+    "bf16_flops": 2516600000000000.0,
+    "fp16_flops": 2516600000000000.0,
+    "fp8_flops": 5033200000000000.0,
+    "mxfp4_flops": 1.00663e+16,
+    "fp32_flops": 157300000000000.0,
+    "hbm_bytes_per_s": 8000000000000.0,
+    "hbm_bytes": 309237645312,
+    "xgmi_links": 7,
+    "xgmi_link_unidir_bytes_per_s": 76800000000.0,
+    "xgmi_egress_unidir_bytes_per_s": 537600000000.0
+  },
+  "notes": {
+    "strategy": "dp",
+    "devices": 1,
+    "config": {
+      "d_model": 4096,
+      "d_ff": 14336,
+      "n_heads": 32,
+      "n_kv_heads": 8,
+      "head_dim": 128
+    },
+    "params_per_layer": 218103808,
+    "layers": 1,
+    "seq_len": 2048,
+    "annotated": true,
+    "roctx": false,
+    "rocprof_selected_step": null,
+    "latency_hiding_override": null,
+    "compiled_memory_2048_tokens": {
+      "argument_size_in_bytes": 1761607680,
+      "output_size_in_bytes": 1744830644,
+      "temp_size_in_bytes": 1417694000,
+      "alias_size_in_bytes": 1744830464,
+      "host_temp_size_in_bytes": 0
+    }
+  },
+  "measurements": [
+    {
+      "name": "dp-2048tok",
+      "warmup": 10,
+      "repeats": 20,
+      "times_s": [
+        0.004483669996261597,
+        0.00448340002913028,
+        0.004482579999603331,
+        0.004475009045563638,
+        0.004483229946345091,
+        0.004480729985516518,
+        0.004482119984459132,
+        0.004472439992241561,
+        0.004502850002609193,
+        0.004590347991324961,
+        0.004514619999099523,
+        0.0044460700009949505,
+        0.00448151002638042,
+        0.004486149991862476,
+        0.0044753989786840975,
+        0.004477720009163022,
+        0.004482529999222606,
+        0.004477920010685921,
+        0.00446599000133574,
+        0.004464210011065006
+      ],
+      "median_s": 0.004481815005419776,
+      "mean_s": 0.004485424800077453,
+      "stdev_s": 2.820230658667254e-05,
+      "min_s": 0.0044460700009949505,
+      "max_s": 0.004590347991324961,
+      "median_mean_gap_pct": 0.08054314275158571,
+      "flops": 2783138807808.0,
+      "bytes": null,
+      "achieved_flops_per_s": 620984758282615.9,
+      "achieved_bytes_per_s": null,
+      "predicted_s": null,
+      "ratio_to_prediction": null,
+      "meta": {
+        "tokens_per_device": 2048,
+        "global_tokens": 2048,
+        "batch": 1,
+        "seq_len": 2048,
+        "mfu": 0.24675544714401013
+      }
+    }
+  ]
+}

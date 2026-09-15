@@ -1,0 +1,738 @@
+digraph G {
+rankdir = TB;
+compound = true;
+label = <<b>module_0008.jit_attention_xla.before_optimizations<br/>Computation main.5<br/>ENTRY computation</b>>;
+labelloc = t;
+// Disable the tooltip.  Interestingly, "" doesn't work!
+tooltip = " ";
+// DOT graphs accept a stylesheet as a URI.  So naturally, an inline
+// stylesheet is a data URI!
+stylesheet=<
+  data:text/css,
+  @import url(https://fonts.googleapis.com/css?family=Roboto:400,700);
+  svg text {
+    font-family: 'Roboto';
+    font-size: 12px;
+  }
+
+    %23node47:hover ~ %23edge49 text { fill: %231976d2; }
+  %23node47:hover ~ %23edge49 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node47:hover ~ %23edge49 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node48:hover ~ %23edge49 text { fill: %23d32f2f; }
+  %23node48:hover ~ %23edge49 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node48:hover ~ %23edge49 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node45:hover ~ %23edge47 text { fill: %231976d2; }
+  %23node45:hover ~ %23edge47 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node45:hover ~ %23edge47 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node46:hover ~ %23edge47 text { fill: %23d32f2f; }
+  %23node46:hover ~ %23edge47 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node46:hover ~ %23edge47 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node43:hover ~ %23edge44 text { fill: %231976d2; }
+  %23node43:hover ~ %23edge44 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node43:hover ~ %23edge44 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node44:hover ~ %23edge44 text { fill: %23d32f2f; }
+  %23node44:hover ~ %23edge44 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node44:hover ~ %23edge44 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node38:hover ~ %23edge43 text { fill: %231976d2; }
+  %23node38:hover ~ %23edge43 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node38:hover ~ %23edge43 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node44:hover ~ %23edge43 text { fill: %23d32f2f; }
+  %23node44:hover ~ %23edge43 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node44:hover ~ %23edge43 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node44:hover ~ %23edge45 text { fill: %231976d2; }
+  %23node44:hover ~ %23edge45 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node44:hover ~ %23edge45 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node45:hover ~ %23edge45 text { fill: %23d32f2f; }
+  %23node45:hover ~ %23edge45 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node45:hover ~ %23edge45 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node42:hover ~ %23edge42 text { fill: %231976d2; }
+  %23node42:hover ~ %23edge42 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node42:hover ~ %23edge42 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node43:hover ~ %23edge42 text { fill: %23d32f2f; }
+  %23node43:hover ~ %23edge42 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node43:hover ~ %23edge42 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node39:hover ~ %23edge39 text { fill: %231976d2; }
+  %23node39:hover ~ %23edge39 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node39:hover ~ %23edge39 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node40:hover ~ %23edge39 text { fill: %23d32f2f; }
+  %23node40:hover ~ %23edge39 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node40:hover ~ %23edge39 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node41:hover ~ %23edge41 text { fill: %231976d2; }
+  %23node41:hover ~ %23edge41 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node41:hover ~ %23edge41 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node42:hover ~ %23edge41 text { fill: %23d32f2f; }
+  %23node42:hover ~ %23edge41 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node42:hover ~ %23edge41 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node38:hover ~ %23edge38 text { fill: %231976d2; }
+  %23node38:hover ~ %23edge38 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node38:hover ~ %23edge38 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node39:hover ~ %23edge38 text { fill: %23d32f2f; }
+  %23node39:hover ~ %23edge38 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node39:hover ~ %23edge38 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node32:hover ~ %23edge31 text { fill: %231976d2; }
+  %23node32:hover ~ %23edge31 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node32:hover ~ %23edge31 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node33:hover ~ %23edge31 text { fill: %23d32f2f; }
+  %23node33:hover ~ %23edge31 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node33:hover ~ %23edge31 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node40:hover ~ %23edge40 text { fill: %231976d2; }
+  %23node40:hover ~ %23edge40 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node40:hover ~ %23edge40 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node41:hover ~ %23edge40 text { fill: %23d32f2f; }
+  %23node41:hover ~ %23edge40 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node41:hover ~ %23edge40 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node13:hover ~ %23edge12 text { fill: %231976d2; }
+  %23node13:hover ~ %23edge12 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node13:hover ~ %23edge12 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node14:hover ~ %23edge12 text { fill: %23d32f2f; }
+  %23node14:hover ~ %23edge12 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node14:hover ~ %23edge12 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node4:hover ~ %23edge4 text { fill: %231976d2; }
+  %23node4:hover ~ %23edge4 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node4:hover ~ %23edge4 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node7:hover ~ %23edge4 text { fill: %23d32f2f; }
+  %23node7:hover ~ %23edge4 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node7:hover ~ %23edge4 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node31:hover ~ %23edge30 text { fill: %231976d2; }
+  %23node31:hover ~ %23edge30 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node31:hover ~ %23edge30 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node32:hover ~ %23edge30 text { fill: %23d32f2f; }
+  %23node32:hover ~ %23edge30 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node32:hover ~ %23edge30 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node2:hover ~ %23edge9 text { fill: %231976d2; }
+  %23node2:hover ~ %23edge9 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node2:hover ~ %23edge9 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node11:hover ~ %23edge9 text { fill: %23d32f2f; }
+  %23node11:hover ~ %23edge9 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node11:hover ~ %23edge9 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node34:hover ~ %23edge33 text { fill: %231976d2; }
+  %23node34:hover ~ %23edge33 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node34:hover ~ %23edge33 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node35:hover ~ %23edge33 text { fill: %23d32f2f; }
+  %23node35:hover ~ %23edge33 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node35:hover ~ %23edge33 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node30:hover ~ %23edge29 text { fill: %231976d2; }
+  %23node30:hover ~ %23edge29 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node30:hover ~ %23edge29 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node32:hover ~ %23edge29 text { fill: %23d32f2f; }
+  %23node32:hover ~ %23edge29 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node32:hover ~ %23edge29 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node36:hover ~ %23edge36 text { fill: %231976d2; }
+  %23node36:hover ~ %23edge36 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node36:hover ~ %23edge36 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node37:hover ~ %23edge36 text { fill: %23d32f2f; }
+  %23node37:hover ~ %23edge36 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node37:hover ~ %23edge36 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node10:hover ~ %23edge1 text { fill: %231976d2; }
+  %23node10:hover ~ %23edge1 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node10:hover ~ %23edge1 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node11:hover ~ %23edge1 text { fill: %23d32f2f; }
+  %23node11:hover ~ %23edge1 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node11:hover ~ %23edge1 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node9:hover ~ %23edge8 text { fill: %231976d2; }
+  %23node9:hover ~ %23edge8 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node9:hover ~ %23edge8 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node10:hover ~ %23edge8 text { fill: %23d32f2f; }
+  %23node10:hover ~ %23edge8 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node10:hover ~ %23edge8 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node14:hover ~ %23edge13 text { fill: %231976d2; }
+  %23node14:hover ~ %23edge13 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node14:hover ~ %23edge13 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node15:hover ~ %23edge13 text { fill: %23d32f2f; }
+  %23node15:hover ~ %23edge13 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node15:hover ~ %23edge13 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node11:hover ~ %23edge10 text { fill: %231976d2; }
+  %23node11:hover ~ %23edge10 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node11:hover ~ %23edge10 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node12:hover ~ %23edge10 text { fill: %23d32f2f; }
+  %23node12:hover ~ %23edge10 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node12:hover ~ %23edge10 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node37:hover ~ %23edge37 text { fill: %231976d2; }
+  %23node37:hover ~ %23edge37 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node37:hover ~ %23edge37 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node38:hover ~ %23edge37 text { fill: %23d32f2f; }
+  %23node38:hover ~ %23edge37 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node38:hover ~ %23edge37 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node23:hover ~ %23edge23 text { fill: %231976d2; }
+  %23node23:hover ~ %23edge23 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node23:hover ~ %23edge23 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node28:hover ~ %23edge23 text { fill: %23d32f2f; }
+  %23node28:hover ~ %23edge23 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node28:hover ~ %23edge23 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node46:hover ~ %23edge48 text { fill: %231976d2; }
+  %23node46:hover ~ %23edge48 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node46:hover ~ %23edge48 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node47:hover ~ %23edge48 text { fill: %23d32f2f; }
+  %23node47:hover ~ %23edge48 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node47:hover ~ %23edge48 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node6:hover ~ %23edge5 text { fill: %231976d2; }
+  %23node6:hover ~ %23edge5 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node6:hover ~ %23edge5 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node7:hover ~ %23edge5 text { fill: %23d32f2f; }
+  %23node7:hover ~ %23edge5 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node7:hover ~ %23edge5 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node28:hover ~ %23edge19 text { fill: %231976d2; }
+  %23node28:hover ~ %23edge19 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node28:hover ~ %23edge19 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node29:hover ~ %23edge19 text { fill: %23d32f2f; }
+  %23node29:hover ~ %23edge19 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node29:hover ~ %23edge19 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node5:hover ~ %23edge3 text { fill: %231976d2; }
+  %23node5:hover ~ %23edge3 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node5:hover ~ %23edge3 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node6:hover ~ %23edge3 text { fill: %23d32f2f; }
+  %23node6:hover ~ %23edge3 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node6:hover ~ %23edge3 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node1:hover ~ %23edge46 text { fill: %231976d2; }
+  %23node1:hover ~ %23edge46 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node1:hover ~ %23edge46 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node46:hover ~ %23edge46 text { fill: %23d32f2f; }
+  %23node46:hover ~ %23edge46 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node46:hover ~ %23edge46 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node25:hover ~ %23edge24 text { fill: %231976d2; }
+  %23node25:hover ~ %23edge24 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node25:hover ~ %23edge24 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node28:hover ~ %23edge24 text { fill: %23d32f2f; }
+  %23node28:hover ~ %23edge24 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node28:hover ~ %23edge24 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node7:hover ~ %23edge6 text { fill: %231976d2; }
+  %23node7:hover ~ %23edge6 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node7:hover ~ %23edge6 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node10:hover ~ %23edge6 text { fill: %23d32f2f; }
+  %23node10:hover ~ %23edge6 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node10:hover ~ %23edge6 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node3:hover ~ %23edge2 text { fill: %231976d2; }
+  %23node3:hover ~ %23edge2 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node3:hover ~ %23edge2 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node4:hover ~ %23edge2 text { fill: %23d32f2f; }
+  %23node4:hover ~ %23edge2 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node4:hover ~ %23edge2 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node16:hover ~ %23edge14 text { fill: %231976d2; }
+  %23node16:hover ~ %23edge14 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node16:hover ~ %23edge14 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node17:hover ~ %23edge14 text { fill: %23d32f2f; }
+  %23node17:hover ~ %23edge14 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node17:hover ~ %23edge14 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node33:hover ~ %23edge32 text { fill: %231976d2; }
+  %23node33:hover ~ %23edge32 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node33:hover ~ %23edge32 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node34:hover ~ %23edge32 text { fill: %23d32f2f; }
+  %23node34:hover ~ %23edge32 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node34:hover ~ %23edge32 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node18:hover ~ %23edge16 text { fill: %231976d2; }
+  %23node18:hover ~ %23edge16 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node18:hover ~ %23edge16 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node19:hover ~ %23edge16 text { fill: %23d32f2f; }
+  %23node19:hover ~ %23edge16 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node19:hover ~ %23edge16 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node8:hover ~ %23edge7 text { fill: %231976d2; }
+  %23node8:hover ~ %23edge7 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node8:hover ~ %23edge7 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node10:hover ~ %23edge7 text { fill: %23d32f2f; }
+  %23node10:hover ~ %23edge7 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node10:hover ~ %23edge7 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node17:hover ~ %23edge15 text { fill: %231976d2; }
+  %23node17:hover ~ %23edge15 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node17:hover ~ %23edge15 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node19:hover ~ %23edge15 text { fill: %23d32f2f; }
+  %23node19:hover ~ %23edge15 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node19:hover ~ %23edge15 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node15:hover ~ %23edge26 text { fill: %231976d2; }
+  %23node15:hover ~ %23edge26 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node15:hover ~ %23edge26 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node29:hover ~ %23edge26 text { fill: %23d32f2f; }
+  %23node29:hover ~ %23edge26 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node29:hover ~ %23edge26 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node21:hover ~ %23edge27 text { fill: %231976d2; }
+  %23node21:hover ~ %23edge27 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node21:hover ~ %23edge27 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node29:hover ~ %23edge27 text { fill: %23d32f2f; }
+  %23node29:hover ~ %23edge27 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node29:hover ~ %23edge27 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node48:hover ~ %23edge50 text { fill: %231976d2; }
+  %23node48:hover ~ %23edge50 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node48:hover ~ %23edge50 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node49:hover ~ %23edge50 text { fill: %23d32f2f; }
+  %23node49:hover ~ %23edge50 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node49:hover ~ %23edge50 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node19:hover ~ %23edge17 text { fill: %231976d2; }
+  %23node19:hover ~ %23edge17 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node19:hover ~ %23edge17 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node21:hover ~ %23edge17 text { fill: %23d32f2f; }
+  %23node21:hover ~ %23edge17 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node21:hover ~ %23edge17 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node24:hover ~ %23edge21 text { fill: %231976d2; }
+  %23node24:hover ~ %23edge21 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node24:hover ~ %23edge21 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node25:hover ~ %23edge21 text { fill: %23d32f2f; }
+  %23node25:hover ~ %23edge21 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node25:hover ~ %23edge21 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node35:hover ~ %23edge34 text { fill: %231976d2; }
+  %23node35:hover ~ %23edge34 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node35:hover ~ %23edge34 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node36:hover ~ %23edge34 text { fill: %23d32f2f; }
+  %23node36:hover ~ %23edge34 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node36:hover ~ %23edge34 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node20:hover ~ %23edge18 text { fill: %231976d2; }
+  %23node20:hover ~ %23edge18 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node20:hover ~ %23edge18 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node21:hover ~ %23edge18 text { fill: %23d32f2f; }
+  %23node21:hover ~ %23edge18 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node21:hover ~ %23edge18 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node22:hover ~ %23edge20 text { fill: %231976d2; }
+  %23node22:hover ~ %23edge20 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node22:hover ~ %23edge20 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node23:hover ~ %23edge20 text { fill: %23d32f2f; }
+  %23node23:hover ~ %23edge20 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node23:hover ~ %23edge20 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node29:hover ~ %23edge28 text { fill: %231976d2; }
+  %23node29:hover ~ %23edge28 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node29:hover ~ %23edge28 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node30:hover ~ %23edge28 text { fill: %23d32f2f; }
+  %23node30:hover ~ %23edge28 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node30:hover ~ %23edge28 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node26:hover ~ %23edge22 text { fill: %231976d2; }
+  %23node26:hover ~ %23edge22 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node26:hover ~ %23edge22 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node27:hover ~ %23edge22 text { fill: %23d32f2f; }
+  %23node27:hover ~ %23edge22 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node27:hover ~ %23edge22 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node29:hover ~ %23edge35 text { fill: %231976d2; }
+  %23node29:hover ~ %23edge35 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node29:hover ~ %23edge35 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node37:hover ~ %23edge35 text { fill: %23d32f2f; }
+  %23node37:hover ~ %23edge35 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node37:hover ~ %23edge35 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node12:hover ~ %23edge11 text { fill: %231976d2; }
+  %23node12:hover ~ %23edge11 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node12:hover ~ %23edge11 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node13:hover ~ %23edge11 text { fill: %23d32f2f; }
+  %23node13:hover ~ %23edge11 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node13:hover ~ %23edge11 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node27:hover ~ %23edge25 text { fill: %231976d2; }
+  %23node27:hover ~ %23edge25 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node27:hover ~ %23edge25 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node28:hover ~ %23edge25 text { fill: %23d32f2f; }
+  %23node28:hover ~ %23edge25 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node28:hover ~ %23edge25 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+>
+
+423084032 [label=<<b>Parameter 2</b><br/>bf16[1,128,8,64]{3,2,1,0}>, shape=rect, tooltip="v", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
+423951392 [label=<<b>broadcast_in_dim.10</b><br/>dimensions={}<br/>pred[128,128]{1,0}<br/><b>operand</b> = pred[] true>, shape=rect, tooltip="jit(attention_xla)/vmap()/broadcast_in_dim
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_xla:276:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:285:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#cbc693", fillcolor="#fff9c4"];
+subgraph cluster_424626336 {
+style=rounded; color=black;
+label = <Subcomputation for <b>vmap_jit_tril__.1</b><br/>tril.1>;
+labelloc = t;
+tooltip = " ";
+420869664 [label=<<b>iota.4</b><br/>iota_dimension=0<br/>s32[128]>, shape=rect, tooltip="iota", style="filled", fontcolor="black", color="#9e9e9e", fillcolor="white"];
+420867840 [label=<<b>iota.5</b><br/>broadcast<br/>dimensions={0}<br/>s32[128,128]{1,0}>, shape=rect, tooltip="iota", style="filled", fontcolor="black", color="#cbc693", fillcolor="#fff9c4"];
+423038096 [label=<<b>iota.6</b><br/>iota_dimension=0<br/>s32[128]>, shape=rect, tooltip="iota", style="filled", fontcolor="black", color="#9e9e9e", fillcolor="white"];
+421051616 [label=<<b>iota.7</b><br/>broadcast<br/>dimensions={1}<br/>s32[128,128]{1,0}>, shape=rect, tooltip="iota", style="filled", fontcolor="black", color="#cbc693", fillcolor="#fff9c4"];
+421038608 [label=<<b>ge.1</b><br/>compare<br/>direction=GE<br/>pred[128,128]{1,0}>, shape=rect, tooltip="ge", style="filled", fontcolor="black", color="#9e9e9e", fillcolor="white"];
+409391568 [label=<<b>Parameter 0</b><br/><i>from broadcast_in_dim.10 in the ENTRY computation</i><br/>pred[128,128]{1,0}>, shape=rect, tooltip="", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
+421044912 [label=<<b>broadcast_in_dim.2</b><br/>dimensions={}<br/>pred[128,128]{1,0}<br/><b>operand</b> = pred[] false>, shape=rect, tooltip="broadcast_in_dim", style="filled", fontcolor="black", color="#cbc693", fillcolor="#fff9c4"];
+420718160 [label=<<b>select_n.1</b><br/>pred[128,128]{1,0}>, shape=rect, tooltip="select_n", style="filled", fontcolor="black", color="#9e9e9e", fillcolor="white"];
+
+}  // cluster_424626336
+
+425316912 [label=<<b>vmap_jit_tril__.1</b><br/>call<br/>pred[128,128]{1,0}>, shape=rect, tooltip="jit(attention_xla)/vmap(jit(tril))
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_xla:276:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:285:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="white", color="#005005", fillcolor="#2e7d32"];
+425254384 [label=<<b>broadcast_in_dim.11</b><br/>reshape<br/>pred[1,1,128,128]{3,2,1,0}>, shape=rect, tooltip="jit(attention_xla)/vmap()/broadcast_in_dim
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_xla:276:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:285:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#97b498", fillcolor="#c8e6c9"];
+423332608 [label=<<b>and.3</b><br/>broadcast<br/>dimensions={0,1,2,3}<br/>pred[1,1,128,128]{3,2,1,0}>, shape=rect, tooltip="jit(attention_xla)/vmap()/and
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_xla:276:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:285:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#cbc693", fillcolor="#fff9c4"];
+423040976 [label=<<b>and.4</b><br/>reshape<br/>pred[1,128,128]{2,1,0}>, shape=rect, tooltip="jit(attention_xla)/vmap()/and
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_xla:276:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:285:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#97b498", fillcolor="#c8e6c9"];
+421433776 [label=<<b>and.5</b><br/>broadcast<br/>dimensions={0,2,3}<br/>pred[1,8,128,128]{3,2,1,0}>, shape=rect, tooltip="jit(attention_xla)/vmap()/and
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_xla:276:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:285:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#cbc693", fillcolor="#fff9c4"];
+422065344 [label=<<b>Parameter 0</b><br/>bf16[1,128,8,64]{3,2,1,0}>, shape=rect, tooltip="q", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
+418770368 [label=<<b>reshape.2</b><br/>bf16[1,128,8,1,64]{4,3,2,1,0}>, shape=rect, tooltip="jit(attention_xla)/reshape
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_xla:276:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:285:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#97b498", fillcolor="#c8e6c9"];
+421409360 [label=<<b>Parameter 1</b><br/>bf16[1,128,8,64]{3,2,1,0}>, shape=rect, tooltip="k", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
+423187056 [label=<<b>dot_general.2</b><br/>lhs_batch_dims={0,2}, lhs_contracting_dims={4}, rhs_batch_dims={0,2}, rhs_contracting_dims={3}<br/>algorithm=dot_bf16_bf16_f32<br/>f32[1,8,128,1,128]{4,3,2,1,0}>, shape=rect, tooltip="jit(attention_xla)/vmap(BTNH,BSNH-&gt;BNTS)/dot_general
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_xla:276:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:285:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="white", color="#003c8f", fillcolor="#1565c0"];
+425354000 [label=<<b>mul.2</b><br/>broadcast<br/>dimensions={}<br/>f32[1,8,128,1,128]{4,3,2,1,0}<br/><b>operand</b> = f32[] 0.125>, shape=rect, tooltip="jit(attention_xla)/vmap()/mul
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_xla:276:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:285:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#cbc693", fillcolor="#fff9c4"];
+422293568 [label=<<b>mul.3</b><br/>multiply<br/>f32[1,8,128,1,128]{4,3,2,1,0}>, shape=rect, tooltip="jit(attention_xla)/vmap()/mul
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_xla:276:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:285:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#9e9e9e", fillcolor="white"];
+subgraph cluster_421356640 {
+style=rounded; color=black;
+label = <Subcomputation for <b>vmap_jit__where__.1</b><br/>_where.2>;
+labelloc = t;
+tooltip = " ";
+420877296 [label=<<b>Parameter 0</b><br/><i>from and.5 in the ENTRY computation</i><br/>pred[1,8,128,128]{3,2,1,0}>, shape=rect, tooltip="", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
+421409600 [label=<<b>broadcast_in_dim.6</b><br/>reshape<br/>pred[1,1,8,128,128]{4,3,2,1,0}>, shape=rect, tooltip="broadcast_in_dim", style="filled", fontcolor="black", color="#97b498", fillcolor="#c8e6c9"];
+408837584 [label=<<b>Parameter 1</b><br/><i>from mul.3 in the ENTRY computation</i><br/>f32[1,8,128,1,128]{4,3,2,1,0}>, shape=rect, tooltip="", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
+421434736 [label=<<b>transpose.1</b><br/>reshape<br/>f32[1,1,8,128,128]{4,3,2,1,0}>, shape=rect, tooltip="transpose", style="filled", fontcolor="black", color="#97b498", fillcolor="#c8e6c9"];
+420353184 [label=<<b>Parameter 2</b><br/><i>from constant.13 in the ENTRY computation</i><br/>f32[]>, shape=rect, tooltip="", style="filled", fontcolor="black", color="#cbae82", fillcolor="#ffe0b2"];
+421842976 [label=<<b>broadcast_in_dim.7</b><br/>dimensions={}<br/>f32[1,1,8,128,128]{4,3,2,1,0}>, shape=rect, tooltip="broadcast_in_dim", style="filled", fontcolor="black", color="#cbc693", fillcolor="#fff9c4"];
+420754736 [label=<<b>select_n.3</b><br/>f32[1,1,8,128,128]{4,3,2,1,0}>, shape=rect, tooltip="select_n", style="filled", fontcolor="black", color="#9e9e9e", fillcolor="white"];
+
+}  // cluster_421356640
+
+423966480 [label=<<b>vmap_jit__where__.1</b><br/>call<br/>f32[1,1,8,128,128]{4,3,2,1,0}<br/><b>operand 2</b> = f32[] -2.38197633e+38>, shape=rect, tooltip="jit(attention_xla)/vmap(jit(_where))
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_xla:276:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:285:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="white", color="#005005", fillcolor="#2e7d32"];
+423973904 [label=<<b>reduce_max.7</b><br/>Subcomputation: <b>max</b><br/>dimensions={4}<br/>f32[1,1,8,128]{3,2,1,0}<br/><b>operand 1</b> = f32[] -inf>, shape=rect, tooltip="jit(attention_xla)/vmap()/reduce_max
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_xla:276:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:285:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#af8eb5", fillcolor="#e1bee7"];
+423262272 [label=<<b>max.2</b><br/>broadcast<br/>dimensions={}<br/>f32[1,1,8,128]{3,2,1,0}<br/><b>operand</b> = f32[] -inf>, shape=rect, tooltip="jit(attention_xla)/vmap()/max
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_xla:276:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:285:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#cbc693", fillcolor="#fff9c4"];
+421440960 [label=<<b>max.3</b><br/>maximum<br/>f32[1,1,8,128]{3,2,1,0}>, shape=rect, tooltip="jit(attention_xla)/vmap()/max
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_xla:276:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:285:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#9e9e9e", fillcolor="white"];
+409743264 [label=<<b>broadcast_in_dim.12</b><br/>reshape<br/>f32[1,1,8,128,1]{4,3,2,1,0}>, shape=rect, tooltip="jit(attention_xla)/vmap()/broadcast_in_dim
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_xla:276:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:285:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#97b498", fillcolor="#c8e6c9"];
+424624320 [label=<<b>sub.4</b><br/>broadcast<br/>dimensions={0,1,2,3,4}<br/>f32[1,1,8,128,1]{4,3,2,1,0}>, shape=rect, tooltip="jit(attention_xla)/vmap()/sub
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_xla:276:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:285:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#cbc693", fillcolor="#fff9c4"];
+421020192 [label=<<b>sub.5</b><br/>reshape<br/>f32[1,1,8,128]{3,2,1,0}>, shape=rect, tooltip="jit(attention_xla)/vmap()/sub
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_xla:276:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:285:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#97b498", fillcolor="#c8e6c9"];
+422158128 [label=<<b>sub.6</b><br/>broadcast<br/>dimensions={0,1,2,3}<br/>f32[1,1,8,128,128]{4,3,2,1,0}>, shape=rect, tooltip="jit(attention_xla)/vmap()/sub
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_xla:276:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:285:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#cbc693", fillcolor="#fff9c4"];
+348381376 [label=<<b>sub.7</b><br/>subtract<br/>f32[1,1,8,128,128]{4,3,2,1,0}>, shape=rect, tooltip="jit(attention_xla)/vmap()/sub
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_xla:276:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:285:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#9e9e9e", fillcolor="white"];
+423951632 [label=<<b>exp.1</b><br/>exponential<br/>f32[1,1,8,128,128]{4,3,2,1,0}>, shape=rect, tooltip="jit(attention_xla)/vmap()/exp
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_xla:276:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:285:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#9e9e9e", fillcolor="white"];
+423177504 [label=<<b>reduce_sum.7</b><br/>Subcomputation: <b>add</b><br/>dimensions={4}<br/>f32[1,1,8,128]{3,2,1,0}<br/><b>operand 1</b> = f32[] 0>, shape=rect, tooltip="jit(attention_xla)/vmap()/reduce_sum
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_xla:276:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:285:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#af8eb5", fillcolor="#e1bee7"];
+420186288 [label=<<b>broadcast_in_dim.13</b><br/>reshape<br/>f32[1,1,8,128,1]{4,3,2,1,0}>, shape=rect, tooltip="jit(attention_xla)/vmap()/broadcast_in_dim
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_xla:276:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:285:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#97b498", fillcolor="#c8e6c9"];
+420188976 [label=<<b>div.4</b><br/>broadcast<br/>dimensions={0,1,2,3,4}<br/>f32[1,1,8,128,1]{4,3,2,1,0}>, shape=rect, tooltip="jit(attention_xla)/vmap()/div
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_xla:276:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:285:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#cbc693", fillcolor="#fff9c4"];
+421044592 [label=<<b>div.5</b><br/>reshape<br/>f32[1,1,8,128]{3,2,1,0}>, shape=rect, tooltip="jit(attention_xla)/vmap()/div
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_xla:276:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:285:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#97b498", fillcolor="#c8e6c9"];
+409404880 [label=<<b>div.6</b><br/>broadcast<br/>dimensions={0,1,2,3}<br/>f32[1,1,8,128,128]{4,3,2,1,0}>, shape=rect, tooltip="jit(attention_xla)/vmap()/div
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_xla:276:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:285:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#cbc693", fillcolor="#fff9c4"];
+423266720 [label=<<b>div.7</b><br/>divide<br/>f32[1,1,8,128,128]{4,3,2,1,0}>, shape=rect, tooltip="jit(attention_xla)/vmap()/div
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_xla:276:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:285:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#9e9e9e", fillcolor="white"];
+408070352 [label=<<b>convert_element_type.1</b><br/>bf16[1,1,8,128,128]{4,3,2,1,0}>, shape=rect, tooltip="jit(attention_xla)/vmap()/convert_element_type
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_xla:276:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:285:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#9e9e9e", fillcolor="white"];
+422082800 [label=<<b>dot_general.3</b><br/>lhs_batch_dims={0,2}, lhs_contracting_dims={1}, rhs_batch_dims={1,2}, rhs_contracting_dims={4}<br/>bf16[1,8,64,1,128]{4,3,2,1,0}>, shape=rect, tooltip="jit(attention_xla)/vmap(BNTS,BSNH-&gt;BTNH)/dot_general
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_xla:276:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:285:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="white", color="#003c8f", fillcolor="#1565c0"];
+410101168 [label=<<b>transpose.3</b><br/>dimensions={0,4,1,3,2}<br/>bf16[1,128,8,1,64]{1,3,4,2,0}>, shape=rect, tooltip="jit(attention_xla)/vmap()/transpose;jit(attention_xla)/vmap(BNTS,BSNH-&gt;BTNH)/transpose", style="filled", fontcolor="black", color="#97b498", fillcolor="#c8e6c9"];
+422083152 [label=<<b>reshape.3</b><br/>bf16[1,128,8,64]{3,2,1,0}>, shape=rect, tooltip="jit(attention_xla)/reshape
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_xla:276:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:285:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#97b498", fillcolor="#c8e6c9"];
+cluster_408844080 [label=<ROOT>, shape=circle, tooltip=" ", style="filled", fontcolor="black", color="#8c7b75", fillcolor="#bcaaa4"];
+420718160 -> 425316912 [ltail="cluster_424626336", style="dashed" tooltip="tril.1 -> vmap_jit_tril__.1"];
+420869664 -> 420867840 [arrowhead=empty tooltip="iota.4 -> iota.5" ];
+423038096 -> 421051616 [arrowhead=empty tooltip="iota.6 -> iota.7" ];
+420867840 -> 421038608 [arrowhead=normal tooltip="iota.5 -> ge.1"  headlabel="0", labeldistance=2];
+421051616 -> 421038608 [arrowhead=normal tooltip="iota.7 -> ge.1"  headlabel="1", labeldistance=2];
+421038608 -> 420718160 [arrowhead=normal tooltip="ge.1 -> select_n.1"  headlabel="0", labeldistance=2];
+409391568 -> 420718160 [arrowhead=normal tooltip="Arg_0.1 -> select_n.1"  headlabel="1", labeldistance=2];
+421044912 -> 420718160 [arrowhead=normal tooltip="broadcast_in_dim.2 -> select_n.1"  headlabel="2", labeldistance=2];
+423951392 -> 425316912 [arrowhead=normal tooltip="broadcast_in_dim.10 -> vmap_jit_tril__.1" ];
+425316912 -> 425254384 [arrowhead=normal tooltip="vmap_jit_tril__.1 -> broadcast_in_dim.11" ];
+425254384 -> 423332608 [arrowhead=normal tooltip="broadcast_in_dim.11 -> and.3" ];
+423332608 -> 423040976 [arrowhead=normal tooltip="and.3 -> and.4" ];
+423040976 -> 421433776 [arrowhead=normal tooltip="and.4 -> and.5" ];
+422065344 -> 418770368 [arrowhead=normal tooltip="q.1 -> reshape.2" ];
+418770368 -> 423187056 [arrowhead=normal tooltip="reshape.2 -> dot_general.2"  headlabel="0", labeldistance=2];
+421409360 -> 423187056 [arrowhead=normal tooltip="k.1 -> dot_general.2"  headlabel="1", labeldistance=2];
+423187056 -> 422293568 [arrowhead=normal tooltip="dot_general.2 -> mul.3"  headlabel="0", labeldistance=2];
+425354000 -> 422293568 [arrowhead=normal tooltip="mul.2 -> mul.3"  headlabel="1", labeldistance=2];
+420754736 -> 423966480 [ltail="cluster_421356640", style="dashed" tooltip="_where.2 -> vmap_jit__where__.1"];
+420877296 -> 421409600 [arrowhead=normal tooltip="Arg_0.3 -> broadcast_in_dim.6" ];
+408837584 -> 421434736 [arrowhead=normal tooltip="Arg_1.1 -> transpose.1" ];
+420353184 -> 421842976 [arrowhead=empty tooltip="Arg_2.1 -> broadcast_in_dim.7" ];
+421409600 -> 420754736 [arrowhead=normal tooltip="broadcast_in_dim.6 -> select_n.3"  headlabel="0", labeldistance=2];
+421434736 -> 420754736 [arrowhead=normal tooltip="transpose.1 -> select_n.3"  headlabel="1", labeldistance=2];
+421842976 -> 420754736 [arrowhead=normal tooltip="broadcast_in_dim.7 -> select_n.3"  headlabel="2", labeldistance=2];
+421433776 -> 423966480 [arrowhead=normal tooltip="and.5 -> vmap_jit__where__.1"  headlabel="0", labeldistance=2];
+422293568 -> 423966480 [arrowhead=normal tooltip="mul.3 -> vmap_jit__where__.1"  headlabel="1", labeldistance=2];
+423966480 -> 423973904 [arrowhead=normal tooltip="vmap_jit__where__.1 -> reduce_max.7"  headlabel="0", labeldistance=2];
+423973904 -> 421440960 [arrowhead=empty tooltip="reduce_max.7 -> max.3"  headlabel="0", labeldistance=2];
+423262272 -> 421440960 [arrowhead=empty tooltip="max.2 -> max.3"  headlabel="1", labeldistance=2];
+421440960 -> 409743264 [arrowhead=empty tooltip="max.3 -> broadcast_in_dim.12" ];
+409743264 -> 424624320 [arrowhead=empty tooltip="broadcast_in_dim.12 -> sub.4" ];
+424624320 -> 421020192 [arrowhead=empty tooltip="sub.4 -> sub.5" ];
+421020192 -> 422158128 [arrowhead=empty tooltip="sub.5 -> sub.6" ];
+423966480 -> 348381376 [arrowhead=normal tooltip="vmap_jit__where__.1 -> sub.7"  headlabel="0", labeldistance=2];
+422158128 -> 348381376 [arrowhead=normal tooltip="sub.6 -> sub.7"  headlabel="1", labeldistance=2];
+348381376 -> 423951632 [arrowhead=normal tooltip="sub.7 -> exp.1" ];
+423951632 -> 423177504 [arrowhead=normal tooltip="exp.1 -> reduce_sum.7"  headlabel="0", labeldistance=2];
+423177504 -> 420186288 [arrowhead=empty tooltip="reduce_sum.7 -> broadcast_in_dim.13" ];
+420186288 -> 420188976 [arrowhead=empty tooltip="broadcast_in_dim.13 -> div.4" ];
+420188976 -> 421044592 [arrowhead=empty tooltip="div.4 -> div.5" ];
+421044592 -> 409404880 [arrowhead=empty tooltip="div.5 -> div.6" ];
+423951632 -> 423266720 [arrowhead=normal tooltip="exp.1 -> div.7"  headlabel="0", labeldistance=2];
+409404880 -> 423266720 [arrowhead=normal tooltip="div.6 -> div.7"  headlabel="1", labeldistance=2];
+423266720 -> 408070352 [arrowhead=normal tooltip="div.7 -> convert_element_type.1" ];
+423084032 -> 422082800 [arrowhead=normal tooltip="v.1 -> dot_general.3"  headlabel="0", labeldistance=2];
+408070352 -> 422082800 [arrowhead=normal tooltip="convert_element_type.1 -> dot_general.3"  headlabel="1", labeldistance=2];
+422082800 -> 410101168 [arrowhead=normal tooltip="dot_general.3 -> transpose.3" ];
+410101168 -> 422083152 [arrowhead=normal tooltip="transpose.3 -> reshape.3" ];
+422083152 -> cluster_408844080 [tooltip=" "];
+}

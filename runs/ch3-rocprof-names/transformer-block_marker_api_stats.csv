@@ -1,0 +1,4 @@
+"Name","Calls","TotalDurationNs","AverageNs","Percentage","MinNs","MaxNs","StdDev"
+"transformer_block/train_step",1,4528718,4528718.000000,99.88,4528718,4528718,0.00000000e+00
+"roctxProfilerResume",1,4070,4070.000000,0.0898,4070,4070,0.00000000e+00
+"roctxProfilerPause",2,1520,760.000000,0.0335,450,1070,438.406204

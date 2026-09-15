@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml-stylesheet href="
+  data:text/css,
+  @import url(https://fonts.googleapis.com/css?family=Roboto:400,700);
+  svg text {
+    font-family: 'Roboto';
+    font-size: 12px;
+  }
+
+    %23node8:hover ~ %23edge10 text { fill: %231976d2; }
+  %23node8:hover ~ %23edge10 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node8:hover ~ %23edge10 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node11:hover ~ %23edge10 text { fill: %23d32f2f; }
+  %23node11:hover ~ %23edge10 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node11:hover ~ %23edge10 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node9:hover ~ %23edge9 text { fill: %231976d2; }
+  %23node9:hover ~ %23edge9 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node9:hover ~ %23edge9 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node10:hover ~ %23edge9 text { fill: %23d32f2f; }
+  %23node10:hover ~ %23edge9 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node10:hover ~ %23edge9 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node6:hover ~ %23edge8 text { fill: %231976d2; }
+  %23node6:hover ~ %23edge8 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node6:hover ~ %23edge8 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node9:hover ~ %23edge8 text { fill: %23d32f2f; }
+  %23node9:hover ~ %23edge8 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node9:hover ~ %23edge8 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node3:hover ~ %23edge7 text { fill: %231976d2; }
+  %23node3:hover ~ %23edge7 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node3:hover ~ %23edge7 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node9:hover ~ %23edge7 text { fill: %23d32f2f; }
+  %23node9:hover ~ %23edge7 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node9:hover ~ %23edge7 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node7:hover ~ %23edge6 text { fill: %231976d2; }
+  %23node7:hover ~ %23edge6 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node7:hover ~ %23edge6 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node8:hover ~ %23edge6 text { fill: %23d32f2f; }
+  %23node8:hover ~ %23edge6 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node8:hover ~ %23edge6 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node5:hover ~ %23edge4 text { fill: %231976d2; }
+  %23node5:hover ~ %23edge4 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node5:hover ~ %23edge4 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node6:hover ~ %23edge4 text { fill: %23d32f2f; }
+  %23node6:hover ~ %23edge4 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node6:hover ~ %23edge4 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node10:hover ~ %23edge5 text { fill: %231976d2; }
+  %23node10:hover ~ %23edge5 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node10:hover ~ %23edge5 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node7:hover ~ %23edge5 text { fill: %23d32f2f; }
+  %23node7:hover ~ %23edge5 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node7:hover ~ %23edge5 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node4:hover ~ %23edge3 text { fill: %231976d2; }
+  %23node4:hover ~ %23edge3 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node4:hover ~ %23edge3 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node5:hover ~ %23edge3 text { fill: %23d32f2f; }
+  %23node5:hover ~ %23edge3 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node5:hover ~ %23edge3 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node2:hover ~ %23edge2 text { fill: %231976d2; }
+  %23node2:hover ~ %23edge2 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node2:hover ~ %23edge2 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node3:hover ~ %23edge2 text { fill: %23d32f2f; }
+  %23node3:hover ~ %23edge2 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node3:hover ~ %23edge2 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node1:hover ~ %23edge1 text { fill: %231976d2; }
+  %23node1:hover ~ %23edge1 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node1:hover ~ %23edge1 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node2:hover ~ %23edge1 text { fill: %23d32f2f; }
+  %23node2:hover ~ %23edge1 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node2:hover ~ %23edge1 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+" type="text/css"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: G Pages: 1 -->
+<svg width="528pt" height="765pt"
+ viewBox="0.00 0.00 528.00 764.69" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 760.69)">
+<title>G</title>
+<g id="a_graph0"><a xlink:title=" ">
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-760.69 524,-760.69 524,4 -4,4"/>
+<text text-anchor="start" x="54" y="-742.49" font-family="Times,serif" font-weight="bold" font-size="14.00">module_0000.jit_sharding_tp.after_spmd_partitioner</text>
+<text text-anchor="start" x="154.5" y="-728.49" font-family="Times,serif" font-weight="bold" font-size="14.00">Computation main.0_spmd</text>
+<text text-anchor="start" x="180" y="-714.49" font-family="Times,serif" font-weight="bold" font-size="14.00">ENTRY computation</text>
+</a>
+</g>
+<!-- 159336608 -->
+<g id="node1" class="node">
+<title>159336608</title>
+<g id="a_node1"><a xlink:title="x_local">
+<polygon fill="#ffb74d" stroke="#c88719" points="251,-706.69 0,-706.69 0,-656.69 251,-656.69 251,-706.69"/>
+<text text-anchor="start" x="76.5" y="-692.49" font-family="Times,serif" font-weight="bold" font-size="14.00">Parameter 0</text>
+<text text-anchor="start" x="8" y="-678.49" font-family="Times,serif" font-size="14.00">sharding={devices=[1,8]&lt;=[8]}</text>
+<text text-anchor="start" x="59" y="-664.49" font-family="Times,serif" font-size="14.00">f16[1024,64]{1,0}</text>
+</a>
+</g>
+</g>
+<!-- 159394928 -->
+<g id="node2" class="node">
+<title>159394928</title>
+<g id="a_node2"><a xlink:title="jit(sharding_tp)/shard_map&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:sharding_fixture:185:19&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="#c8e6c9" stroke="#97b498" points="253,-620.69 104,-620.69 104,-570.69 253,-570.69 253,-620.69"/>
+<text text-anchor="start" x="128.5" y="-606.49" font-family="Times,serif" font-weight="bold" font-size="14.00">shard_map.4</text>
+<text text-anchor="start" x="161.5" y="-592.49" font-family="Times,serif" font-size="14.00">copy</text>
+<text text-anchor="start" x="112" y="-578.49" font-family="Times,serif" font-size="14.00">f16[1024,64]{1,0}</text>
+</a>
+</g>
+</g>
+<!-- 159336608&#45;&gt;159394928 -->
+<g id="edge1" class="edge">
+<title>159336608&#45;&gt;159394928</title>
+<g id="a_edge1"><a xlink:title="param.2 &#45;&gt; shard_map.4">
+<path fill="none" stroke="black" d="M140.83,-656.4C146.1,-648.04 152.1,-638.54 157.73,-629.61"/>
+<polygon fill="black" stroke="black" points="160.83,-631.26 163.2,-620.93 154.91,-627.52 160.83,-631.26"/>
+</a>
+</g>
+</g>
+<!-- 155801232 -->
+<g id="node3" class="node">
+<title>155801232</title>
+<g id="a_node3"><a xlink:title="jit(sharding_tp)/shard_map&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:sharding_fixture:185:19&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="#c8e6c9" stroke="#97b498" points="253,-534.69 104,-534.69 104,-498.69 253,-498.69 253,-534.69"/>
+<text text-anchor="start" x="160.5" y="-520.49" font-family="Times,serif" font-weight="bold" font-size="14.00">copy</text>
+<text text-anchor="start" x="112" y="-506.49" font-family="Times,serif" font-size="14.00">f16[1024,64]{1,0}</text>
+</a>
+</g>
+</g>
+<!-- 159394928&#45;&gt;155801232 -->
+<g id="edge2" class="edge">
+<title>159394928&#45;&gt;155801232</title>
+<g id="a_edge2"><a xlink:title="shard_map.4 &#45;&gt; copy">
+<path fill="none" stroke="black" d="M178.5,-570.33C178.5,-562.36 178.5,-553.46 178.5,-545.28"/>
+<polygon fill="black" stroke="black" points="182,-545.07 178.5,-535.07 175,-545.07 182,-545.07"/>
+</a>
+</g>
+</g>
+<!-- 157535072 -->
+<g id="node9" class="node">
+<title>157535072</title>
+<g id="a_node9"><a xlink:title="jit(sharding_tp)/shard_map/dot_general&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:sharding_fixture.&lt;locals&gt;.sharding_tp:182:22&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:sharding_fixture:185:19&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="#1565c0" stroke="#003c8f" points="463,-462.69 56,-462.69 56,-412.69 463,-412.69 463,-462.69"/>
+<text text-anchor="start" x="206" y="-448.49" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="white">dot_general.3</text>
+<text text-anchor="start" x="64" y="-434.49" font-family="Times,serif" font-size="14.00" fill="white">lhs_contracting_dims={1}, rhs_contracting_dims={0}</text>
+<text text-anchor="start" x="188.5" y="-420.49" font-family="Times,serif" font-size="14.00" fill="white">f16[1024,512]{1,0}</text>
+</a>
+</g>
+</g>
+<!-- 155801232&#45;&gt;157535072 -->
+<g id="edge7" class="edge">
+<title>155801232&#45;&gt;157535072</title>
+<g id="a_edge7"><a xlink:title="copy &#45;&gt; dot_general.3">
+<path fill="none" stroke="black" d="M196.48,-498.6C205.4,-490.12 216.47,-479.6 226.83,-469.75"/>
+<polygon fill="black" stroke="black" points="229.36,-472.17 234.2,-462.74 224.54,-467.1 229.36,-472.17"/>
+</a>
+</g>
+<text text-anchor="middle" x="226.89" y="-477.66" font-family="Times,serif" font-size="14.00">0</text>
+</g>
+<!-- 159343232 -->
+<g id="node4" class="node">
+<title>159343232</title>
+<g id="a_node4"><a xlink:title="w_local">
+<polygon fill="#ffb74d" stroke="#c88719" points="520,-706.69 269,-706.69 269,-656.69 520,-656.69 520,-706.69"/>
+<text text-anchor="start" x="345.5" y="-692.49" font-family="Times,serif" font-weight="bold" font-size="14.00">Parameter 1</text>
+<text text-anchor="start" x="277" y="-678.49" font-family="Times,serif" font-size="14.00">sharding={devices=[8,1]&lt;=[8]}</text>
+<text text-anchor="start" x="332.5" y="-664.49" font-family="Times,serif" font-size="14.00">f16[64,512]{1,0}</text>
+</a>
+</g>
+</g>
+<!-- 155771168 -->
+<g id="node5" class="node">
+<title>155771168</title>
+<g id="a_node5"><a xlink:title="jit(sharding_tp)/shard_map&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:sharding_fixture:185:19&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="#c8e6c9" stroke="#97b498" points="437.5,-620.69 297.5,-620.69 297.5,-570.69 437.5,-570.69 437.5,-620.69"/>
+<text text-anchor="start" x="317.5" y="-606.49" font-family="Times,serif" font-weight="bold" font-size="14.00">shard_map.8</text>
+<text text-anchor="start" x="350.5" y="-592.49" font-family="Times,serif" font-size="14.00">copy</text>
+<text text-anchor="start" x="305.5" y="-578.49" font-family="Times,serif" font-size="14.00">f16[64,512]{1,0}</text>
+</a>
+</g>
+</g>
+<!-- 159343232&#45;&gt;155771168 -->
+<g id="edge3" class="edge">
+<title>159343232&#45;&gt;155771168</title>
+<g id="a_edge3"><a xlink:title="param.3 &#45;&gt; shard_map.8">
+<path fill="none" stroke="black" d="M386.69,-656.4C384.12,-648.39 381.2,-639.33 378.44,-630.73"/>
+<polygon fill="black" stroke="black" points="381.68,-629.38 375.29,-620.93 375.02,-631.53 381.68,-629.38"/>
+</a>
+</g>
+</g>
+<!-- 159393600 -->
+<g id="node6" class="node">
+<title>159393600</title>
+<g id="a_node6"><a xlink:title="jit(sharding_tp)/shard_map&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:sharding_fixture:185:19&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="#c8e6c9" stroke="#97b498" points="424.5,-534.69 284.5,-534.69 284.5,-498.69 424.5,-498.69 424.5,-534.69"/>
+<text text-anchor="start" x="330" y="-520.49" font-family="Times,serif" font-weight="bold" font-size="14.00">copy.1</text>
+<text text-anchor="start" x="292.5" y="-506.49" font-family="Times,serif" font-size="14.00">f16[64,512]{1,0}</text>
+</a>
+</g>
+</g>
+<!-- 155771168&#45;&gt;159393600 -->
+<g id="edge4" class="edge">
+<title>155771168&#45;&gt;159393600</title>
+<g id="a_edge4"><a xlink:title="shard_map.8 &#45;&gt; copy.1">
+<path fill="none" stroke="black" d="M363.39,-570.33C362.03,-562.28 360.51,-553.26 359.11,-545"/>
+<polygon fill="black" stroke="black" points="362.55,-544.35 357.43,-535.07 355.65,-545.51 362.55,-544.35"/>
+</a>
+</g>
+</g>
+<!-- 159393600&#45;&gt;157535072 -->
+<g id="edge8" class="edge">
+<title>159393600&#45;&gt;157535072</title>
+<g id="a_edge8"><a xlink:title="copy.1 &#45;&gt; dot_general.3">
+<path fill="none" stroke="black" d="M333.42,-498.6C322.74,-489.95 309.46,-479.19 297.12,-469.18"/>
+<polygon fill="black" stroke="black" points="299.14,-466.32 289.17,-462.74 294.74,-471.76 299.14,-466.32"/>
+</a>
+</g>
+<text text-anchor="middle" x="308.58" y="-463.89" font-family="Times,serif" font-size="14.00">1</text>
+</g>
+<!-- 159347456 -->
+<g id="node7" class="node">
+<title>159347456</title>
+<g id="a_node7"><a xlink:title="jit(sharding_tp)/shard_map&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:sharding_fixture:185:19&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="#c8e6c9" stroke="#97b498" points="338.5,-234.69 180.5,-234.69 180.5,-184.69 338.5,-184.69 338.5,-234.69"/>
+<text text-anchor="start" x="204.5" y="-220.49" font-family="Times,serif" font-weight="bold" font-size="14.00">shard_map.18</text>
+<text text-anchor="start" x="242.5" y="-206.49" font-family="Times,serif" font-size="14.00">copy</text>
+<text text-anchor="start" x="188.5" y="-192.49" font-family="Times,serif" font-size="14.00">f16[1024,512]{1,0}</text>
+</a>
+</g>
+</g>
+<!-- 127785040 -->
+<g id="node8" class="node">
+<title>127785040</title>
+<g id="a_node8"><a xlink:title="jit(sharding_tp)/shard_map&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:sharding_fixture:185:19&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="#c8e6c9" stroke="#97b498" points="338.5,-148.69 180.5,-148.69 180.5,-112.69 338.5,-112.69 338.5,-148.69"/>
+<text text-anchor="start" x="235" y="-134.49" font-family="Times,serif" font-weight="bold" font-size="14.00">copy.2</text>
+<text text-anchor="start" x="188.5" y="-120.49" font-family="Times,serif" font-size="14.00">f16[1024,512]{1,0}</text>
+</a>
+</g>
+</g>
+<!-- 159347456&#45;&gt;127785040 -->
+<g id="edge6" class="edge">
+<title>159347456&#45;&gt;127785040</title>
+<g id="a_edge6"><a xlink:title="shard_map.18 &#45;&gt; copy.2">
+<path fill="none" stroke="black" d="M259.5,-184.33C259.5,-176.36 259.5,-167.46 259.5,-159.28"/>
+<polygon fill="black" stroke="black" points="263,-159.07 259.5,-149.07 256,-159.07 263,-159.07"/>
+</a>
+</g>
+</g>
+<!-- cluster_156718656 -->
+<g id="node11" class="node">
+<title>cluster_156718656</title>
+<g id="a_node11"><a xlink:title=" ">
+<ellipse fill="#bcaaa4" stroke="#8c7b75" cx="259.5" cy="-38.35" rx="38.19" ry="38.19"/>
+<text text-anchor="start" x="238" y="-34.65" font-family="Times,serif" font-size="14.00">ROOT</text>
+</a>
+</g>
+</g>
+<!-- 127785040&#45;&gt;cluster_156718656 -->
+<g id="edge10" class="edge">
+<title>127785040&#45;&gt;cluster_156718656</title>
+<g id="a_edge10"><a xlink:title=" ">
+<path fill="none" stroke="black" d="M259.5,-112.27C259.5,-104.97 259.5,-96.09 259.5,-87.07"/>
+<polygon fill="black" stroke="black" points="263,-86.91 259.5,-76.91 256,-86.91 263,-86.91"/>
+</a>
+</g>
+</g>
+<!-- 159390256 -->
+<g id="node10" class="node">
+<title>159390256</title>
+<g id="a_node10"><a xlink:title="jit(sharding_tp)/shard_map/psum_invariant&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:sharding_fixture.&lt;locals&gt;.sharding_tp:183:19&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:sharding_fixture:185:19&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="#bcaaa4" stroke="#8c7b75" points="418,-376.69 101,-376.69 101,-270.69 418,-270.69 418,-376.69"/>
+<text text-anchor="start" x="191" y="-362.49" font-family="Times,serif" font-weight="bold" font-size="14.00">psum_invariant.7</text>
+<text text-anchor="start" x="224" y="-348.49" font-family="Times,serif" font-size="14.00">all&#45;reduce</text>
+<text text-anchor="start" x="181.5" y="-334.49" font-family="Times,serif" font-size="14.00">Subcomputation: </text>
+<text text-anchor="start" x="308.5" y="-334.49" font-family="Times,serif" font-weight="bold" font-size="14.00">add</text>
+<text text-anchor="start" x="211" y="-320.49" font-family="Times,serif" font-size="14.00">channel_id=1</text>
+<text text-anchor="start" x="109" y="-306.49" font-family="Times,serif" font-size="14.00">replica_groups=mesh[&#39;mesh&#39;=8] {&#39;mesh&#39;}</text>
+<text text-anchor="start" x="160.5" y="-292.49" font-family="Times,serif" font-size="14.00">use_global_device_ids=true</text>
+<text text-anchor="start" x="188.5" y="-278.49" font-family="Times,serif" font-size="14.00">f16[1024,512]{1,0}</text>
+</a>
+</g>
+</g>
+<!-- 157535072&#45;&gt;159390256 -->
+<g id="edge9" class="edge">
+<title>157535072&#45;&gt;159390256</title>
+<g id="a_edge9"><a xlink:title="dot_general.3 &#45;&gt; psum_invariant.7">
+<path fill="none" stroke="black" d="M259.5,-412.67C259.5,-404.93 259.5,-395.96 259.5,-386.77"/>
+<polygon fill="black" stroke="black" points="263,-386.76 259.5,-376.76 256,-386.76 263,-386.76"/>
+</a>
+</g>
+</g>
+<!-- 159390256&#45;&gt;159347456 -->
+<g id="edge5" class="edge">
+<title>159390256&#45;&gt;159347456</title>
+<g id="a_edge5"><a xlink:title="psum_invariant.7 &#45;&gt; shard_map.18">
+<path fill="none" stroke="black" d="M259.5,-270.63C259.5,-261.97 259.5,-253.18 259.5,-245.11"/>
+<polygon fill="black" stroke="black" points="263,-244.97 259.5,-234.97 256,-244.97 263,-244.97"/>
+</a>
+</g>
+</g>
+</g>
+</svg>

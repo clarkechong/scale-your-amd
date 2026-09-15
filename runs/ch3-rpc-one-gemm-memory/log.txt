@@ -1,0 +1,49 @@
+Rocprofiler-Compute version: 3.7.0
+Profiler choice: rocprofv3
+Output directory: /home/clchong/work/scale-your-amd/runs/ch3-rpc-one-gemm-memory
+Target: MI355
+Command: python3 -m bench.transformer_block --strategy dp --devices 1 --tokens 2048 --layers 1 --warmup 10 --repeats 1 --no-freeze --tag ch3-rpc-one-gemm-memory
+Kernel Selection: ['Cijk_Alik_Bljk_BBS_BH_Bias_HA_S_SAV_UserArgs_MT256x256x64']
+Dispatch Selection: ['1']
+Filtered sections: ['2.1.17', '2.1.18', '16.1.2', '17.1.0']
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Collecting Performance Counters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+[profiling] Iteration multiplexing: Disabled
+[Run 1/1][Approximate profiling time left: pending first measurement...]
+[profiling] Current input file: runs/ch3-rpc-one-gemm-memory/perfmon/pmc_perf_0.yaml
+   |-> [rocprofv3] W0914 17:00:45.999694  621258 simple_timer.cpp:55] [rocprofv3] tool initialization ::     0.196305 sec
+   |-> [rocprofv3] W0914 17:00:45.999918  621258 simple_timer.cpp:55] [rocprofv3] 'python3 -m bench.transformer_block --strategy dp --devices 1 --tokens 2048 --layers 1 --warmup 10 --repeats 1 --no-freeze --tag ch3-rpc-one-gemm-memory' ::     0.000000 sec
+   |-> [rocprofv3] W0914 17:00:46.291711  621258 simple_timer.cpp:55] [rocprofv3] tool initialization ::     0.198146 sec
+   |-> [rocprofv3] W0914 17:00:46.291939  621258 simple_timer.cpp:55] [rocprofv3] '/opt/venv/bin/python3 -m bench.transformer_block --strategy dp --devices 1 --tokens 2048 --layers 1 --warmup 10 --repeats 1 --no-freeze --tag ch3-rpc-one-gemm-memory' ::     0.000000 sec
+   |-> [rocprofv3] W0914 17:00:46.821984  621258 tool.cpp:3082] HSA version 1.21.0 initialized (instance=0)
+   |-> [rocprofv3] [run] /home/clchong/work/scale-your-amd/runs/20260914-transformer-block-ch3-rpc-one-gemm-memory
+   |-> [rocprofv3] dp-2048tok: median 5.577 ms  499.0 TFLOP/s
+   |-> [rocprofv3] MFU 19.8% of 1 x 2516.6 TFLOP/s
+   |-> [rocprofv3] [run] wrote /home/clchong/work/scale-your-amd/runs/20260914-transformer-block-ch3-rpc-one-gemm-memory/results.json
+   |-> [rocprofv3] W0914 17:01:04.683135  621258 simple_timer.cpp:55] [rocprofv3] '/opt/venv/bin/python3 -m bench.transformer_block --strategy dp --devices 1 --tokens 2048 --layers 1 --warmup 10 --repeats 1 --no-freeze --tag ch3-rpc-one-gemm-memory' ::    18.391194 sec
+   |-> [rocprofv3] W0914 17:01:04.705109  621258 generateRocpd.cpp:1054] writing SQL database for process 621258 on node 677166835
+   |-> [rocprofv3] E0914 17:01:04.705901  621258 generateRocpd.cpp:1078] Opened result file: runs/ch3-rpc-one-gemm-memory/out/pass_1/smci355-ccs-aus-m15-29/621258_results.db (UUID=00001a46-e38f-738f-b2ce-462829c2ce0a)
+   |-> [rocprofv3] W0914 17:01:04.863663  621258 simple_timer.cpp:55] SQLite3 generation :: rocpd_string             ::     0.126346 sec
+   |-> [rocprofv3] W0914 17:01:04.863730  621258 simple_timer.cpp:55] SQLite3 generation :: rocpd_info_node          ::     0.000011 sec
+   |-> [rocprofv3] W0914 17:01:04.864111  621258 simple_timer.cpp:55] SQLite3 generation :: rocpd_info_process       ::     0.000378 sec
+   |-> [rocprofv3] W0914 17:01:04.867468  621258 simple_timer.cpp:55] SQLite3 generation :: rocpd_info_agent         ::     0.003347 sec
+   |-> [rocprofv3] W0914 17:01:04.876632  621258 simple_timer.cpp:55] SQLite3 generation :: rocpd_info_pmc           ::     0.009159 sec
+   |-> [rocprofv3] W0914 17:01:04.990803  621258 simple_timer.cpp:55] SQLite3 generation :: rocpd kernel info        ::     0.114150 sec
+   |-> [rocprofv3] W0914 17:01:04.991078  621258 simple_timer.cpp:55] SQLite3 generation :: rocpd_region             ::     0.000034 sec
+   |-> [rocprofv3] W0914 17:01:04.995147  621258 simple_timer.cpp:55] SQLite3 generation :: rocpd_kernel_dispatch    ::     0.004065 sec
+   |-> [rocprofv3] W0914 17:01:04.998616  621258 simple_timer.cpp:55] SQLite3 generation :: rocpd_pmc_event          ::     0.003447 sec
+   |-> [rocprofv3] W0914 17:01:04.998639  621258 simple_timer.cpp:55] SQLite3 generation :: rocpd_memory_copy        ::     0.000004 sec
+   |-> [rocprofv3] W0914 17:01:04.998646  621258 simple_timer.cpp:55] SQLite3 generation :: rocpd_memory_allocate    ::     0.000004 sec
+   |-> [rocprofv3] W0914 17:01:04.999206  621258 simple_timer.cpp:55] SQLite3 generation :: rocpd_info_pmc: kfd      ::     0.000558 sec
+   |-> [rocprofv3] W0914 17:01:04.999215  621258 simple_timer.cpp:55] SQLite3 generation :: rocpd_pmc_event: kfd     ::     0.000001 sec
+   |-> [rocprofv3] W0914 17:01:05.001949  621258 simple_timer.cpp:55] SQLite3 generation :: rocpd_flush_pending      ::     0.002730 sec
+   |-> [rocprofv3] W0914 17:01:05.002239  621258 simple_timer.cpp:55] SQLite3 generation :: SQL indexing             ::     0.000280 sec
+   |-> [rocprofv3] W0914 17:01:05.009907  621258 simple_timer.cpp:55] SQLite3 generation :: total                    ::     0.304808 sec
+   |-> [rocprofv3] W0914 17:01:05.013268  621258 simple_timer.cpp:55] [rocprofv3] output generation ::     0.318644 sec
+   |-> [rocprofv3] W0914 17:01:05.015302  621258 simple_timer.cpp:55] [rocprofv3] tool finalization ::     0.320715 sec
+Intermediate results_*.csv generation from rocpd databases is deprecated and will be replaced with automatic .db file retention in a future release.
+PC sampling data collection skipped as --pc-sampling is not specified.
+[roofline] Skipping roofline

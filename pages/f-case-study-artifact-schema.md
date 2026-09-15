@@ -79,7 +79,30 @@ artifacts/<case_id>/<run_id>/
 ├── hlo/
 │   ├── before-optimizations.txt
 │   ├── optimized.txt
-│   └── memory-analysis.txt
+│   ├── scheduled.txt
+│   ├── buffer-assignment.txt
+│   ├── memory-analysis.txt
+│   └── compiler-delta/
+│       ├── comparison.yaml
+│       ├── before/
+│       │   ├── jaxpr.txt
+│       │   ├── stablehlo.mlir
+│       │   ├── shardy-after-propagation.mlir
+│       │   ├── optimized.txt
+│       │   ├── scheduled.txt
+│       │   └── buffer-assignment.txt
+│       ├── after/
+│       │   ├── jaxpr.txt
+│       │   ├── stablehlo.mlir
+│       │   ├── shardy-after-propagation.mlir
+│       │   ├── optimized.txt
+│       │   ├── scheduled.txt
+│       │   └── buffer-assignment.txt
+│       ├── diff/
+│       │   ├── optimized.normalized.diff
+│       │   └── normalization-rules.txt
+│       ├── hlo-snippet.svg
+│       └── metrics.json
 ├── profiles/
 │   ├── xprof/
 │   ├── rocprof/
@@ -94,6 +117,18 @@ artifacts/<case_id>/<run_id>/
 
 Omit a directory only when the claim does not need it. Record the omission and reason in the
 manifest.
+
+The root HLO files describe a single run. `hlo/compiler-delta/` holds matched
+feature arms: `before/` and `after/` mean the feature setting, not the compiler
+pass boundary. `comparison.yaml` records the seven callout items defined in
+[Chapter 2]({{ '/pages/2-lowering-jax-jit-on-rocm' | relative_url }}).
+`metrics.json` records per-arm compile and execution metrics and points to the raw
+samples in `results/`; it does not replace those samples. The normalized diff does
+not replace either raw arm. Follow the retention and normalization rules in
+[Appendix D]({{ '/pages/d-profiler-and-hlo-cookbook' | relative_url }}).
+`hlo-snippet.svg` must be rendered from the retained XLA DOT graph or from literal
+operation lines in scheduled HLO. It may crop unrelated nodes and add highlighting,
+but it must not replace operations with a conceptual redraw.
 
 ## Manifest Schema
 
@@ -279,6 +314,7 @@ delete the bundle.
 | Step time or tokens/s | Unprofiled timing samples, synchronization proof, batch/token definition |
 | Peak memory | Compiled analysis plus runtime high-water mark from the same config |
 | Kernel/backend route | Optimized HLO plus kernel trace |
+| Compiler-delta claim | `hlo/compiler-delta/comparison.yaml`; matched `before/` and `after/` stage files; scheduled HLO; buffer assignment; raw HLO and DOT; normalized diff and its rules; literal HLO SVG; metrics; and the runtime proof named by the callout |
 | Collective placement | HLO replica groups, trace, rank-affinity map |
 | Profiler attribution | Native XProf or lossless `rocpd`, not only a screenshot |
 | Hardware-counter result | Raw PMC passes, counter list, tool version, analysis output |

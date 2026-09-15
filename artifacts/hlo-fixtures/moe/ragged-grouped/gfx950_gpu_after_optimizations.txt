@@ -1,0 +1,42 @@
+HloModule jit_moe_ragged_grouped, is_scheduled=true, entry_computation_layout={(f16[64,128]{1,0}, f16[4,128,128]{2,1,0}, s32[4]{0})->f16[64,128]{1,0}}, allow_spmd_sharding_propagation_to_parameters={true,true,true}, allow_spmd_sharding_propagation_to_output={true}, frontend_attributes={fingerprint_before_lhs="7ca1f9b9f91150c56e35804dbeb14ed8"}
+
+FileNames
+1 "<frozen runpy>"
+2 "/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py"
+
+FunctionNames
+1 "_run_module_as_main"
+2 "_run_code"
+3 "<module>"
+4 "main"
+5 "moe_fixture"
+6 "_compile_and_run"
+7 "moe_fixture.<locals>.moe_ragged_grouped"
+
+FileLocations
+1 {file_name_id=1 function_name_id=1 line=198 end_line=199 column=11 end_column=42}
+2 {file_name_id=1 function_name_id=2 line=88 end_line=88 column=4 end_column=27}
+3 {file_name_id=2 function_name_id=3 line=369 end_line=369 column=4 end_column=10}
+4 {file_name_id=2 function_name_id=4 line=361 end_line=361 column=4 end_column=40}
+5 {file_name_id=2 function_name_id=5 line=340 end_line=340 column=15 end_column=65}
+6 {file_name_id=2 function_name_id=6 line=27 end_line=27 column=15 end_column=70}
+7 {file_name_id=2 function_name_id=7 line=337 end_line=337 column=19 end_column=67}
+
+StackFrames
+1 {file_location_id=1 parent_frame_id=1}
+2 {file_location_id=2 parent_frame_id=2}
+3 {file_location_id=3 parent_frame_id=3}
+4 {file_location_id=4 parent_frame_id=4}
+5 {file_location_id=5 parent_frame_id=5}
+6 {file_location_id=6 parent_frame_id=6}
+7 {file_location_id=7 parent_frame_id=7}
+
+
+ENTRY %main.1 (tokens.1: f16[64,128], experts.1: f16[4,128,128], group_sizes.1: s32[4]) -> f16[64,128] {
+  %group_sizes.1 = s32[4]{0} parameter(2), metadata={op_name="group_sizes"}
+  %experts.1 = f16[4,128,128]{2,1,0} parameter(1), metadata={op_name="experts"}
+  %tokens.1 = f16[64,128]{1,0} parameter(0), metadata={op_name="tokens"}
+  %custom-call.1 = (f16[64,128]{1,0}, s8[784]{0}) custom-call(%tokens.1, %experts.1, %group_sizes.1), custom_call_target="__cublas$lt$groupedMatmul", metadata={op_name="jit(moe_ragged_grouped)/ragged_dot_general" stack_frame_id=7}, backend_config={"operation_queue_id":"0","force_earliest_schedule":false,"reification_cost":[],"device_type":"DEVICE_TYPE_INVALID","grouped_gemm_backend_config":{"gemm_backend_config":{"selected_algorithm":"0","alpha_real":1,"beta":0,"dot_dimension_numbers":{"lhs_contracting_dimensions":["1"],"rhs_contracting_dimensions":["1"],"lhs_batch_dimensions":[],"rhs_batch_dimensions":[]},"alpha_imag":0,"epilogue":"DEFAULT","grad_x":false,"grad_y":false,"damax_output":false,"autotune_workspace_size":"784","scale_mode":0},"ragged_dot_dimension_numbers":{"dot_dimension_numbers":{"lhs_contracting_dimensions":["1"],"rhs_contracting_dimensions":["1"],"lhs_batch_dimensions":[],"rhs_batch_dimensions":[]},"lhs_ragged_dimensions":["0"],"rhs_group_dimensions":["0"]}}}
+  ROOT %get-tuple-element.1 = f16[64,128]{1,0} get-tuple-element(%custom-call.1), index=0, metadata={op_name="jit(moe_ragged_grouped)/ragged_dot_general" stack_frame_id=7}
+}
+

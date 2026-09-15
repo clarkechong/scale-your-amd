@@ -1,0 +1,8 @@
+jobs:
+- pmc:
+  - SQ_WAVES
+  - SPI_CS0_WAVE
+  - SPI_CS1_WAVE
+  - SPI_CS2_WAVE
+  - SPI_CS3_WAVE
+  - GRBM_GUI_ACTIVE

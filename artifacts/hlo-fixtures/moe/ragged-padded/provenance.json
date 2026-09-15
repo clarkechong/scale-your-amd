@@ -1,0 +1,28 @@
+{
+  "additional_artifacts": {},
+  "command": [
+    "/opt/venv/bin/python3",
+    "-m",
+    "bench.hlo_feature_fixtures",
+    "moe",
+    "ragged-padded"
+  ],
+  "environment": {
+    "HIP_VISIBLE_DEVICES": "0",
+    "JAX_PLATFORMS": "rocm",
+    "XLA_FLAGS": "--xla_dump_to=/tmp/hlo-moe-ragged-padded-3q_i3ywx --xla_dump_hlo_as_text --xla_dump_hlo_as_dot --xla_gpu_enable_cublaslt=true --xla_gpu_experimental_use_ragged_dot_grouped_gemm=false",
+    "XLA_PYTHON_CLIENT_PREALLOCATE": "false"
+  },
+  "feature": "moe",
+  "fixture_module": "moe_ragged_padded",
+  "kind": "explanatory-hlo-fixture",
+  "measured": false,
+  "raw_dot": "module_0013.jit_moe_ragged_padded.gfx950_gpu_after_optimizations.dot",
+  "raw_text": "module_0013.jit_moe_ragged_padded.gfx950_gpu_after_optimizations.txt",
+  "rendered_svg": "pages/img/hlo-moe-ragged-padded.svg",
+  "renderer": "XLA DOT rendered by Graphviz",
+  "retained_stage": "gfx950_gpu_after_optimizations",
+  "stderr": "",
+  "stdout": "compiled fixture=moe variant=ragged-padded backend=gpu devices=1",
+  "variant": "ragged-padded"
+}

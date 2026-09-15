@@ -1,0 +1,53 @@
+HloModule jit_scan_unrolled, entry_computation_layout={(bf16[4,128,128]{2,1,0}, bf16[32,128]{1,0})->bf16[32,128]{1,0}}, allow_spmd_sharding_propagation_to_parameters={true,true}, allow_spmd_sharding_propagation_to_output={true}
+
+FileNames
+1 "<frozen runpy>"
+2 "/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py"
+
+FunctionNames
+1 "_run_module_as_main"
+2 "_run_code"
+3 "<module>"
+4 "main"
+5 "scan_fixture"
+6 "_compile_and_run"
+7 "scan_fixture.<locals>.scan_unrolled"
+
+FileLocations
+1 {file_name_id=1 function_name_id=1 line=198 end_line=199 column=11 end_column=42}
+2 {file_name_id=1 function_name_id=2 line=88 end_line=88 column=4 end_column=27}
+3 {file_name_id=2 function_name_id=3 line=369 end_line=369 column=4 end_column=10}
+4 {file_name_id=2 function_name_id=4 line=361 end_line=361 column=4 end_column=40}
+5 {file_name_id=2 function_name_id=5 line=49 end_line=49 column=15 end_column=58}
+6 {file_name_id=2 function_name_id=6 line=27 end_line=27 column=15 end_column=70}
+7 {file_name_id=2 function_name_id=7 line=46 end_line=46 column=24 end_column=34}
+8 {file_name_id=2 function_name_id=7 line=46 end_line=46 column=20 end_column=34}
+
+StackFrames
+1 {file_location_id=1 parent_frame_id=1}
+2 {file_location_id=2 parent_frame_id=2}
+3 {file_location_id=3 parent_frame_id=3}
+4 {file_location_id=4 parent_frame_id=4}
+5 {file_location_id=5 parent_frame_id=5}
+6 {file_location_id=6 parent_frame_id=6}
+7 {file_location_id=7 parent_frame_id=7}
+8 {file_location_id=8 parent_frame_id=7}
+
+
+ENTRY %main.1 (weights.1: bf16[4,128,128], x.1: bf16[32,128]) -> bf16[32,128] {
+  %x.1 = bf16[32,128]{1,0} parameter(1), metadata={op_name="x"}
+  %weights.1 = bf16[4,128,128]{2,1,0} parameter(0), metadata={op_name="weights"}
+  %slice.4 = bf16[1,128,128]{2,1,0} slice(%weights.1), slice={[0:1], [0:128], [0:128]}, metadata={op_name="jit(scan_unrolled)/slice" stack_frame_id=7}
+  %squeeze.4 = bf16[128,128]{1,0} reshape(%slice.4), metadata={op_name="jit(scan_unrolled)/squeeze" stack_frame_id=7}
+  %dot_general.4 = bf16[32,128]{1,0} dot(%x.1, %squeeze.4), lhs_contracting_dims={1}, rhs_contracting_dims={0}, metadata={op_name="jit(scan_unrolled)/dot_general" stack_frame_id=8}
+  %slice.5 = bf16[1,128,128]{2,1,0} slice(%weights.1), slice={[1:2], [0:128], [0:128]}, metadata={op_name="jit(scan_unrolled)/slice" stack_frame_id=7}
+  %squeeze.5 = bf16[128,128]{1,0} reshape(%slice.5), metadata={op_name="jit(scan_unrolled)/squeeze" stack_frame_id=7}
+  %dot_general.5 = bf16[32,128]{1,0} dot(%dot_general.4, %squeeze.5), lhs_contracting_dims={1}, rhs_contracting_dims={0}, metadata={op_name="jit(scan_unrolled)/dot_general" stack_frame_id=8}
+  %slice.6 = bf16[1,128,128]{2,1,0} slice(%weights.1), slice={[2:3], [0:128], [0:128]}, metadata={op_name="jit(scan_unrolled)/slice" stack_frame_id=7}
+  %squeeze.6 = bf16[128,128]{1,0} reshape(%slice.6), metadata={op_name="jit(scan_unrolled)/squeeze" stack_frame_id=7}
+  %dot_general.6 = bf16[32,128]{1,0} dot(%dot_general.5, %squeeze.6), lhs_contracting_dims={1}, rhs_contracting_dims={0}, metadata={op_name="jit(scan_unrolled)/dot_general" stack_frame_id=8}
+  %slice.7 = bf16[1,128,128]{2,1,0} slice(%weights.1), slice={[3:4], [0:128], [0:128]}, metadata={op_name="jit(scan_unrolled)/slice" stack_frame_id=7}
+  %squeeze.7 = bf16[128,128]{1,0} reshape(%slice.7), metadata={op_name="jit(scan_unrolled)/squeeze" stack_frame_id=7}
+  ROOT %dot_general.7 = bf16[32,128]{1,0} dot(%dot_general.6, %squeeze.7), lhs_contracting_dims={1}, rhs_contracting_dims={0}, metadata={op_name="jit(scan_unrolled)/dot_general" stack_frame_id=8}
+}
+

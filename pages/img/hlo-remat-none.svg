@@ -1,0 +1,1135 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml-stylesheet href="
+  data:text/css,
+  @import url(https://fonts.googleapis.com/css?family=Roboto:400,700);
+  svg text {
+    font-family: 'Roboto';
+    font-size: 12px;
+  }
+
+    %23node12:hover ~ %23edge41 text { fill: %231976d2; }
+  %23node12:hover ~ %23edge41 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node12:hover ~ %23edge41 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node31:hover ~ %23edge41 text { fill: %23d32f2f; }
+  %23node31:hover ~ %23edge41 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node31:hover ~ %23edge41 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node29:hover ~ %23edge40 text { fill: %231976d2; }
+  %23node29:hover ~ %23edge40 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node29:hover ~ %23edge40 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node30:hover ~ %23edge40 text { fill: %23d32f2f; }
+  %23node30:hover ~ %23edge40 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node30:hover ~ %23edge40 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node24:hover ~ %23edge33 text { fill: %231976d2; }
+  %23node24:hover ~ %23edge33 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node24:hover ~ %23edge33 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node25:hover ~ %23edge33 text { fill: %23d32f2f; }
+  %23node25:hover ~ %23edge33 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node25:hover ~ %23edge33 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node23:hover ~ %23edge32 text { fill: %231976d2; }
+  %23node23:hover ~ %23edge32 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node23:hover ~ %23edge32 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node25:hover ~ %23edge32 text { fill: %23d32f2f; }
+  %23node25:hover ~ %23edge32 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node25:hover ~ %23edge32 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node13:hover ~ %23edge13 text { fill: %231976d2; }
+  %23node13:hover ~ %23edge13 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node13:hover ~ %23edge13 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node14:hover ~ %23edge13 text { fill: %23d32f2f; }
+  %23node14:hover ~ %23edge13 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node14:hover ~ %23edge13 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node31:hover ~ %23edge43 text { fill: %231976d2; }
+  %23node31:hover ~ %23edge43 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node31:hover ~ %23edge43 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node32:hover ~ %23edge43 text { fill: %23d32f2f; }
+  %23node32:hover ~ %23edge43 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node32:hover ~ %23edge43 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node1:hover ~ %23edge35 text { fill: %231976d2; }
+  %23node1:hover ~ %23edge35 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node1:hover ~ %23edge35 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node26:hover ~ %23edge35 text { fill: %23d32f2f; }
+  %23node26:hover ~ %23edge35 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node26:hover ~ %23edge35 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node8:hover ~ %23edge9 text { fill: %231976d2; }
+  %23node8:hover ~ %23edge9 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node8:hover ~ %23edge9 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node9:hover ~ %23edge9 text { fill: %23d32f2f; }
+  %23node9:hover ~ %23edge9 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node9:hover ~ %23edge9 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node25:hover ~ %23edge34 text { fill: %231976d2; }
+  %23node25:hover ~ %23edge34 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node25:hover ~ %23edge34 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node26:hover ~ %23edge34 text { fill: %23d32f2f; }
+  %23node26:hover ~ %23edge34 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node26:hover ~ %23edge34 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node17:hover ~ %23edge21 text { fill: %231976d2; }
+  %23node17:hover ~ %23edge21 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node17:hover ~ %23edge21 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node18:hover ~ %23edge21 text { fill: %23d32f2f; }
+  %23node18:hover ~ %23edge21 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node18:hover ~ %23edge21 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node6:hover ~ %23edge27 text { fill: %231976d2; }
+  %23node6:hover ~ %23edge27 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node6:hover ~ %23edge27 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node22:hover ~ %23edge27 text { fill: %23d32f2f; }
+  %23node22:hover ~ %23edge27 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node22:hover ~ %23edge27 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node9:hover ~ %23edge10 text { fill: %231976d2; }
+  %23node9:hover ~ %23edge10 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node9:hover ~ %23edge10 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node10:hover ~ %23edge10 text { fill: %23d32f2f; }
+  %23node10:hover ~ %23edge10 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node10:hover ~ %23edge10 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node7:hover ~ %23edge7 text { fill: %231976d2; }
+  %23node7:hover ~ %23edge7 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node7:hover ~ %23edge7 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node8:hover ~ %23edge7 text { fill: %23d32f2f; }
+  %23node8:hover ~ %23edge7 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node8:hover ~ %23edge7 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node6:hover ~ %23edge8 text { fill: %231976d2; }
+  %23node6:hover ~ %23edge8 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node6:hover ~ %23edge8 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node9:hover ~ %23edge8 text { fill: %23d32f2f; }
+  %23node9:hover ~ %23edge8 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node9:hover ~ %23edge8 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node14:hover ~ %23edge17 text { fill: %231976d2; }
+  %23node14:hover ~ %23edge17 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node14:hover ~ %23edge17 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node16:hover ~ %23edge17 text { fill: %23d32f2f; }
+  %23node16:hover ~ %23edge17 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node16:hover ~ %23edge17 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node2:hover ~ %23edge6 text { fill: %231976d2; }
+  %23node2:hover ~ %23edge6 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node2:hover ~ %23edge6 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node7:hover ~ %23edge6 text { fill: %23d32f2f; }
+  %23node7:hover ~ %23edge6 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node7:hover ~ %23edge6 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node30:hover ~ %23edge42 text { fill: %231976d2; }
+  %23node30:hover ~ %23edge42 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node30:hover ~ %23edge42 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node31:hover ~ %23edge42 text { fill: %23d32f2f; }
+  %23node31:hover ~ %23edge42 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node31:hover ~ %23edge42 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node6:hover ~ %23edge20 text { fill: %231976d2; }
+  %23node6:hover ~ %23edge20 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node6:hover ~ %23edge20 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node17:hover ~ %23edge20 text { fill: %23d32f2f; }
+  %23node17:hover ~ %23edge20 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node17:hover ~ %23edge20 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node20:hover ~ %23edge39 text { fill: %231976d2; }
+  %23node20:hover ~ %23edge39 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node20:hover ~ %23edge39 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node30:hover ~ %23edge39 text { fill: %23d32f2f; }
+  %23node30:hover ~ %23edge39 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node30:hover ~ %23edge39 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node6:hover ~ %23edge31 text { fill: %231976d2; }
+  %23node6:hover ~ %23edge31 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node6:hover ~ %23edge31 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node24:hover ~ %23edge31 text { fill: %23d32f2f; }
+  %23node24:hover ~ %23edge31 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node24:hover ~ %23edge31 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node5:hover ~ %23edge5 text { fill: %231976d2; }
+  %23node5:hover ~ %23edge5 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node5:hover ~ %23edge5 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node6:hover ~ %23edge5 text { fill: %23d32f2f; }
+  %23node6:hover ~ %23edge5 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node6:hover ~ %23edge5 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node3:hover ~ %23edge2 text { fill: %231976d2; }
+  %23node3:hover ~ %23edge2 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node3:hover ~ %23edge2 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node4:hover ~ %23edge2 text { fill: %23d32f2f; }
+  %23node4:hover ~ %23edge2 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node4:hover ~ %23edge2 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node4:hover ~ %23edge4 text { fill: %231976d2; }
+  %23node4:hover ~ %23edge4 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node4:hover ~ %23edge4 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node5:hover ~ %23edge4 text { fill: %23d32f2f; }
+  %23node5:hover ~ %23edge4 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node5:hover ~ %23edge4 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node10:hover ~ %23edge11 text { fill: %231976d2; }
+  %23node10:hover ~ %23edge11 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node10:hover ~ %23edge11 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node11:hover ~ %23edge11 text { fill: %23d32f2f; }
+  %23node11:hover ~ %23edge11 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node11:hover ~ %23edge11 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node23:hover ~ %23edge30 text { fill: %231976d2; }
+  %23node23:hover ~ %23edge30 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node23:hover ~ %23edge30 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node24:hover ~ %23edge30 text { fill: %23d32f2f; }
+  %23node24:hover ~ %23edge30 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node24:hover ~ %23edge30 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node1:hover ~ %23edge3 text { fill: %231976d2; }
+  %23node1:hover ~ %23edge3 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node1:hover ~ %23edge3 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node5:hover ~ %23edge3 text { fill: %23d32f2f; }
+  %23node5:hover ~ %23edge3 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node5:hover ~ %23edge3 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node14:hover ~ %23edge15 text { fill: %231976d2; }
+  %23node14:hover ~ %23edge15 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node14:hover ~ %23edge15 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node15:hover ~ %23edge15 text { fill: %23d32f2f; }
+  %23node15:hover ~ %23edge15 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node15:hover ~ %23edge15 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node16:hover ~ %23edge24 text { fill: %231976d2; }
+  %23node16:hover ~ %23edge24 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node16:hover ~ %23edge24 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node21:hover ~ %23edge24 text { fill: %23d32f2f; }
+  %23node21:hover ~ %23edge24 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node21:hover ~ %23edge24 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node16:hover ~ %23edge19 text { fill: %231976d2; }
+  %23node16:hover ~ %23edge19 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node16:hover ~ %23edge19 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node17:hover ~ %23edge19 text { fill: %23d32f2f; }
+  %23node17:hover ~ %23edge19 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node17:hover ~ %23edge19 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node2:hover ~ %23edge1 text { fill: %231976d2; }
+  %23node2:hover ~ %23edge1 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node2:hover ~ %23edge1 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node3:hover ~ %23edge1 text { fill: %23d32f2f; }
+  %23node3:hover ~ %23edge1 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node3:hover ~ %23edge1 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node27:hover ~ %23edge37 text { fill: %231976d2; }
+  %23node27:hover ~ %23edge37 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node27:hover ~ %23edge37 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node28:hover ~ %23edge37 text { fill: %23d32f2f; }
+  %23node28:hover ~ %23edge37 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node28:hover ~ %23edge37 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node11:hover ~ %23edge12 text { fill: %231976d2; }
+  %23node11:hover ~ %23edge12 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node11:hover ~ %23edge12 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node12:hover ~ %23edge12 text { fill: %23d32f2f; }
+  %23node12:hover ~ %23edge12 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node12:hover ~ %23edge12 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node10:hover ~ %23edge14 text { fill: %231976d2; }
+  %23node10:hover ~ %23edge14 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node10:hover ~ %23edge14 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node14:hover ~ %23edge14 text { fill: %23d32f2f; }
+  %23node14:hover ~ %23edge14 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node14:hover ~ %23edge14 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node10:hover ~ %23edge16 text { fill: %231976d2; }
+  %23node10:hover ~ %23edge16 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node10:hover ~ %23edge16 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node15:hover ~ %23edge16 text { fill: %23d32f2f; }
+  %23node15:hover ~ %23edge16 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node15:hover ~ %23edge16 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node28:hover ~ %23edge38 text { fill: %231976d2; }
+  %23node28:hover ~ %23edge38 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node28:hover ~ %23edge38 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node29:hover ~ %23edge38 text { fill: %23d32f2f; }
+  %23node29:hover ~ %23edge38 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node29:hover ~ %23edge38 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node18:hover ~ %23edge22 text { fill: %231976d2; }
+  %23node18:hover ~ %23edge22 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node18:hover ~ %23edge22 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node19:hover ~ %23edge22 text { fill: %23d32f2f; }
+  %23node19:hover ~ %23edge22 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node19:hover ~ %23edge22 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node26:hover ~ %23edge36 text { fill: %231976d2; }
+  %23node26:hover ~ %23edge36 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node26:hover ~ %23edge36 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node27:hover ~ %23edge36 text { fill: %23d32f2f; }
+  %23node27:hover ~ %23edge36 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node27:hover ~ %23edge36 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node19:hover ~ %23edge23 text { fill: %231976d2; }
+  %23node19:hover ~ %23edge23 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node19:hover ~ %23edge23 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node20:hover ~ %23edge23 text { fill: %23d32f2f; }
+  %23node20:hover ~ %23edge23 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node20:hover ~ %23edge23 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node8:hover ~ %23edge25 text { fill: %231976d2; }
+  %23node8:hover ~ %23edge25 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node8:hover ~ %23edge25 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node21:hover ~ %23edge25 text { fill: %23d32f2f; }
+  %23node21:hover ~ %23edge25 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node21:hover ~ %23edge25 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node21:hover ~ %23edge28 text { fill: %231976d2; }
+  %23node21:hover ~ %23edge28 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node21:hover ~ %23edge28 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node23:hover ~ %23edge28 text { fill: %23d32f2f; }
+  %23node23:hover ~ %23edge28 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node23:hover ~ %23edge28 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node15:hover ~ %23edge18 text { fill: %231976d2; }
+  %23node15:hover ~ %23edge18 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node15:hover ~ %23edge18 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node16:hover ~ %23edge18 text { fill: %23d32f2f; }
+  %23node16:hover ~ %23edge18 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node16:hover ~ %23edge18 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node13:hover ~ %23edge26 text { fill: %231976d2; }
+  %23node13:hover ~ %23edge26 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node13:hover ~ %23edge26 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node22:hover ~ %23edge26 text { fill: %23d32f2f; }
+  %23node22:hover ~ %23edge26 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node22:hover ~ %23edge26 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node22:hover ~ %23edge29 text { fill: %231976d2; }
+  %23node22:hover ~ %23edge29 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node22:hover ~ %23edge29 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node23:hover ~ %23edge29 text { fill: %23d32f2f; }
+  %23node23:hover ~ %23edge29 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node23:hover ~ %23edge29 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+" type="text/css"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: G Pages: 1 -->
+<svg width="993pt" height="1869pt"
+ viewBox="0.00 0.00 993.13 1868.69" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 1864.69)">
+<title>G</title>
+<g id="a_graph0"><a xlink:title=" ">
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-1864.69 989.13,-1864.69 989.13,4 -4,4"/>
+<text text-anchor="start" x="276.06" y="-1846.49" font-family="Times,serif" font-weight="bold" font-size="14.00">module_0011.jit_remat_none_loss.before_optimizations</text>
+<text text-anchor="start" x="411.56" y="-1832.49" font-family="Times,serif" font-weight="bold" font-size="14.00">Computation main.2</text>
+<text text-anchor="start" x="412.56" y="-1818.49" font-family="Times,serif" font-weight="bold" font-size="14.00">ENTRY computation</text>
+</a>
+</g>
+<!-- 783138448 -->
+<g id="node1" class="node">
+<title>783138448</title>
+<g id="a_node1"><a xlink:title="x">
+<polygon fill="#ffb74d" stroke="#c88719" points="902.13,-1645.69 753.13,-1645.69 753.13,-1609.69 902.13,-1609.69 902.13,-1645.69"/>
+<text text-anchor="start" x="778.63" y="-1631.49" font-family="Times,serif" font-weight="bold" font-size="14.00">Parameter 1</text>
+<text text-anchor="start" x="761.13" y="-1617.49" font-family="Times,serif" font-size="14.00">bf16[64,128]{1,0}</text>
+</a>
+</g>
+</g>
+<!-- 772895328 -->
+<g id="node5" class="node">
+<title>772895328</title>
+<g id="a_node5"><a xlink:title="jit(remat_none_loss)/jvp()/dot_general&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_layer:34:20&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture.&lt;locals&gt;.remat_none_loss:71:16&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture:85:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="#1565c0" stroke="#003c8f" points="737.13,-1566.69 330.13,-1566.69 330.13,-1516.69 737.13,-1516.69 737.13,-1566.69"/>
+<text text-anchor="start" x="480.13" y="-1552.49" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="white">dot_general.5</text>
+<text text-anchor="start" x="338.13" y="-1538.49" font-family="Times,serif" font-size="14.00" fill="white">lhs_contracting_dims={1}, rhs_contracting_dims={0}</text>
+<text text-anchor="start" x="467.13" y="-1524.49" font-family="Times,serif" font-size="14.00" fill="white">bf16[64,128]{1,0}</text>
+</a>
+</g>
+</g>
+<!-- 783138448&#45;&gt;772895328 -->
+<g id="edge3" class="edge">
+<title>783138448&#45;&gt;772895328</title>
+<g id="a_edge3"><a xlink:title="x.1 &#45;&gt; dot_general.5">
+<path fill="none" stroke="black" d="M767.78,-1609.59C727.41,-1598.06 673.33,-1582.61 627.32,-1569.46"/>
+<polygon fill="black" stroke="black" points="628.2,-1566.08 617.63,-1566.69 626.28,-1572.81 628.2,-1566.08"/>
+</a>
+</g>
+<text text-anchor="middle" x="637.38" y="-1559.85" font-family="Times,serif" font-size="14.00">0</text>
+</g>
+<!-- 788638912 -->
+<g id="node26" class="node">
+<title>788638912</title>
+<g id="a_node26"><a xlink:title="jit(remat_none_loss)/transpose(jvp())/dot_general&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_layer:34:20&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture.&lt;locals&gt;.remat_none_loss:71:16&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture:85:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="#1565c0" stroke="#003c8f" points="985.13,-585.69 578.13,-585.69 578.13,-535.69 985.13,-535.69 985.13,-585.69"/>
+<text text-anchor="start" x="728.13" y="-571.49" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="white">dot_general.9</text>
+<text text-anchor="start" x="586.13" y="-557.49" font-family="Times,serif" font-size="14.00" fill="white">lhs_contracting_dims={0}, rhs_contracting_dims={0}</text>
+<text text-anchor="start" x="710.63" y="-543.49" font-family="Times,serif" font-size="14.00" fill="white">bf16[128,128]{1,0}</text>
+</a>
+</g>
+</g>
+<!-- 783138448&#45;&gt;788638912 -->
+<g id="edge35" class="edge">
+<title>783138448&#45;&gt;788638912</title>
+<g id="a_edge35"><a xlink:title="x.1 &#45;&gt; dot_general.9">
+<path fill="none" stroke="black" d="M856.7,-1609.61C898.25,-1582.77 969.63,-1526.49 969.63,-1456.69 969.63,-1456.69 969.63,-1456.69 969.63,-724.69 969.63,-660.78 906.84,-616.31 853.84,-590.14"/>
+<polygon fill="black" stroke="black" points="855.28,-586.95 844.75,-585.78 852.25,-593.26 855.28,-586.95"/>
+</a>
+</g>
+<text text-anchor="middle" x="864.75" y="-582.3" font-family="Times,serif" font-size="14.00">1</text>
+</g>
+<!-- 782305424 -->
+<g id="node2" class="node">
+<title>782305424</title>
+<g id="a_node2"><a xlink:title="weights">
+<polygon fill="#ffb74d" stroke="#c88719" points="470.13,-1810.69 285.13,-1810.69 285.13,-1774.69 470.13,-1774.69 470.13,-1810.69"/>
+<text text-anchor="start" x="328.63" y="-1796.49" font-family="Times,serif" font-weight="bold" font-size="14.00">Parameter 0</text>
+<text text-anchor="start" x="293.13" y="-1782.49" font-family="Times,serif" font-size="14.00">bf16[2,128,128]{2,1,0}</text>
+</a>
+</g>
+</g>
+<!-- 772844384 -->
+<g id="node3" class="node">
+<title>772844384</title>
+<g id="a_node3"><a xlink:title="jit(remat_none_loss)/jvp()/slice&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture.&lt;locals&gt;.remat_none_loss:71:26&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture:85:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="white" stroke="#9e9e9e" points="627.63,-1738.69 395.63,-1738.69 395.63,-1688.69 627.63,-1688.69 627.63,-1738.69"/>
+<text text-anchor="start" x="486.13" y="-1724.49" font-family="Times,serif" font-weight="bold" font-size="14.00">slice.2</text>
+<text text-anchor="start" x="403.63" y="-1710.49" font-family="Times,serif" font-size="14.00">slice={[0:1], [0:128], [0:128]}</text>
+<text text-anchor="start" x="427.13" y="-1696.49" font-family="Times,serif" font-size="14.00">bf16[1,128,128]{2,1,0}</text>
+</a>
+</g>
+</g>
+<!-- 782305424&#45;&gt;772844384 -->
+<g id="edge1" class="edge">
+<title>782305424&#45;&gt;772844384</title>
+<g id="a_edge1"><a xlink:title="weights.1 &#45;&gt; slice.2">
+<path fill="none" stroke="black" d="M407.36,-1774.6C423.13,-1765.54 442.94,-1754.16 461.05,-1743.76"/>
+<polygon fill="black" stroke="black" points="462.85,-1746.76 469.77,-1738.74 459.36,-1740.69 462.85,-1746.76"/>
+</a>
+</g>
+</g>
+<!-- 785141248 -->
+<g id="node7" class="node">
+<title>785141248</title>
+<g id="a_node7"><a xlink:title="jit(remat_none_loss)/jvp()/slice&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture.&lt;locals&gt;.remat_none_loss:71:26&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture:85:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="white" stroke="#9e9e9e" points="368.63,-1738.69 136.63,-1738.69 136.63,-1688.69 368.63,-1688.69 368.63,-1738.69"/>
+<text text-anchor="start" x="227.13" y="-1724.49" font-family="Times,serif" font-weight="bold" font-size="14.00">slice.3</text>
+<text text-anchor="start" x="144.63" y="-1710.49" font-family="Times,serif" font-size="14.00">slice={[1:2], [0:128], [0:128]}</text>
+<text text-anchor="start" x="168.13" y="-1696.49" font-family="Times,serif" font-size="14.00">bf16[1,128,128]{2,1,0}</text>
+</a>
+</g>
+</g>
+<!-- 782305424&#45;&gt;785141248 -->
+<g id="edge6" class="edge">
+<title>782305424&#45;&gt;785141248</title>
+<g id="a_edge6"><a xlink:title="weights.1 &#45;&gt; slice.3">
+<path fill="none" stroke="black" d="M349.88,-1774.6C335.31,-1765.62 317.03,-1754.37 300.27,-1744.04"/>
+<polygon fill="black" stroke="black" points="302.02,-1741.01 291.67,-1738.74 298.35,-1746.97 302.02,-1741.01"/>
+</a>
+</g>
+</g>
+<!-- 784378784 -->
+<g id="node4" class="node">
+<title>784378784</title>
+<g id="a_node4"><a xlink:title="jit(remat_none_loss)/jvp()/squeeze&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture.&lt;locals&gt;.remat_none_loss:71:26&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture:85:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="#c8e6c9" stroke="#97b498" points="594.63,-1652.69 436.63,-1652.69 436.63,-1602.69 594.63,-1602.69 594.63,-1652.69"/>
+<text text-anchor="start" x="476.13" y="-1638.49" font-family="Times,serif" font-weight="bold" font-size="14.00">squeeze.2</text>
+<text text-anchor="start" x="486.63" y="-1624.49" font-family="Times,serif" font-size="14.00">reshape</text>
+<text text-anchor="start" x="444.63" y="-1610.49" font-family="Times,serif" font-size="14.00">bf16[128,128]{1,0}</text>
+</a>
+</g>
+</g>
+<!-- 772844384&#45;&gt;784378784 -->
+<g id="edge2" class="edge">
+<title>772844384&#45;&gt;784378784</title>
+<g id="a_edge2"><a xlink:title="slice.2 &#45;&gt; squeeze.2">
+<path fill="none" stroke="black" d="M512.78,-1688.4C513.16,-1680.47 513.59,-1671.52 513.99,-1663.01"/>
+<polygon fill="black" stroke="black" points="517.49,-1663.09 514.47,-1652.93 510.5,-1662.76 517.49,-1663.09"/>
+</a>
+</g>
+</g>
+<!-- 784378784&#45;&gt;772895328 -->
+<g id="edge4" class="edge">
+<title>784378784&#45;&gt;772895328</title>
+<g id="a_edge4"><a xlink:title="squeeze.2 &#45;&gt; dot_general.5">
+<path fill="none" stroke="black" d="M520.83,-1602.4C522.55,-1594.39 524.49,-1585.33 526.33,-1576.73"/>
+<polygon fill="black" stroke="black" points="529.76,-1577.45 528.43,-1566.93 522.91,-1575.98 529.76,-1577.45"/>
+</a>
+</g>
+<text text-anchor="middle" x="532.9" y="-1582.73" font-family="Times,serif" font-size="14.00">1</text>
+</g>
+<!-- 772832448 -->
+<g id="node6" class="node">
+<title>772832448</title>
+<g id="a_node6"><a xlink:title="jit(remat_none_loss)/jvp()/tanh&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_layer:34:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture.&lt;locals&gt;.remat_none_loss:71:16&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture:85:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="white" stroke="#9e9e9e" points="608.13,-1473.69 459.13,-1473.69 459.13,-1437.69 608.13,-1437.69 608.13,-1473.69"/>
+<text text-anchor="start" x="507.63" y="-1459.49" font-family="Times,serif" font-weight="bold" font-size="14.00">tanh.2</text>
+<text text-anchor="start" x="467.13" y="-1445.49" font-family="Times,serif" font-size="14.00">bf16[64,128]{1,0}</text>
+</a>
+</g>
+</g>
+<!-- 772895328&#45;&gt;772832448 -->
+<g id="edge5" class="edge">
+<title>772895328&#45;&gt;772832448</title>
+<g id="a_edge5"><a xlink:title="dot_general.5 &#45;&gt; tanh.2">
+<path fill="none" stroke="black" d="M533.63,-1516.4C533.63,-1506.26 533.63,-1494.43 533.63,-1483.99"/>
+<polygon fill="black" stroke="black" points="537.13,-1483.74 533.63,-1473.74 530.13,-1483.74 537.13,-1483.74"/>
+</a>
+</g>
+</g>
+<!-- 785137248 -->
+<g id="node9" class="node">
+<title>785137248</title>
+<g id="a_node9"><a xlink:title="jit(remat_none_loss)/jvp()/dot_general&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_layer:34:20&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture.&lt;locals&gt;.remat_none_loss:71:16&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture:85:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="#1565c0" stroke="#003c8f" points="441.13,-1394.69 34.13,-1394.69 34.13,-1344.69 441.13,-1344.69 441.13,-1394.69"/>
+<text text-anchor="start" x="184.13" y="-1380.49" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="white">dot_general.6</text>
+<text text-anchor="start" x="42.13" y="-1366.49" font-family="Times,serif" font-size="14.00" fill="white">lhs_contracting_dims={1}, rhs_contracting_dims={0}</text>
+<text text-anchor="start" x="171.13" y="-1352.49" font-family="Times,serif" font-size="14.00" fill="white">bf16[64,128]{1,0}</text>
+</a>
+</g>
+</g>
+<!-- 772832448&#45;&gt;785137248 -->
+<g id="edge8" class="edge">
+<title>772832448&#45;&gt;785137248</title>
+<g id="a_edge8"><a xlink:title="tanh.2 &#45;&gt; dot_general.6">
+<path fill="none" stroke="black" d="M473.37,-1437.59C432.73,-1426.06 378.28,-1410.61 331.95,-1397.46"/>
+<polygon fill="black" stroke="black" points="332.77,-1394.06 322.2,-1394.69 330.86,-1400.79 332.77,-1394.06"/>
+</a>
+</g>
+<text text-anchor="middle" x="341.94" y="-1387.81" font-family="Times,serif" font-size="14.00">0</text>
+</g>
+<!-- 784284064 -->
+<g id="node17" class="node">
+<title>784284064</title>
+<g id="a_node17"><a xlink:title="jit(remat_none_loss)/transpose(jvp())/dot_general&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_layer:34:20&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture.&lt;locals&gt;.remat_none_loss:71:16&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture:85:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="#1565c0" stroke="#003c8f" points="941.13,-922.69 534.13,-922.69 534.13,-872.69 941.13,-872.69 941.13,-922.69"/>
+<text text-anchor="start" x="684.13" y="-908.49" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="white">dot_general.7</text>
+<text text-anchor="start" x="542.13" y="-894.49" font-family="Times,serif" font-size="14.00" fill="white">lhs_contracting_dims={0}, rhs_contracting_dims={0}</text>
+<text text-anchor="start" x="666.63" y="-880.49" font-family="Times,serif" font-size="14.00" fill="white">bf16[128,128]{1,0}</text>
+</a>
+</g>
+</g>
+<!-- 772832448&#45;&gt;784284064 -->
+<g id="edge20" class="edge">
+<title>772832448&#45;&gt;784284064</title>
+<g id="a_edge20"><a xlink:title="tanh.2 &#45;&gt; dot_general.7">
+<path fill="none" stroke="black" d="M569.89,-1437.49C620.09,-1410.86 704.63,-1354.6 704.63,-1277.69 704.63,-1277.69 704.63,-1277.69 704.63,-1096.69 704.63,-1038.47 718.68,-971.91 728.45,-932.7"/>
+<polygon fill="black" stroke="black" points="731.87,-933.42 730.95,-922.86 725.09,-931.69 731.87,-933.42"/>
+</a>
+</g>
+<text text-anchor="middle" x="734.67" y="-938.81" font-family="Times,serif" font-size="14.00">1</text>
+</g>
+<!-- 786087296 -->
+<g id="node22" class="node">
+<title>786087296</title>
+<g id="a_node22"><a xlink:title="jit(remat_none_loss)/jvp()/sub&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_layer:34:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture.&lt;locals&gt;.remat_none_loss:71:16&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture:85:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="white" stroke="#9e9e9e" points="644.13,-1208.69 495.13,-1208.69 495.13,-1158.69 644.13,-1158.69 644.13,-1208.69"/>
+<text text-anchor="start" x="548.13" y="-1194.49" font-family="Times,serif" font-weight="bold" font-size="14.00">sub.2</text>
+<text text-anchor="start" x="539.13" y="-1180.49" font-family="Times,serif" font-size="14.00">subtract</text>
+<text text-anchor="start" x="503.13" y="-1166.49" font-family="Times,serif" font-size="14.00">bf16[64,128]{1,0}</text>
+</a>
+</g>
+</g>
+<!-- 772832448&#45;&gt;786087296 -->
+<g id="edge27" class="edge">
+<title>772832448&#45;&gt;786087296</title>
+<g id="a_edge27"><a xlink:title="tanh.2 &#45;&gt; sub.2">
+<path fill="none" stroke="black" d="M535.93,-1437.39C541.78,-1393.56 557.25,-1277.51 565.03,-1219.19"/>
+<polygon fill="black" stroke="black" points="568.53,-1219.37 566.39,-1209 561.59,-1218.45 568.53,-1219.37"/>
+</a>
+</g>
+<text text-anchor="middle" x="572.37" y="-1224.38" font-family="Times,serif" font-size="14.00">1</text>
+</g>
+<!-- 784273856 -->
+<g id="node24" class="node">
+<title>784273856</title>
+<g id="a_node24"><a xlink:title="jit(remat_none_loss)/transpose(jvp())/mul&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_layer:34:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture.&lt;locals&gt;.remat_none_loss:71:16&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture:85:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="white" stroke="#9e9e9e" points="567.13,-750.69 418.13,-750.69 418.13,-700.69 567.13,-700.69 567.13,-750.69"/>
+<text text-anchor="start" x="469.63" y="-736.49" font-family="Times,serif" font-weight="bold" font-size="14.00">mul.5</text>
+<text text-anchor="start" x="462.63" y="-722.49" font-family="Times,serif" font-size="14.00">multiply</text>
+<text text-anchor="start" x="426.13" y="-708.49" font-family="Times,serif" font-size="14.00">bf16[64,128]{1,0}</text>
+</a>
+</g>
+</g>
+<!-- 772832448&#45;&gt;784273856 -->
+<g id="edge31" class="edge">
+<title>772832448&#45;&gt;784273856</title>
+<g id="a_edge31"><a xlink:title="tanh.2 &#45;&gt; mul.5">
+<path fill="none" stroke="black" d="M528.11,-1437.49C512.25,-1386.43 467.63,-1231.01 467.63,-1098.69 467.63,-1098.69 467.63,-1098.69 467.63,-896.69 467.63,-849.11 477.33,-794.83 484.65,-760.67"/>
+<polygon fill="black" stroke="black" points="488.1,-761.26 486.83,-750.74 481.26,-759.76 488.1,-761.26"/>
+</a>
+</g>
+<text text-anchor="middle" x="491.19" y="-766.56" font-family="Times,serif" font-size="14.00">1</text>
+</g>
+<!-- 793113440 -->
+<g id="node8" class="node">
+<title>793113440</title>
+<g id="a_node8"><a xlink:title="jit(remat_none_loss)/jvp()/squeeze&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture.&lt;locals&gt;.remat_none_loss:71:26&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture:85:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="#c8e6c9" stroke="#97b498" points="316.63,-1480.69 158.63,-1480.69 158.63,-1430.69 316.63,-1430.69 316.63,-1480.69"/>
+<text text-anchor="start" x="198.13" y="-1466.49" font-family="Times,serif" font-weight="bold" font-size="14.00">squeeze.3</text>
+<text text-anchor="start" x="208.63" y="-1452.49" font-family="Times,serif" font-size="14.00">reshape</text>
+<text text-anchor="start" x="166.63" y="-1438.49" font-family="Times,serif" font-size="14.00">bf16[128,128]{1,0}</text>
+</a>
+</g>
+</g>
+<!-- 785141248&#45;&gt;793113440 -->
+<g id="edge7" class="edge">
+<title>785141248&#45;&gt;793113440</title>
+<g id="a_edge7"><a xlink:title="slice.3 &#45;&gt; squeeze.3">
+<path fill="none" stroke="black" d="M251.21,-1688.61C248.54,-1642.96 242.72,-1543.72 239.64,-1491.08"/>
+<polygon fill="black" stroke="black" points="243.12,-1490.68 239.04,-1480.9 236.13,-1491.09 243.12,-1490.68"/>
+</a>
+</g>
+</g>
+<!-- 793113440&#45;&gt;785137248 -->
+<g id="edge9" class="edge">
+<title>793113440&#45;&gt;785137248</title>
+<g id="a_edge9"><a xlink:title="squeeze.3 &#45;&gt; dot_general.6">
+<path fill="none" stroke="black" d="M237.63,-1430.4C237.63,-1422.47 237.63,-1413.52 237.63,-1405.01"/>
+<polygon fill="black" stroke="black" points="241.13,-1404.93 237.63,-1394.93 234.13,-1404.93 241.13,-1404.93"/>
+</a>
+</g>
+<text text-anchor="middle" x="246.08" y="-1409.36" font-family="Times,serif" font-size="14.00">1</text>
+</g>
+<!-- 788652896 -->
+<g id="node21" class="node">
+<title>788652896</title>
+<g id="a_node21"><a xlink:title="jit(remat_none_loss)/transpose(jvp())/dot_general&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_layer:34:20&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture.&lt;locals&gt;.remat_none_loss:71:16&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture:85:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="#1565c0" stroke="#003c8f" points="439.13,-922.69 32.13,-922.69 32.13,-872.69 439.13,-872.69 439.13,-922.69"/>
+<text text-anchor="start" x="182.13" y="-908.49" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="white">dot_general.8</text>
+<text text-anchor="start" x="40.13" y="-894.49" font-family="Times,serif" font-size="14.00" fill="white">lhs_contracting_dims={1}, rhs_contracting_dims={1}</text>
+<text text-anchor="start" x="169.13" y="-880.49" font-family="Times,serif" font-size="14.00" fill="white">bf16[64,128]{1,0}</text>
+</a>
+</g>
+</g>
+<!-- 793113440&#45;&gt;788652896 -->
+<g id="edge25" class="edge">
+<title>793113440&#45;&gt;788652896</title>
+<g id="a_edge25"><a xlink:title="squeeze.3 &#45;&gt; dot_general.8">
+<path fill="none" stroke="black" d="M158.54,-1452.34C113.01,-1446.69 58.32,-1431.82 24.63,-1394.69 -10.88,-1355.57 3.63,-1330.52 3.63,-1277.69 3.63,-1277.69 3.63,-1277.69 3.63,-1096.69 3.63,-1034.28 -12.31,-1004.92 29.63,-958.69 41.5,-945.61 56.05,-935.31 71.87,-927.22"/>
+<polygon fill="black" stroke="black" points="73.81,-930.17 81.32,-922.7 70.79,-923.85 73.81,-930.17"/>
+</a>
+</g>
+<text text-anchor="middle" x="68.61" y="-934.44" font-family="Times,serif" font-size="14.00">1</text>
+</g>
+<!-- 772513248 -->
+<g id="node10" class="node">
+<title>772513248</title>
+<g id="a_node10"><a xlink:title="jit(remat_none_loss)/jvp()/tanh&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_layer:34:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture.&lt;locals&gt;.remat_none_loss:71:16&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture:85:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="white" stroke="#9e9e9e" points="266.13,-1294.69 117.13,-1294.69 117.13,-1258.69 266.13,-1258.69 266.13,-1294.69"/>
+<text text-anchor="start" x="165.63" y="-1280.49" font-family="Times,serif" font-weight="bold" font-size="14.00">tanh.3</text>
+<text text-anchor="start" x="125.13" y="-1266.49" font-family="Times,serif" font-size="14.00">bf16[64,128]{1,0}</text>
+</a>
+</g>
+</g>
+<!-- 785137248&#45;&gt;772513248 -->
+<g id="edge10" class="edge">
+<title>785137248&#45;&gt;772513248</title>
+<g id="a_edge10"><a xlink:title="dot_general.6 &#45;&gt; tanh.3">
+<path fill="none" stroke="black" d="M225.3,-1344.31C219.02,-1331.89 211.38,-1316.77 204.97,-1304.08"/>
+<polygon fill="black" stroke="black" points="207.98,-1302.28 200.34,-1294.94 201.73,-1305.44 207.98,-1302.28"/>
+</a>
+</g>
+</g>
+<!-- 789358480 -->
+<g id="node11" class="node">
+<title>789358480</title>
+<g id="a_node11"><a xlink:title="jit(remat_none_loss)/jvp()/convert_element_type&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture.&lt;locals&gt;.remat_none_loss:72:23&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture:85:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="white" stroke="#9e9e9e" points="233.63,-1201.69 31.63,-1201.69 31.63,-1165.69 233.63,-1165.69 233.63,-1201.69"/>
+<text text-anchor="start" x="39.63" y="-1187.49" font-family="Times,serif" font-weight="bold" font-size="14.00">convert_element_type.1</text>
+<text text-anchor="start" x="70.63" y="-1173.49" font-family="Times,serif" font-size="14.00">f32[64,128]{1,0}</text>
+</a>
+</g>
+</g>
+<!-- 772513248&#45;&gt;789358480 -->
+<g id="edge11" class="edge">
+<title>772513248&#45;&gt;789358480</title>
+<g id="a_edge11"><a xlink:title="tanh.3 &#45;&gt; convert_element_type.1">
+<path fill="none" stroke="black" d="M180.53,-1258.58C171.71,-1244.98 159.24,-1225.74 149.23,-1210.31"/>
+<polygon fill="black" stroke="black" points="152.05,-1208.22 143.67,-1201.73 146.18,-1212.03 152.05,-1208.22"/>
+</a>
+</g>
+</g>
+<!-- 788652112 -->
+<g id="node14" class="node">
+<title>788652112</title>
+<g id="a_node14"><a xlink:title="jit(remat_none_loss)/jvp()/sub&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_layer:34:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture.&lt;locals&gt;.remat_none_loss:71:16&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture:85:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="white" stroke="#9e9e9e" points="438.13,-1208.69 289.13,-1208.69 289.13,-1158.69 438.13,-1158.69 438.13,-1208.69"/>
+<text text-anchor="start" x="342.13" y="-1194.49" font-family="Times,serif" font-weight="bold" font-size="14.00">sub.3</text>
+<text text-anchor="start" x="333.13" y="-1180.49" font-family="Times,serif" font-size="14.00">subtract</text>
+<text text-anchor="start" x="297.13" y="-1166.49" font-family="Times,serif" font-size="14.00">bf16[64,128]{1,0}</text>
+</a>
+</g>
+</g>
+<!-- 772513248&#45;&gt;788652112 -->
+<g id="edge14" class="edge">
+<title>772513248&#45;&gt;788652112</title>
+<g id="a_edge14"><a xlink:title="tanh.3 &#45;&gt; sub.3">
+<path fill="none" stroke="black" d="M223.98,-1258.58C247.95,-1245.89 281.18,-1228.31 309.21,-1213.48"/>
+<polygon fill="black" stroke="black" points="310.91,-1216.54 318.11,-1208.77 307.64,-1210.36 310.91,-1216.54"/>
+</a>
+</g>
+<text text-anchor="middle" x="306.04" y="-1221.02" font-family="Times,serif" font-size="14.00">1</text>
+</g>
+<!-- 787526128 -->
+<g id="node15" class="node">
+<title>787526128</title>
+<g id="a_node15"><a xlink:title="jit(remat_none_loss)/transpose(jvp())/mul&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_layer:34:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture.&lt;locals&gt;.remat_none_loss:71:16&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture:85:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="white" stroke="#9e9e9e" points="336.13,-1122.69 187.13,-1122.69 187.13,-1072.69 336.13,-1072.69 336.13,-1122.69"/>
+<text text-anchor="start" x="238.63" y="-1108.49" font-family="Times,serif" font-weight="bold" font-size="14.00">mul.3</text>
+<text text-anchor="start" x="231.63" y="-1094.49" font-family="Times,serif" font-size="14.00">multiply</text>
+<text text-anchor="start" x="195.13" y="-1080.49" font-family="Times,serif" font-size="14.00">bf16[64,128]{1,0}</text>
+</a>
+</g>
+</g>
+<!-- 772513248&#45;&gt;787526128 -->
+<g id="edge16" class="edge">
+<title>772513248&#45;&gt;787526128</title>
+<g id="a_edge16"><a xlink:title="tanh.3 &#45;&gt; mul.3">
+<path fill="none" stroke="black" d="M208.52,-1258.45C219.97,-1245.73 234.45,-1227.46 242.63,-1208.69 253.12,-1184.61 257.82,-1155.2 259.93,-1132.85"/>
+<polygon fill="black" stroke="black" points="263.43,-1133.06 260.75,-1122.81 256.45,-1132.49 263.43,-1133.06"/>
+</a>
+</g>
+<text text-anchor="middle" x="267.7" y="-1137.86" font-family="Times,serif" font-size="14.00">1</text>
+</g>
+<!-- 784512800 -->
+<g id="node12" class="node">
+<title>784512800</title>
+<g id="a_node12"><a xlink:title="jit(remat_none_loss)/jvp()/reduce_sum&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture.&lt;locals&gt;.remat_none_loss:72:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture:85:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="#e1bee7" stroke="#af8eb5" points="210.63,-1036.69 38.63,-1036.69 38.63,-958.69 210.63,-958.69 210.63,-1036.69"/>
+<text text-anchor="start" x="70.13" y="-1022.49" font-family="Times,serif" font-weight="bold" font-size="14.00">reduce_sum.7</text>
+<text text-anchor="start" x="46.63" y="-1008.49" font-family="Times,serif" font-size="14.00">Subcomputation: </text>
+<text text-anchor="start" x="173.63" y="-1008.49" font-family="Times,serif" font-weight="bold" font-size="14.00">add</text>
+<text text-anchor="start" x="57.63" y="-994.49" font-family="Times,serif" font-size="14.00">dimensions={0,1}</text>
+<text text-anchor="start" x="107.63" y="-980.49" font-family="Times,serif" font-size="14.00">f32[]</text>
+<text text-anchor="start" x="50.63" y="-966.49" font-family="Times,serif" font-weight="bold" font-size="14.00">operand 1</text>
+<text text-anchor="start" x="129.63" y="-966.49" font-family="Times,serif" font-size="14.00"> = f32[] 0</text>
+</a>
+</g>
+</g>
+<!-- 789358480&#45;&gt;784512800 -->
+<g id="edge12" class="edge">
+<title>789358480&#45;&gt;784512800</title>
+<g id="a_edge12"><a xlink:title="convert_element_type.1 &#45;&gt; reduce_sum.7">
+<path fill="none" stroke="black" d="M131.87,-1165.38C130.71,-1138.53 128.42,-1085.87 126.72,-1046.89"/>
+<polygon fill="black" stroke="black" points="130.21,-1046.63 126.28,-1036.8 123.22,-1046.94 130.21,-1046.63"/>
+</a>
+</g>
+<text text-anchor="middle" x="135.51" y="-1050.84" font-family="Times,serif" font-size="14.00">0</text>
+</g>
+<!-- 788078464 -->
+<g id="node31" class="node">
+<title>788078464</title>
+<polygon fill="white" stroke="#9e9e9e" points="222.13,-148.69 37.13,-148.69 37.13,-112.69 222.13,-112.69 222.13,-148.69"/>
+<text text-anchor="start" x="101.63" y="-134.49" font-family="Times,serif" font-weight="bold" font-size="14.00">tuple.1</text>
+<text text-anchor="start" x="45.13" y="-120.49" font-family="Times,serif" font-size="14.00">(f32[], bf16[2,128,128])</text>
+</g>
+<!-- 784512800&#45;&gt;788078464 -->
+<g id="edge41" class="edge">
+<title>784512800&#45;&gt;788078464</title>
+<g id="a_edge41"><a xlink:title="reduce_sum.7 &#45;&gt; tuple.1">
+<path fill="none" stroke="black" d="M56.25,-958.5C43.32,-948.42 31.19,-936.43 22.63,-922.69 -3.61,-880.58 3.63,-862.31 3.63,-812.69 3.63,-812.69 3.63,-812.69 3.63,-287.69 3.63,-230.16 56.13,-181.9 93.35,-154.92"/>
+<polygon fill="none" stroke="black" points="95.81,-157.46 101.97,-148.84 91.78,-151.74 95.81,-157.46"/>
+</a>
+</g>
+<text text-anchor="middle" x="92.02" y="-162.49" font-family="Times,serif" font-size="14.00">0</text>
+</g>
+<!-- 791864992 -->
+<g id="node13" class="node">
+<title>791864992</title>
+<polygon fill="#fff9c4" stroke="#cbc693" points="443.13,-1308.69 284.13,-1308.69 284.13,-1244.69 443.13,-1244.69 443.13,-1308.69"/>
+<text text-anchor="start" x="317.63" y="-1294.49" font-family="Times,serif" font-weight="bold" font-size="14.00">broadcast.1</text>
+<text text-anchor="start" x="307.63" y="-1280.49" font-family="Times,serif" font-size="14.00">dimensions={}</text>
+<text text-anchor="start" x="297.13" y="-1266.49" font-family="Times,serif" font-size="14.00">bf16[64,128]{1,0}</text>
+<text text-anchor="start" x="292.13" y="-1252.49" font-family="Times,serif" font-weight="bold" font-size="14.00">operand</text>
+<text text-anchor="start" x="357.13" y="-1252.49" font-family="Times,serif" font-size="14.00"> = bf16[] 1</text>
+</g>
+<!-- 791864992&#45;&gt;788652112 -->
+<g id="edge13" class="edge">
+<title>791864992&#45;&gt;788652112</title>
+<g id="a_edge13"><a xlink:title="broadcast.1 &#45;&gt; sub.3">
+<path fill="none" stroke="black" d="M363.63,-1244.63C363.63,-1236.38 363.63,-1227.42 363.63,-1219"/>
+<polygon fill="black" stroke="black" points="367.13,-1218.72 363.63,-1208.72 360.13,-1218.72 367.13,-1218.72"/>
+</a>
+</g>
+<text text-anchor="middle" x="372.08" y="-1223.15" font-family="Times,serif" font-size="14.00">0</text>
+</g>
+<!-- 791864992&#45;&gt;786087296 -->
+<g id="edge26" class="edge">
+<title>791864992&#45;&gt;786087296</title>
+<g id="a_edge26"><a xlink:title="broadcast.1 &#45;&gt; sub.2">
+<path fill="none" stroke="black" d="M433.94,-1244.63C457.3,-1234.31 483.16,-1222.89 505.98,-1212.81"/>
+<polygon fill="black" stroke="black" points="507.49,-1215.97 515.23,-1208.72 504.67,-1209.56 507.49,-1215.97"/>
+</a>
+</g>
+<text text-anchor="middle" x="502.06" y="-1220.08" font-family="Times,serif" font-size="14.00">0</text>
+</g>
+<!-- 788652112&#45;&gt;787526128 -->
+<g id="edge15" class="edge">
+<title>788652112&#45;&gt;787526128</title>
+<g id="a_edge15"><a xlink:title="sub.3 &#45;&gt; mul.3">
+<path fill="none" stroke="black" d="M334.4,-1158.62C323.3,-1149.48 310.51,-1138.95 298.78,-1129.29"/>
+<polygon fill="black" stroke="black" points="300.8,-1126.42 290.86,-1122.77 296.35,-1131.83 300.8,-1126.42"/>
+</a>
+</g>
+<text text-anchor="middle" x="310.22" y="-1124.07" font-family="Times,serif" font-size="14.00">0</text>
+</g>
+<!-- 783107376 -->
+<g id="node16" class="node">
+<title>783107376</title>
+<g id="a_node16"><a xlink:title="jit(remat_none_loss)/transpose(jvp())/add_any&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_layer:34:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture.&lt;locals&gt;.remat_none_loss:71:16&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture:85:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="white" stroke="#9e9e9e" points="408.13,-1015.69 259.13,-1015.69 259.13,-979.69 408.13,-979.69 408.13,-1015.69"/>
+<text text-anchor="start" x="295.63" y="-1001.49" font-family="Times,serif" font-weight="bold" font-size="14.00">add_any.3</text>
+<text text-anchor="start" x="267.13" y="-987.49" font-family="Times,serif" font-size="14.00">bf16[64,128]{1,0}</text>
+</a>
+</g>
+</g>
+<!-- 788652112&#45;&gt;783107376 -->
+<g id="edge17" class="edge">
+<title>788652112&#45;&gt;783107376</title>
+<g id="a_edge17"><a xlink:title="sub.3 &#45;&gt; add_any.3">
+<path fill="none" stroke="black" d="M359.7,-1158.64C354.13,-1124.47 343.96,-1062.06 338.1,-1026.14"/>
+<polygon fill="black" stroke="black" points="341.49,-1025.2 336.43,-1015.9 334.59,-1026.33 341.49,-1025.2"/>
+</a>
+</g>
+<text text-anchor="middle" x="347.69" y="-1028.73" font-family="Times,serif" font-size="14.00">0</text>
+</g>
+<!-- 787526128&#45;&gt;783107376 -->
+<g id="edge18" class="edge">
+<title>787526128&#45;&gt;783107376</title>
+<g id="a_edge18"><a xlink:title="mul.3 &#45;&gt; add_any.3">
+<path fill="none" stroke="black" d="M279.42,-1072.47C290.21,-1057.78 303.97,-1039.06 314.92,-1024.15"/>
+<polygon fill="black" stroke="black" points="317.9,-1026.01 321,-1015.88 312.26,-1021.86 317.9,-1026.01"/>
+</a>
+</g>
+<text text-anchor="middle" x="317.08" y="-1031.79" font-family="Times,serif" font-size="14.00">1</text>
+</g>
+<!-- 783107376&#45;&gt;784284064 -->
+<g id="edge19" class="edge">
+<title>783107376&#45;&gt;784284064</title>
+<g id="a_edge19"><a xlink:title="add_any.3 &#45;&gt; dot_general.7">
+<path fill="none" stroke="black" d="M404,-979.62C465.96,-964.59 557.21,-942.46 628.61,-925.14"/>
+<polygon fill="black" stroke="black" points="629.66,-928.48 638.55,-922.73 628.01,-921.68 629.66,-928.48"/>
+</a>
+</g>
+<text text-anchor="middle" x="622.93" y="-931.51" font-family="Times,serif" font-size="14.00">0</text>
+</g>
+<!-- 783107376&#45;&gt;788652896 -->
+<g id="edge24" class="edge">
+<title>783107376&#45;&gt;788652896</title>
+<g id="a_edge24"><a xlink:title="add_any.3 &#45;&gt; dot_general.8">
+<path fill="none" stroke="black" d="M316.56,-979.62C302.95,-966.02 283.54,-946.61 267.14,-930.2"/>
+<polygon fill="black" stroke="black" points="269.39,-927.51 259.84,-922.91 264.44,-932.46 269.39,-927.51"/>
+</a>
+</g>
+<text text-anchor="middle" x="278.64" y="-926.05" font-family="Times,serif" font-size="14.00">0</text>
+</g>
+<!-- 782086000 -->
+<g id="node18" class="node">
+<title>782086000</title>
+<g id="a_node18"><a xlink:title="jit(remat_none_loss)/transpose(jvp())/transpose&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_layer:34:20&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture.&lt;locals&gt;.remat_none_loss:71:16&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture:85:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="#c8e6c9" stroke="#97b498" points="819.63,-836.69 661.63,-836.69 661.63,-786.69 819.63,-786.69 819.63,-836.69"/>
+<text text-anchor="start" x="694.13" y="-822.49" font-family="Times,serif" font-weight="bold" font-size="14.00">transpose.2</text>
+<text text-anchor="start" x="673.63" y="-808.49" font-family="Times,serif" font-size="14.00">dimensions={1,0}</text>
+<text text-anchor="start" x="669.63" y="-794.49" font-family="Times,serif" font-size="14.00">bf16[128,128]{0,1}</text>
+</a>
+</g>
+</g>
+<!-- 784284064&#45;&gt;782086000 -->
+<g id="edge21" class="edge">
+<title>784284064&#45;&gt;782086000</title>
+<g id="a_edge21"><a xlink:title="dot_general.7 &#45;&gt; transpose.2">
+<path fill="none" stroke="black" d="M738.49,-872.4C738.78,-864.47 739.1,-855.52 739.4,-847.01"/>
+<polygon fill="black" stroke="black" points="742.9,-847.05 739.76,-836.93 735.91,-846.8 742.9,-847.05"/>
+</a>
+</g>
+</g>
+<!-- 783088208 -->
+<g id="node19" class="node">
+<title>783088208</title>
+<g id="a_node19"><a xlink:title="jit(remat_none_loss)/transpose(jvp())/broadcast_in_dim&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture.&lt;locals&gt;.remat_none_loss:71:26&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture:85:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="#c8e6c9" stroke="#97b498" points="820.13,-750.69 635.13,-750.69 635.13,-700.69 820.13,-700.69 820.13,-750.69"/>
+<text text-anchor="start" x="652.13" y="-736.49" font-family="Times,serif" font-weight="bold" font-size="14.00">broadcast_in_dim.2</text>
+<text text-anchor="start" x="698.63" y="-722.49" font-family="Times,serif" font-size="14.00">reshape</text>
+<text text-anchor="start" x="643.13" y="-708.49" font-family="Times,serif" font-size="14.00">bf16[1,128,128]{2,1,0}</text>
+</a>
+</g>
+</g>
+<!-- 782086000&#45;&gt;783088208 -->
+<g id="edge22" class="edge">
+<title>782086000&#45;&gt;783088208</title>
+<g id="a_edge22"><a xlink:title="transpose.2 &#45;&gt; broadcast_in_dim.2">
+<path fill="none" stroke="black" d="M736.87,-786.4C735.64,-778.47 734.25,-769.52 732.94,-761.01"/>
+<polygon fill="black" stroke="black" points="736.37,-760.28 731.38,-750.93 729.45,-761.35 736.37,-760.28"/>
+</a>
+</g>
+</g>
+<!-- 783101920 -->
+<g id="node20" class="node">
+<title>783101920</title>
+<g id="a_node20"><a xlink:title="jit(remat_none_loss)/transpose(jvp())/pad&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture.&lt;locals&gt;.remat_none_loss:71:26&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture:85:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="white" stroke="#9e9e9e" points="560.13,-592.69 375.13,-592.69 375.13,-528.69 560.13,-528.69 560.13,-592.69"/>
+<text text-anchor="start" x="446.13" y="-578.49" font-family="Times,serif" font-weight="bold" font-size="14.00">pad.2</text>
+<text text-anchor="start" x="387.13" y="-564.49" font-family="Times,serif" font-size="14.00">padding=1_0x0_0x0_0</text>
+<text text-anchor="start" x="383.13" y="-550.49" font-family="Times,serif" font-size="14.00">bf16[2,128,128]{2,1,0}</text>
+<text text-anchor="start" x="389.13" y="-536.49" font-family="Times,serif" font-weight="bold" font-size="14.00">operand 1</text>
+<text text-anchor="start" x="468.13" y="-536.49" font-family="Times,serif" font-size="14.00"> = bf16[] 0</text>
+</a>
+</g>
+</g>
+<!-- 783088208&#45;&gt;783101920 -->
+<g id="edge23" class="edge">
+<title>783088208&#45;&gt;783101920</title>
+<g id="a_edge23"><a xlink:title="broadcast_in_dim.2 &#45;&gt; pad.2">
+<path fill="none" stroke="black" d="M721.09,-700.41C714.05,-678.68 700.75,-647.45 678.63,-628.69 676.26,-626.69 622.73,-609.7 570.18,-593.33"/>
+<polygon fill="black" stroke="black" points="570.98,-589.92 560.39,-590.29 568.9,-596.6 570.98,-589.92"/>
+</a>
+</g>
+<text text-anchor="middle" x="580.21" y="-583.9" font-family="Times,serif" font-size="14.00">0</text>
+</g>
+<!-- 787354384 -->
+<g id="node30" class="node">
+<title>787354384</title>
+<g id="a_node30"><a xlink:title="jit(remat_none_loss)/transpose(jvp())/add_any&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture.&lt;locals&gt;.remat_none_loss:71:26&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture:85:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="white" stroke="#9e9e9e" points="560.13,-220.69 375.13,-220.69 375.13,-184.69 560.13,-184.69 560.13,-220.69"/>
+<text text-anchor="start" x="429.63" y="-206.49" font-family="Times,serif" font-weight="bold" font-size="14.00">add_any.5</text>
+<text text-anchor="start" x="383.13" y="-192.49" font-family="Times,serif" font-size="14.00">bf16[2,128,128]{2,1,0}</text>
+</a>
+</g>
+</g>
+<!-- 783101920&#45;&gt;787354384 -->
+<g id="edge39" class="edge">
+<title>783101920&#45;&gt;787354384</title>
+<g id="a_edge39"><a xlink:title="pad.2 &#45;&gt; add_any.5">
+<path fill="none" stroke="black" d="M467.63,-528.41C467.63,-459.61 467.63,-296.08 467.63,-231.05"/>
+<polygon fill="black" stroke="black" points="471.13,-230.79 467.63,-220.79 464.13,-230.79 471.13,-230.79"/>
+</a>
+</g>
+<text text-anchor="middle" x="476.08" y="-235.21" font-family="Times,serif" font-size="14.00">0</text>
+</g>
+<!-- 786345760 -->
+<g id="node23" class="node">
+<title>786345760</title>
+<g id="a_node23"><a xlink:title="jit(remat_none_loss)/transpose(jvp())/mul&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_layer:34:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture.&lt;locals&gt;.remat_none_loss:71:16&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture:85:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="white" stroke="#9e9e9e" points="644.13,-836.69 495.13,-836.69 495.13,-786.69 644.13,-786.69 644.13,-836.69"/>
+<text text-anchor="start" x="546.63" y="-822.49" font-family="Times,serif" font-weight="bold" font-size="14.00">mul.4</text>
+<text text-anchor="start" x="539.63" y="-808.49" font-family="Times,serif" font-size="14.00">multiply</text>
+<text text-anchor="start" x="503.13" y="-794.49" font-family="Times,serif" font-size="14.00">bf16[64,128]{1,0}</text>
+</a>
+</g>
+</g>
+<!-- 788652896&#45;&gt;786345760 -->
+<g id="edge28" class="edge">
+<title>788652896&#45;&gt;786345760</title>
+<g id="a_edge28"><a xlink:title="dot_general.8 &#45;&gt; mul.4">
+<path fill="none" stroke="black" d="M331.34,-872.62C379.84,-860.42 438.21,-845.74 485.05,-833.96"/>
+<polygon fill="black" stroke="black" points="486.01,-837.33 494.86,-831.5 484.31,-830.54 486.01,-837.33"/>
+</a>
+</g>
+<text text-anchor="middle" x="479.34" y="-840.41" font-family="Times,serif" font-size="14.00">0</text>
+</g>
+<!-- 786087296&#45;&gt;786345760 -->
+<g id="edge29" class="edge">
+<title>786087296&#45;&gt;786345760</title>
+<g id="a_edge29"><a xlink:title="sub.2 &#45;&gt; mul.4">
+<path fill="none" stroke="black" d="M558.88,-1158.32C537,-1105.14 492.05,-975.24 525.63,-872.69 528.82,-862.93 534.27,-853.45 540.28,-845.01"/>
+<polygon fill="black" stroke="black" points="543.14,-847.03 546.4,-836.95 537.56,-842.8 543.14,-847.03"/>
+</a>
+</g>
+<text text-anchor="middle" x="542.17" y="-852.8" font-family="Times,serif" font-size="14.00">1</text>
+</g>
+<!-- 786345760&#45;&gt;784273856 -->
+<g id="edge30" class="edge">
+<title>786345760&#45;&gt;784273856</title>
+<g id="a_edge30"><a xlink:title="mul.4 &#45;&gt; mul.5">
+<path fill="none" stroke="black" d="M547.35,-786.4C539.37,-777.69 530.25,-767.74 521.78,-758.49"/>
+<polygon fill="black" stroke="black" points="524.18,-755.94 514.85,-750.93 519.02,-760.67 524.18,-755.94"/>
+</a>
+</g>
+<text text-anchor="middle" x="533.33" y="-754.89" font-family="Times,serif" font-size="14.00">0</text>
+</g>
+<!-- 782952400 -->
+<g id="node25" class="node">
+<title>782952400</title>
+<g id="a_node25"><a xlink:title="jit(remat_none_loss)/transpose(jvp())/add_any&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_layer:34:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture.&lt;locals&gt;.remat_none_loss:71:16&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture:85:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="white" stroke="#9e9e9e" points="669.13,-664.69 520.13,-664.69 520.13,-628.69 669.13,-628.69 669.13,-664.69"/>
+<text text-anchor="start" x="556.63" y="-650.49" font-family="Times,serif" font-weight="bold" font-size="14.00">add_any.4</text>
+<text text-anchor="start" x="528.13" y="-636.49" font-family="Times,serif" font-size="14.00">bf16[64,128]{1,0}</text>
+</a>
+</g>
+</g>
+<!-- 786345760&#45;&gt;782952400 -->
+<g id="edge32" class="edge">
+<title>786345760&#45;&gt;782952400</title>
+<g id="a_edge32"><a xlink:title="mul.4 &#45;&gt; add_any.4">
+<path fill="none" stroke="black" d="M573.31,-786.64C577.88,-756.86 585.65,-706.24 590.43,-675.02"/>
+<polygon fill="black" stroke="black" points="593.94,-675.26 591.99,-664.85 587.02,-674.2 593.94,-675.26"/>
+</a>
+</g>
+<text text-anchor="middle" x="597.6" y="-680.35" font-family="Times,serif" font-size="14.00">0</text>
+</g>
+<!-- 784273856&#45;&gt;782952400 -->
+<g id="edge33" class="edge">
+<title>784273856&#45;&gt;782952400</title>
+<g id="a_edge33"><a xlink:title="mul.5 &#45;&gt; add_any.4">
+<path fill="none" stroke="black" d="M524.62,-700.54C537.06,-691.15 551.25,-680.44 563.6,-671.12"/>
+<polygon fill="black" stroke="black" points="565.93,-673.74 571.8,-664.92 561.71,-668.15 565.93,-673.74"/>
+</a>
+</g>
+<text text-anchor="middle" x="562.43" y="-678.89" font-family="Times,serif" font-size="14.00">1</text>
+</g>
+<!-- 782952400&#45;&gt;788638912 -->
+<g id="edge34" class="edge">
+<title>782952400&#45;&gt;788638912</title>
+<g id="a_edge34"><a xlink:title="add_any.4 &#45;&gt; dot_general.9">
+<path fill="none" stroke="black" d="M632.92,-628.49C657.59,-617.41 690.25,-602.74 718.68,-589.97"/>
+<polygon fill="black" stroke="black" points="720.46,-593.01 728.14,-585.72 717.59,-586.62 720.46,-593.01"/>
+</a>
+</g>
+<text text-anchor="middle" x="715.07" y="-597.15" font-family="Times,serif" font-size="14.00">0</text>
+</g>
+<!-- 790991392 -->
+<g id="node27" class="node">
+<title>790991392</title>
+<g id="a_node27"><a xlink:title="jit(remat_none_loss)/transpose(jvp())/transpose&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_layer:34:20&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture.&lt;locals&gt;.remat_none_loss:71:16&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture:85:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="#c8e6c9" stroke="#97b498" points="811.63,-492.69 653.63,-492.69 653.63,-442.69 811.63,-442.69 811.63,-492.69"/>
+<text text-anchor="start" x="686.13" y="-478.49" font-family="Times,serif" font-weight="bold" font-size="14.00">transpose.3</text>
+<text text-anchor="start" x="665.63" y="-464.49" font-family="Times,serif" font-size="14.00">dimensions={1,0}</text>
+<text text-anchor="start" x="661.63" y="-450.49" font-family="Times,serif" font-size="14.00">bf16[128,128]{0,1}</text>
+</a>
+</g>
+</g>
+<!-- 788638912&#45;&gt;790991392 -->
+<g id="edge36" class="edge">
+<title>788638912&#45;&gt;790991392</title>
+<g id="a_edge36"><a xlink:title="dot_general.9 &#45;&gt; transpose.3">
+<path fill="none" stroke="black" d="M768.49,-535.31C762.96,-525.02 756.43,-512.89 750.46,-501.82"/>
+<polygon fill="black" stroke="black" points="753.45,-499.98 745.62,-492.83 747.28,-503.3 753.45,-499.98"/>
+</a>
+</g>
+</g>
+<!-- 786634528 -->
+<g id="node28" class="node">
+<title>786634528</title>
+<g id="a_node28"><a xlink:title="jit(remat_none_loss)/transpose(jvp())/broadcast_in_dim&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture.&lt;locals&gt;.remat_none_loss:71:26&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture:85:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="#c8e6c9" stroke="#97b498" points="777.13,-406.69 592.13,-406.69 592.13,-356.69 777.13,-356.69 777.13,-406.69"/>
+<text text-anchor="start" x="609.13" y="-392.49" font-family="Times,serif" font-weight="bold" font-size="14.00">broadcast_in_dim.3</text>
+<text text-anchor="start" x="655.63" y="-378.49" font-family="Times,serif" font-size="14.00">reshape</text>
+<text text-anchor="start" x="600.13" y="-364.49" font-family="Times,serif" font-size="14.00">bf16[1,128,128]{2,1,0}</text>
+</a>
+</g>
+</g>
+<!-- 790991392&#45;&gt;786634528 -->
+<g id="edge37" class="edge">
+<title>790991392&#45;&gt;786634528</title>
+<g id="a_edge37"><a xlink:title="transpose.3 &#45;&gt; broadcast_in_dim.3">
+<path fill="none" stroke="black" d="M718.74,-442.4C714.02,-434.13 708.65,-424.73 703.59,-415.89"/>
+<polygon fill="black" stroke="black" points="706.48,-413.88 698.48,-406.93 700.4,-417.35 706.48,-413.88"/>
+</a>
+</g>
+</g>
+<!-- 788652656 -->
+<g id="node29" class="node">
+<title>788652656</title>
+<g id="a_node29"><a xlink:title="jit(remat_none_loss)/transpose(jvp())/pad&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture.&lt;locals&gt;.remat_none_loss:71:26&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:remat_fixture:85:11&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="white" stroke="#9e9e9e" points="729.13,-320.69 544.13,-320.69 544.13,-256.69 729.13,-256.69 729.13,-320.69"/>
+<text text-anchor="start" x="615.13" y="-306.49" font-family="Times,serif" font-weight="bold" font-size="14.00">pad.3</text>
+<text text-anchor="start" x="556.13" y="-292.49" font-family="Times,serif" font-size="14.00">padding=0_1x0_0x0_0</text>
+<text text-anchor="start" x="552.13" y="-278.49" font-family="Times,serif" font-size="14.00">bf16[2,128,128]{2,1,0}</text>
+<text text-anchor="start" x="558.13" y="-264.49" font-family="Times,serif" font-weight="bold" font-size="14.00">operand 1</text>
+<text text-anchor="start" x="637.13" y="-264.49" font-family="Times,serif" font-size="14.00"> = bf16[] 0</text>
+</a>
+</g>
+</g>
+<!-- 786634528&#45;&gt;788652656 -->
+<g id="edge38" class="edge">
+<title>786634528&#45;&gt;788652656</title>
+<g id="a_edge38"><a xlink:title="broadcast_in_dim.3 &#45;&gt; pad.3">
+<path fill="none" stroke="black" d="M671.76,-356.31C667.47,-348.17 662.57,-338.88 657.82,-329.87"/>
+<polygon fill="black" stroke="black" points="660.91,-328.22 653.15,-321.01 654.72,-331.49 660.91,-328.22"/>
+</a>
+</g>
+<text text-anchor="middle" x="669.08" y="-329.4" font-family="Times,serif" font-size="14.00">0</text>
+</g>
+<!-- 788652656&#45;&gt;787354384 -->
+<g id="edge40" class="edge">
+<title>788652656&#45;&gt;787354384</title>
+<g id="a_edge40"><a xlink:title="pad.3 &#45;&gt; add_any.5">
+<path fill="none" stroke="black" d="M574.18,-256.65C553.17,-246.21 530.2,-234.8 510.99,-225.25"/>
+<polygon fill="black" stroke="black" points="512.4,-222.04 501.89,-220.72 509.28,-228.31 512.4,-222.04"/>
+</a>
+</g>
+<text text-anchor="middle" x="521.88" y="-217.52" font-family="Times,serif" font-size="14.00">1</text>
+</g>
+<!-- 787354384&#45;&gt;788078464 -->
+<g id="edge42" class="edge">
+<title>787354384&#45;&gt;788078464</title>
+<g id="a_edge42"><a xlink:title="add_any.5 &#45;&gt; tuple.1">
+<path fill="none" stroke="black" d="M385.37,-184.66C336,-174.43 273.08,-161.4 222,-150.82"/>
+<polygon fill="black" stroke="black" points="222.46,-147.34 211.95,-148.74 221.04,-154.2 222.46,-147.34"/>
+</a>
+</g>
+<text text-anchor="middle" x="231.42" y="-140.44" font-family="Times,serif" font-size="14.00">1</text>
+</g>
+<!-- cluster_790018416 -->
+<g id="node32" class="node">
+<title>cluster_790018416</title>
+<g id="a_node32"><a xlink:title=" ">
+<ellipse fill="#bcaaa4" stroke="#8c7b75" cx="129.63" cy="-38.35" rx="38.19" ry="38.19"/>
+<text text-anchor="start" x="108.13" y="-34.65" font-family="Times,serif" font-size="14.00">ROOT</text>
+</a>
+</g>
+</g>
+<!-- 788078464&#45;&gt;cluster_790018416 -->
+<g id="edge43" class="edge">
+<title>788078464&#45;&gt;cluster_790018416</title>
+<g id="a_edge43"><a xlink:title=" ">
+<path fill="none" stroke="black" d="M129.63,-112.27C129.63,-104.97 129.63,-96.09 129.63,-87.07"/>
+<polygon fill="black" stroke="black" points="133.13,-86.91 129.63,-76.91 126.13,-86.91 133.13,-86.91"/>
+</a>
+</g>
+</g>
+</g>
+</svg>

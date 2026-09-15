@@ -48,6 +48,21 @@ MI300X = {
     "rccl_realised_bytes_per_s": 320e9,
 }
 
+MI355X = {
+    "cus": 256,
+    "clock_ghz": 2.40,
+    "bf16_flops": 2516.6e12,
+    "fp16_flops": 2516.6e12,
+    "fp8_flops": 5033.2e12,
+    "mxfp4_flops": 10066.3e12,
+    "fp32_flops": 157.3e12,
+    "hbm_bytes_per_s": 8.0e12,
+    "hbm_bytes": 288 * 1024**3,
+    "xgmi_links": 7,
+    "xgmi_link_unidir_bytes_per_s": 76.8e9,
+    "xgmi_egress_unidir_bytes_per_s": 537.6e9,
+}
+
 
 @dataclass
 class Measurement:
@@ -184,6 +199,7 @@ class Run:
         tag: str | None = None,
         root: str | Path | None = None,
         notes: dict[str, Any] | None = None,
+        constants: dict[str, Any] | None = None,
         freeze: bool = True,
     ):
         self.workload = workload
@@ -196,6 +212,7 @@ class Run:
         self.hlo_dir = self.dir / "hlo"
         self.measurements: list[Measurement] = []
         self.notes: dict[str, Any] = dict(notes or {})
+        self.constants = dict(constants or MI300X)
         self._started = time.time()
         self._freeze = freeze
         _env.write(self.dir, extra={"workload": workload, "tag": tag}, freeze=freeze)
@@ -245,13 +262,19 @@ class Run:
 
     def finish(self) -> Path:
         """Write results.json and re-read the GPU state for the clocks section."""
+        warmups = sorted({m.warmup for m in self.measurements})
+        repeats = sorted({m.repeats for m in self.measurements})
         payload = {
             "workload": self.workload,
             "tag": self.tag,
             "finished_at": datetime.now(timezone.utc).isoformat(),
             "wall_seconds": time.time() - self._started,
-            "protocol": {"warmup": WARMUP, "repeats": REPEATS, "statistic": "median"},
-            "constants": MI300X,
+            "protocol": {
+                "warmup": warmups[0] if len(warmups) == 1 else warmups,
+                "repeats": repeats[0] if len(repeats) == 1 else repeats,
+                "statistic": "median",
+            },
+            "constants": self.constants,
             "notes": self.notes,
             "measurements": [asdict(m) for m in self.measurements],
         }

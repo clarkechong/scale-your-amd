@@ -1,0 +1,44 @@
+Rocprofiler-Compute version: 3.7.0
+Profiler choice: rocprofiler-sdk
+Output directory: /home/clchong/work/scale-your-amd/runs/ch3-rocprof-compute
+Target: MI355
+Command: python3 -m bench.transformer_block --strategy dp --devices 1 --tokens 2048 --layers 1 --warmup 10 --repeats 1 --no-freeze --tag ch3-rocprof-compute
+Kernel Selection: ['Cijk_Alik_Bljk_BBS']
+Dispatch Selection: ['1']
+Filtered sections: All
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Collecting Performance Counters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Using native collector: /opt/venv/lib/python3.12/site-packages/_rocm_profiler/lib/rocprofiler-compute/librocprofiler-compute-tool.so
+Using native counter collection tool: /opt/venv/lib/python3.12/site-packages/_rocm_profiler/lib/rocprofiler-compute/librocprofiler-compute-tool.so
+[profiling] Iteration multiplexing: Disabled
+[Run 1/20][Approximate profiling time left: pending first measurement...]
+[profiling] Current input file: runs/ch3-rocprof-compute/perfmon/pmc_perf_0.yaml
+   |-> [rocprofiler-sdk] WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+   |-> [rocprofiler-sdk] I0000 00:00:1789404742.436309  614741 tool.cpp:4109] [PPID=614715][PID=614741][TID=614741][rocprofv3] rocprofv3_main(18, 'python3 -m bench.transformer_block --strategy dp --devices 1 --tokens 2048 --layers 1 --warmup 10 --repeats 1 --no-freeze --tag ch3-rocprof-compute', ...)
+   |-> [rocprofiler-sdk] [rocprofiler-compute] [rocprofiler_configure] (priority=1) is using rocprofiler-sdk v1.3.2 (1.3.2)
+   |-> [rocprofiler-sdk] W0914 16:52:22.621785  614741 simple_timer.cpp:55] [rocprofv3] tool initialization ::     0.172025 sec
+   |-> [rocprofiler-sdk] [rocprofiler-compute] In tool init
+   |-> [rocprofiler-sdk] W0914 16:52:22.656101  614741 registration.cpp:1085] Failed to invoke rocprofiler-register propagation. This is normal if runtimes have not initialized yet, or if rocprofiler-register is not loaded. Runtimes that initialize after this call will be automatically profiled.
+   |-> [rocprofiler-sdk] W0914 16:52:22.656174  614741 simple_timer.cpp:55] [rocprofv3] 'python3 -m bench.transformer_block --strategy dp --devices 1 --tokens 2048 --layers 1 --warmup 10 --repeats 1 --no-freeze --tag ch3-rocprof-compute' ::     0.000000 sec
+   |-> [rocprofiler-sdk] WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+   |-> [rocprofiler-sdk] I0000 00:00:1789404742.739613  614741 tool.cpp:4109] [PPID=614715][PID=614741][TID=614741][rocprofv3] rocprofv3_main(18, '/opt/venv/bin/python3 -m bench.transformer_block --strategy dp --devices 1 --tokens 2048 --layers 1 --warmup 10 --repeats 1 --no-freeze --tag ch3-rocprof-compute', ...)
+   |-> [rocprofiler-sdk] [rocprofiler-compute] [rocprofiler_configure] (priority=1) is using rocprofiler-sdk v1.3.2 (1.3.2)
+   |-> [rocprofiler-sdk] W0914 16:52:22.925476  614741 simple_timer.cpp:55] [rocprofv3] tool initialization ::     0.172940 sec
+   |-> [rocprofiler-sdk] [rocprofiler-compute] In tool init
+   |-> [rocprofiler-sdk] W0914 16:52:22.958512  614741 registration.cpp:1085] Failed to invoke rocprofiler-register propagation. This is normal if runtimes have not initialized yet, or if rocprofiler-register is not loaded. Runtimes that initialize after this call will be automatically profiled.
+   |-> [rocprofiler-sdk] W0914 16:52:22.958584  614741 simple_timer.cpp:55] [rocprofv3] '/opt/venv/bin/python3 -m bench.transformer_block --strategy dp --devices 1 --tokens 2048 --layers 1 --warmup 10 --repeats 1 --no-freeze --tag ch3-rocprof-compute' ::     0.000000 sec
+   |-> [rocprofiler-sdk] W0914 16:52:23.499885  614741 tool.cpp:3082] HSA version 1.21.0 initialized (instance=0)
+   |-> [rocprofiler-sdk] aqlprofile API table load failed: HSA_STATUS_ERROR: A generic error has occurred.
+   |-> [rocprofiler-sdk] W0914 16:52:23.524770  614916 tool.cpp:3811] [PPID=614715][PID=614741][TID=614916][rocprofv3_error_signal_handler] rocprofv3 caught signal 6...
+   |-> [rocprofiler-sdk] W0914 16:52:23.524854  614916 tool.cpp:3834] [PPID=614715][PID=614741][TID=614916][rocprofv3_error_signal_handler] rocprofv3 will wait for 0 children to exit
+   |-> [rocprofiler-sdk] W0914 16:52:23.524856  614916 tool.cpp:3849] [PPID=614715][PID=614741][TID=614916][rocprofv3_error_signal_handler] rocprofv3 finalizing after signal 6...
+   |-> [rocprofiler-sdk] W0914 16:52:23.525421  614916 simple_timer.cpp:55] [rocprofv3] output generation ::     0.000450 sec
+   |-> [rocprofiler-sdk] W0914 16:52:23.525598  614916 simple_timer.cpp:55] [rocprofv3] tool finalization ::     0.000728 sec
+   |-> [rocprofiler-sdk] W0914 16:52:23.525601  614916 tool.cpp:3891] [PPID=614715][PID=614741][TID=614916][rocprofv3_error_signal_handler] rocprofv3 found chained signal handler for 6... executing chained sigaction (SIGINFO)
+   |-> [rocprofiler-sdk] *** SIGABRT received at time=1789404743 on cpu 188 ***
+   |-> [rocprofiler-sdk] PC: @     0x7453335c4c0c  (unknown)  pthread_kill
+   |-> [rocprofiler-sdk] W0914 16:52:23.538690  614916 tool.cpp:3811] [PPID=614715][PID=614741][TID=614916][rocprofv3_error_signal_handler] rocprofv3 caught signal 6...
+   |-> [rocprofiler-sdk] W0914 16:52:26.525665  614741 tool.cpp:3811] [PPID=614715][PID=614741][TID=614741][rocprofv3_error_signal_handler] rocprofv3 caught signal 6...

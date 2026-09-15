@@ -21,6 +21,7 @@ toc:
   - name: A Compact Sharding Notation
   - name: The Four Core Collectives
   - name: The Four Matmul Cases
+  - name: Read a Sharding Delta
   - name: Automatic, Constrained, and Manual Partitioning
   - name: Verify the Compiled Mesh
   - name: MI355X and RCCL
@@ -182,6 +183,112 @@ or assign the dimensions to different mesh axes.
 These rules apply to forward and backward matmuls. Before estimating a strategy, write
 the shardings for the activation, weight, output, input gradient, and weight gradient.
 
+## Read a Sharding Delta
+
+A sharding claim is a comparison across three representations, not a search for one
+opcode. Follow the
+[Chapter 2 compiler-delta convention]({{ '/pages/2-lowering-jax-jit-on-rocm' | relative_url }}#reading-a-compiler-delta):
+keep the compile signature, mesh, device assignment, and compiler build fixed, then
+attribute each change to the first representation in which it appears.
+
+1. **Global StableHLO records intent.** Read global shapes, dtypes, contracting
+   dimensions, and input, output, or constraint shardings. It does not yet describe
+   the amount of work held by one device.
+2. **Post-Shardy IR records the per-device program.** Divide sharded dimensions by
+   their mesh-axis degrees, retain replicated dimensions, and identify semantic
+   collectives inserted to repair a layout or resolve partial sums.
+3. **Optimized HLO records the executable form.** Recheck local shapes and collective
+   replica groups, then inspect physical layouts, copies, fusion or library custom
+   calls, backend configuration, and the final collective form. Later XLA passes can
+   combine or reorder a semantic collective and split it into asynchronous
+   `start`/`done` operations; that split is not a second communication requirement.
+
+The graphs below are literal XLA DOT output captured from
+`bench/hlo_feature_fixtures.py` on eight MI355X devices with JAX 0.11.0. The
+before graph retains the global HLO and Shardy attributes; the after graphs are
+captured at `after_spmd_partitioner`. Raw text, DOT, debug options, and invocation
+provenance are under `artifacts/hlo-fixtures/sharding/`. They are compiler
+fixtures, not throughput measurements.
+
+### Data parallel: a local matmul
+
+Here the `data` axis shards only the non-contracting batch dimension. The weight is
+replicated, so this is matmul case 1 and this forward dot owes no communication.
+
+{% include figure.liquid path="pages/img/hlo-sharding-dp.svg" class="img-fluid" zoomable=true alt="Literal post-SPMD HLO graph for a data-parallel matrix multiplication" caption="Captured `after_spmd_partitioner` HLO. The global `f16[1024,512]` activation becomes `f16[128,512]` per device, the `f16[512,512]` weight remains replicated, and the local `dot` has no forward collective. Raw artifact: `artifacts/hlo-fixtures/sharding/dp/`." %}
+
+The global output is f16 `[1024,512]`; each device returns f16 `[128,512]`
+(128 KiB). The mesh axis is `data`, but there is no replica group because there is no
+collective for this operation, and its communication payload is 0 bytes. A real
+optimized module may select rocBLAS, Triton, or an XLA fusion instead of the
+post-partition `dot`; that later choice is a backend delta, not a sharding delta.
+
+### FSDP: gather a weight shard
+
+The fixture shards the activation batch and the weight's contracting dimension over
+the same axis. A local batch needs the complete weight contraction, so Shardy repairs
+matmul case 2 by gathering the weight before the dot.
+
+<div class="row">
+<div class="col-md-6" markdown="1">
+
+{% include figure.liquid path="pages/img/hlo-sharding-fsdp-before.svg" class="img-fluid" zoomable=true alt="Literal global HLO graph with Shardy attributes before FSDP partitioning" caption="Captured `before_optimizations` HLO. Both global parameters carry eight-way Shardy attributes; the graph still contains one global `dot_general`. Raw artifact: `artifacts/hlo-fixtures/sharding/fsdp/`." %}
+
+</div>
+<div class="col-md-6" markdown="1">
+
+{% include figure.liquid path="pages/img/hlo-sharding-fsdp.svg" class="img-fluid" zoomable=true alt="Literal post-SPMD HLO graph with an FSDP weight AllGather before a local dot" caption="Captured `after_spmd_partitioner` HLO. The local `f16[64,512]` weight shard is AllGathered along dimension 0 to `f16[512,512]` before the local `dot`. The node records the actual mesh replica group and channel ID." %}
+
+</div>
+</div>
+
+The global weight is f16 `[512,512]` (512 KiB); each device initially holds
+f16 `[64,512]` (64 KiB). The semantic AllGather is over `fsdp` and materializes
+512 KiB per device, with an ideal moved payload of `512 KiB × 7/8 = 448 KiB`.
+Layout
+assignment can add a copy or choose a different dimension order around the gather,
+but it must preserve the gathered values used by the dot.
+
+### Tensor parallel: local partials, then reduction
+
+Sharding the contracting dimension of both operands over `tensor` creates matmul
+case 3. Every device computes one contribution to the same global output, so the
+local dot is followed by a sum reduction.
+
+{% include figure.liquid path="pages/img/hlo-sharding-tp.svg" class="img-fluid" zoomable=true alt="Literal post-SPMD HLO graph for a tensor-parallel dot followed by AllReduce" caption="Captured `after_spmd_partitioner` HLO from the `shard_map` fixture. Matching `f16[1024,64]` and `f16[64,512]` contracting shards feed the local `dot_general`; `psum` becomes an AllReduce with the actual eight-device replica group. Raw artifact: `artifacts/hlo-fixtures/sharding/tp/`." %}
+
+The global and local reduced output are both f16 `[1024,512]` because the output is
+replicated over `tensor`. The AllReduce operand is 1 MiB, its replica groups are
+{% raw %}`{{0,1,2,3,4,5,6,7}}`{% endraw %}, and its ideal moved payload is
+`2 × 1 MiB × 7/8 = 1.75 MiB` per device. The `start`/`done` distance is only a
+scheduling opportunity; a runtime trace must show whether useful compute actually
+overlaps the RCCL work.
+
+### Compare automatic partitioning with `shard_map`
+
+Compile both variants with identical global shapes, dtypes, mesh ordering, device
+assignment, compiler build, and flags. Normalize generated instruction names and
+channel IDs, then compare:
+
+- per-device parameter, dot, and result shapes;
+- dot contracting dimensions and accumulation dtype;
+- collective kind, reduction, operand bytes, mesh axis, and replica groups;
+- collective dependencies and `start`/`done` placement; and
+- physical layouts, copies, fusion or library route, and backend configuration.
+
+In the automatic program, Shardy derives the local dot and inserts the semantic
+AllReduce. In `shard_map`, the body already describes the same local dot and
+`jax.lax.psum` requests the reduction. If both routes produce the same local shapes,
+dot, reduction, dependency order, and participant groups, they describe equivalent
+local programs and may produce equivalent optimized HLO. Differences limited to
+symbolic versus enumerated groups, reducer names, or source metadata do not establish
+a performance difference. Conversely, equal HLO still needs the trace and timing
+criteria below before it establishes equal runtime behavior.
+
+Use
+[Appendix D]({{ '/pages/d-profiler-and-hlo-cookbook' | relative_url }}#feature-comparison-bundles)
+for matched dump arms, retained pass boundaries, and normalized-diff rules.
+
 ## Automatic, Constrained, and Manual Partitioning
 
 Current JAX documents three levels of control.
@@ -255,8 +362,9 @@ Compare their optimized HLO rather than assuming an API-level speed difference.
 
 ## Verify the Compiled Mesh
 
-The configuration records intent. Optimized HLO records what the compiler produced.
-Dump both the Shardy-stage and final HLO:
+The configuration records intent. Apply the three-stage delta above, then use
+optimized HLO to verify what the compiler produced. Dump both the Shardy-stage and
+final HLO:
 
 ```bash
 XLA_FLAGS="--xla_dump_to=/tmp/hlo --xla_dump_hlo_as_text --xla_dump_hlo_pass_re=shardy" \
@@ -268,17 +376,6 @@ rg -n "all-reduce|all-gather|reduce-scatter|all-to-all|collective-permute|replic
 
 For MaxText, also retain the resolved configuration and set `dump_hlo=true` when the
 pinned runner supports it.
-
-A collective may appear as one operation or as asynchronous start/done operations:
-
-{% raw %}
-```text
-all-reduce-start(...),
-  replica_groups={{0,1,2,3,4,5,6,7}},
-  use_global_device_ids=true
-all-reduce-done(...)
-```
-{% endraw %}
 
 Read six fields:
 

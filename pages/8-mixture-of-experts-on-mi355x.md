@@ -27,6 +27,7 @@ toc:
       - name: "Fixed Capacity One Hot"
       - name: "Sparse Dense Padded"
       - name: "Sparse Grouped GEMM"
+      - name: "Read the Expert Lowering"
   - name: "The Grouped GEMM Win Condition"
   - name: "Token Movement and Ragged Collectives"
   - name: "Expert Parallelism on One MI355X Node"
@@ -476,6 +477,47 @@ MXFP4 MoE path. They do not create additional validated MI355X training paths he
 Their platform, dtype, gradient, and workspace restrictions are part of this
 chapter's versioned sparse-route status.
 
+### Read the Expert Lowering
+
+Read the optimized HLO as a delta between paths, not as proof by operation name alone.
+The four graphs below are literal XLA DOT output from
+`bench/hlo_feature_fixtures.py`, captured on gfx950 with JAX 0.11.0. They isolate
+expert execution for 64 tokens, four experts, and width 128. The fixtures do not
+model the preceding token sort or cross-device AllToAll; those remain
+case-study evidence requirements. Raw HLO, DOT, debug options, flags, and
+provenance are retained under `artifacts/hlo-fixtures/moe/`.
+
+{% include figure.liquid path="pages/img/hlo-moe-dense-masked.svg" class="img-fluid" zoomable=true alt="Literal HLO graph for dense-masked expert execution" caption="Captured `before_optimizations` HLO. The first `dot_general` produces `[tokens,experts,width]`; the second contracts routing weights while keeping every expert's issued work. Raw artifact: `artifacts/hlo-fixtures/moe/dense-masked/`." %}
+
+{% include figure.liquid path="pages/img/hlo-moe-fixed-capacity.svg" class="img-fluid" zoomable=true alt="Literal HLO graph for fixed-capacity one-hot expert execution" caption="Captured `before_optimizations` HLO. Dispatch `[tokens,experts,capacity]` creates `[experts,capacity,width]`, which feeds the expert dot and final combine dot. Raw artifact: `artifacts/hlo-fixtures/moe/fixed-capacity/`." %}
+
+{% include figure.liquid path="pages/img/hlo-moe-ragged-padded.svg" class="img-fluid" zoomable=true alt="Literal optimized HLO graph for ragged dot lowered to padded dense work" caption="Captured gfx950 optimized HLO with grouped GEMM disabled. The runtime group sizes build masks and padded operands around an ordinary GEMM fusion. Raw artifact: `artifacts/hlo-fixtures/moe/ragged-padded/`." %}
+
+{% include figure.liquid path="pages/img/hlo-moe-ragged-grouped.svg" class="img-fluid" zoomable=true alt="Literal optimized HLO graph for ragged dot lowered to hipBLASLt GroupedGEMM" caption="Captured gfx950 optimized HLO with grouped GEMM enabled. The same `ragged_dot` frontend becomes the compatibility-named `__cublas$lt$groupedMatmul` custom call implemented by hipBLASLt on ROCm. Raw artifact: `artifacts/hlo-fixtures/moe/ragged-grouped/`." %}
+
+The last pair is the cleanest compiler comparison. Hold the sparse frontend, router
+indices, FP16 dtype, mesh, remat policy, and ragged collective flags fixed. The HLO
+should match through `ragged_dot` and diverge only at its lowering. A different sort,
+`group_sizes`, collective, sharding, or backward route means the test changed more than
+the grouped-GEMM lowering.
+
+For every path, record:
+
+- local input, weight, intermediate, and output shapes before and after dispatch;
+- fixed capacity \(C\), or the runtime `group_sizes` for every local expert;
+- issued padding as rows and FLOPs, separately from allocated buffer padding;
+- the collective operation and replica groups, including whether it is
+  `ragged-all-to-all`;
+- the custom-call target and traced kernel name, or their confirmed absence;
+- both forward and backward routes, including any route repeated by rematerialization;
+- temporary and library-reported workspace bytes.
+
+[Chapter 2]({{ '/pages/2-lowering-jax-jit-on-rocm' | relative_url }}#reading-a-compiler-delta) locates
+`ragged_dot`, GPU lowering, custom calls, and runtime dispatch in the compilation
+pipeline. [Appendix D]({{ '/pages/d-profiler-and-hlo-cookbook' | relative_url }}#feature-comparison-bundles)
+gives the dump, search, trace, and memory-recording procedure for collecting this
+delta.
+
 ## The Grouped GEMM Win Condition
 
 A sparse implementation wins only when the arithmetic it avoids is worth more than its
@@ -769,6 +811,18 @@ def backward(sort_indices, grads):
 This avoids an inefficient gather gradient that can lower to scatter-add. It does not
 make the router differentiable through top-k, eliminate dispatch communication, or
 prevent the routed layer from being rematerialized.
+
+The custom-sort compiler delta is narrow. With the generic VJP, the transpose of
+`inputs[sort_indices]` is a gather backward that can become a `scatter` or
+`scatter-add`. With the custom VJP, backward computes the inverse permutation with
+`argsort` and gathers gradients in that order. Preserve three evidence layers for the
+comparison: the backward jaxpr (`scatter-add` versus `argsort` plus gather), optimized
+HLO (`scatter` versus inverse-sort/permutation operations), and the trace (generic
+scatter kernels and time versus inverse-sort and gather kernels and time). This is a
+backward-only delta; the forward route should remain unchanged. Use
+[Chapter 2]({{ '/pages/2-lowering-jax-jit-on-rocm' | relative_url }}#reading-a-compiler-delta) to locate the
+compiler boundary and [Appendix D]({{ '/pages/d-profiler-and-hlo-cookbook' | relative_url }}#feature-comparison-bundles)
+to capture the HLO and trace evidence.
 
 Test the custom VJP in two ways:
 

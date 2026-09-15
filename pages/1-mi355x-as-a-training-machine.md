@@ -17,14 +17,14 @@ authors:
     url: "https://github.com/clarkechong"
 
 toc:
-  - name: "Inside one MI355X"
+  - name: "Inside an MI355X"
     subsections:
-      - name: "What JAX sees"
       - name: "Package organization"
       - name: "Compute hierarchy"
+      - name: "The ROCm device stack"
   - name: "Matrix execution"
     subsections:
-      - name: "From one projection to a GEMM"
+      - name: "Example: Lowering a projection matrix to a GEMM, to MFMA instructions"
       - name: "Blocked GEMM"
       - name: "Inner and outer views"
       - name: "MFMA lane fragments"
@@ -39,14 +39,14 @@ toc:
     subsections:
       - name: "Worked occupancy example"
       - name: "Spills and bank conflicts"
-  - name: "Native training formats"
+  - name: "CDNA4 Native precision formats"
     subsections:
       - name: "OCP FP8"
       - name: "Microscaling formats"
       - name: "Dense and sparse peaks"
   - name: "Partition modes"
   - name: "Capacity bandwidth and the BF16 roofline"
-  - name: "8x GPU scale up"
+  - name: "8x GPU scale up domain"
     subsections:
       - name: "Directional bandwidth"
       - name: "Partial participation"
@@ -59,25 +59,12 @@ toc:
 
 The AMD Instinct MI355 belongs to AMD's CDNA family of accelerators for HPC and AI workloads, serving a role equivalent to NVIDIA's H100 and H200. Its architecture is designed around the computational patterns common in modern AI models, with an emphasis on high-throughput matrix multiplication and *matrix cores* that perform these operations efficiently.
 
-## Inside one MI355X
+## Inside an MI355X
 
 MI355X is an OCP (Open Compute Project) Accelerator Module based on AMD CDNA 4.
-Its LLVM target is `gfx950`. This section follows one accelerator from the
-logical device presented to JAX, through its chiplet package, down to the
-wavefronts that execute instructions.
-
-### What JAX sees
-
-In the full-chip SPX partition used throughout this book, one physical OAM is one
-logical GPU. JAX normally prints it as a device such as `rocm:0`; XLA compiles
-GPU code for `gfx950`. Each visible OAM therefore contributes one logical JAX
-device, subject to process and container visibility. The name
-`rocm:0` describes a runtime device, not an XCD, a CU, or the whole UBB.
-
-The host CPU still launches work and manages the process. Each OAM has one PCIe
-Gen 5 x16 connection for host or I/O traffic. Device-to-device traffic within
-the UBB uses Infinity Fabric links instead. The distinction matters because
-host staging, xGMI peer traffic, and HBM access have different limits.
+Its LLVM target is `gfx950`. This section follows one accelerator through its
+chiplet package and down to the wavefronts that execute instructions, then
+relates that physical hierarchy to the logical device presented to JAX.
 
 ### Package organization
 
@@ -88,7 +75,7 @@ Dies (XCDs), eight HBM3E stacks, and 256 active Compute Units (CUs). It has
 and the
 [CDNA 4 architecture white paper](https://www.amd.com/content/dam/amd/en/documents/instinct-tech-docs/white-papers/amd-cdna-4-architecture-whitepaper.pdf).
 
-{% include figure.liquid path="pages/img/mi350-arch-diagram.png" class="img-fluid" alt="AMD MI350 Series package with two IODs, eight XCDs, eight HBM3E stacks, PCIe, and Infinity Fabric links" caption="AMD's MI350 Series package diagram, which covers the MI355X organization used here: two IODs connect eight XCDs, eight HBM3E stacks, host PCIe, and external Infinity Fabric. The diagram's 1,075 GB/s Infinity Fabric figure is aggregate bidirectional bandwidth; later cost models use per-direction rates." %}
+{% include figure.liquid path="pages/img/mi350-arch-diagram.png" class="img-fluid" alt="AMD MI350 Series package with two IODs, eight XCDs, eight HBM3E stacks, PCIe, and Infinity Fabric links" caption="AMD's MI350 Series package diagram, which covers the MI355X organization used here: two IODs connect eight XCDs, eight HBM3E stacks, host PCIe, and external Infinity Fabric. The diagram's 1,075 GB/s Infinity Fabric figure is aggregate bidirectional bandwidth." %}
 
 ### Compute hierarchy
 
@@ -109,7 +96,7 @@ MI355X OAM: one physical GPU
 ```
 
 Across the package, `8 XCDs × 32 active CUs/XCD = 256 CUs`. There are four SIMDs
-and four Matrix Cores per CU, giving 1,024 of each across the OAM. An XCD and a
+and four Matrix Cores per CU, giving 1,024 of each across the OAM. Note that an XCD and a
 Shader Engine are not the same unit. The XCD is a compute chiplet containing CUs,
 cache, and scheduling resources.
 
@@ -135,6 +122,18 @@ For readers coming from CUDA, the small translation table is:
 | local memory spill | scratch | backed outside the register file |
 | NVLink | xGMI over Infinity Fabric | seven direct peer links |
 
+### The ROCm device stack
+
+The physical hierarchy above reaches JAX through the Linux driver, ROCm
+userspace runtimes, and XLA's ROCm backend. The diagram shows the device path;
+Chapter 2 follows the separate compilation path that produces the executable.
+
+{% include figure.liquid path="pages/img/rocm-device-stack.png" class="img-fluid" alt="The ROCm device stack from a JAX logical device through PJRT, StreamExecutor, HIP, HSA, and the amdgpu kernel driver to an MI355X" caption="How one physical MI355X becomes a logical JAX device. The full-chip SPX mode normally presents one OAM as one device such as rocm:0. Container mappings, HIP_VISIBLE_DEVICES, and hardware partition mode can change that enumeration. JAX sees the logical device, not its IOD, XCD, CU, or wavefront hierarchy." %}
+
+Each OAM has one PCIe Gen 5 x16 host or I/O connection; peer traffic within the
+UBB uses Infinity Fabric instead. JAX therefore presents one device abstraction
+over paths with very different bandwidth and locality.
+
 ## Matrix execution
 
 Transformer training spends most of its FLOPs in matrix multiplications. For a
@@ -142,7 +141,7 @@ compute-bound matrix kernel, MFMA is the innermost compute primitive. Kernel
 optimization chooses parallel work, tiles, data movement, and schedules that
 keep useful MFMA instructions issuing.
 
-### From one projection to a GEMM
+### Example: Lowering a projection matrix to a GEMM, to MFMA instructions
 
 A Transformer linear projection can be written as
 
@@ -174,7 +173,7 @@ $$
 C_{IJ}\mathrel{+}=A_{IK_b}B_{K_bJ}.
 $$
 
-Each iteration loads an $A$ tile and a $B$ tile, commonly stages them through
+Each iteration loads an $A$ tile and a $B$ tile, stages them through
 LDS, and updates register-resident accumulators. Splitting $M$ and $N$ creates
 parallel workgroups; splitting $K$ creates repeated accumulation and operand
 reuse. The workgroup writes the output macrotile after all $K$ blocks have
@@ -251,7 +250,7 @@ HBM or cache → LDS staging tile → VGPR operand fragments
 ```
 
 For a compute-bound GEMM, the innermost throughput question is whether useful
-MFMA instructions can issue continuously. Namely:
+MFMA instructions can issue continuously:
 
 - Are there enough output tiles to distribute work across 256 CUs?
 - Do the local $M$, $N$, and $K$ dimensions fill efficient instruction tiles?
@@ -282,7 +281,7 @@ to this upper estimate. A predicated kernel may avoid some arithmetic while
 still paying for inactive lanes and less efficient memory transactions. This is
 why batch, sequence, hidden, and expert dimensions that look almost identical
 at the model level can select different kernels or show different utilization.
-No one tile divisibility rule covers every backend; inspect the selected kernel
+No one tile divisibility rule covers every backend, rather you should inspect the selected kernel
 and profile the actual shape.
 
 ### A useful TPU contrast
@@ -316,7 +315,7 @@ scalar, memory, and control pipelines:
   reductions may require several workgroups or a device collective.
 - Memory instructions move values among HBM, caches, LDS, and registers.
 
-These paths explain why a $2\times$ matrix peak does not imply a $2\times$
+These paths explain why a $2\times$ matrix peak FLOPs does not imply a $2\times$
 training-step speedup. This is [Amdahl's law](https://doi.org/10.1145/1465482.1465560):
 if a fraction $p$ of step time improves by a factor $s$, the largest
 end-to-end speedup with the remainder unchanged is
@@ -325,23 +324,20 @@ $$
 S_{\mathrm{step}}=\frac{1}{(1-p)+p/s}.
 $$
 
-**[analytical]** If GEMMs account for 85% of a hypothetical step and their time
-halves, then
+**[analytical]** If GEMMs account for 85% of a hypothetical step and they experience a $2\times$ speedup, then the theoretical training step speedup becomes:
 
 $$
 S_{\mathrm{step}}=\frac{1}{0.15+0.85/2}=1.74,
 $$
 
-not $2\times$. Here, 85% is a hypothetical attribution. A profile determines
+A profile determines
 the workload-specific value of $p$ by measuring time spent in attention
 softmax, normalization, optimizer work, routing, launch gaps, collectives, and
 other work outside the accelerated GEMMs.
 
 ## Memory hierarchy
 
-The useful memory hierarchy is organized by both speed and sharing scope.
-
-| Level | Published MI355X capacity | Scope | Training role |
+| Level | MI355X capacity | Scope | Training role |
 |---|---:|---|---|
 | VGPR and AccVGPR | 512 32-bit entries per lane | one SIMD; allocated per wave | operands, accumulators, live values |
 | LDS | 160 KiB | one CU; shared by a workgroup | software-managed staging and cross-wave exchange |
@@ -428,8 +424,7 @@ G_{\mathrm{LDS}} =
 \right\rfloor.
 $$
 
-Convert all limits to waves per SIMD, take the minimum, and clamp at eight.
-Occupancy is that result divided by eight. The
+Convert all limits to waves per SIMD, take the minimum, and constrain to eight. The
 [MI355X occupancy guide](https://rocm.blogs.amd.com/software-tools-optimization/occupancy-math-mi355x/README.html)
 derives the conversion for different workgroup sizes.
 
@@ -488,7 +483,7 @@ bandwidth. A poor lane layout serializes bank-conflicting accesses even when
 capacity and occupancy look healthy. Padding or swizzling the LDS tile can
 change the bank mapping, but the benefit is shape- and schedule-dependent.
 
-## Native training formats
+## CDNA4 Native precision formats
 
 The hardware supports more formats than a training recipe should use. A format
 is useful only when the JAX-to-kernel path selects the corresponding instruction
@@ -652,12 +647,11 @@ Chapter 3 applies this ratio to concrete training projections and derives the
 corresponding token-row threshold. This chapter only supplies the hardware side
 of that calculation.
 
-## 8x GPU scale up
+## 8x GPU scale up domain
 
 **[cited]** The MI355X UBB 2.0 places eight OAMs in a one-hop, fully connected
 mesh. Every GPU has one dedicated xGMI link to each of its seven peers. There is
-no scale-up switch between them. The ninth GPU is outside this complete graph
-and must be reached through a scale-out network.
+no scale-up switch between them. A ninth GPU would need to be reached through a scale-out network.
 
 The topology is valuable for tensor, expert, and fully sharded parallelism
 because every pair can communicate directly. It also sets a hard placement
@@ -741,8 +735,7 @@ compiler-chosen shardings.
 
 An MI355X OAM exposes PCIe Gen 5 x16, with a published 128 GB/s bidirectional
 rate, or 64 GB/s per direction before protocol overhead. A server can connect
-this I/O path to the host and to RDMA-capable NICs. The NIC is a system
-component, not part of the MI355X OAM.
+this I/O path to the host and to RDMA-capable NICs.
 
 **[cited]** ROCm exposes PeerDirect interfaces that let an RDMA NIC read and
 write GPU memory without copying the payload through host memory. The
@@ -760,9 +753,9 @@ $$
 \frac{400\ \mathrm{Gb/s}}{8}=50\ \mathrm{GB/s}.
 $$
 
-This is simply a reference design, not an intrinsic MI355X topology. Deployed
-servers may use Pollara, Broadcom, NVIDIA, or other supported RDMA adapters;
-they may use a fat tree, rail, or hybrid network; and subscription ratios vary.
+This is simply a reference design. Deployed
+servers may use Pollara, Broadcom, NVIDIA, or other supported RDMA adapters and
+they may use a fat tree, rail, or hybrid network.
 
 {% include figure.liquid path="pages/img/amd-2tier-design.png" class="img-fluid" alt="Generic two-tier network connecting groups of GPU nodes through leaf and spine switches" caption="A generic two-tier scale-out design. The diagram shows the leaf-and-spine hierarchy rather than a fixed MI355X configuration; NIC models, switch counts, rail placement, and subscription ratios depend on the deployed system." %}
 
@@ -773,11 +766,6 @@ GPU. Physical mesh ordering, process ranks, and JAX mesh axes must agree before
 rail placement can help.
 
 {% include figure.liquid path="pages/img/multinode-topology.png" class="img-fluid" alt="Two eight-GPU MI355X nodes connected through a rail-optimized leaf-and-spine network" caption="A non-normative two-node rail example. Each node contains an eight-GPU xGMI full mesh, while one external NIC per GPU connects equal GPU indices to the same leaf. The highlighted paths contrast a same-rail transfer with cross-rail traffic that reaches the spine. Pollara 400 is the reference NIC used in this schematic." %}
-
-There are no multi-node MI355X training measurements in this book yet.
-Multi-node bandwidth, overlap, and scaling claims must remain **[analytical]**
-until a run records the server PCIe topology, NIC model and firmware, link
-state, switch fabric, rail map, RCCL settings, and message-size curve.
 
 ## Hardware constants sheet
 

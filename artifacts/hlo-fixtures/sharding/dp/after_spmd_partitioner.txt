@@ -1,0 +1,37 @@
+HloModule jit_sharding_dp, entry_computation_layout={(f16[128,512]{1,0}, f16[512,512]{1,0})->f16[128,512]{1,0}}, allow_spmd_sharding_propagation_to_parameters={false,false}, num_partitions=8
+
+FileNames
+1 "<frozen runpy>"
+2 "/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py"
+
+FunctionNames
+1 "_run_module_as_main"
+2 "_run_code"
+3 "<module>"
+4 "main"
+5 "sharding_fixture"
+6 "sharding_fixture.<locals>.sharding_dp"
+
+FileLocations
+1 {file_name_id=1 function_name_id=1 line=198 end_line=198 column=11 end_column=11}
+2 {file_name_id=1 function_name_id=2 line=88 end_line=88 column=4 end_column=4}
+3 {file_name_id=2 function_name_id=3 line=369 end_line=369 column=4 end_column=4}
+4 {file_name_id=2 function_name_id=4 line=361 end_line=361 column=4 end_column=4}
+5 {file_name_id=2 function_name_id=5 line=145 end_line=145 column=10 end_column=10}
+6 {file_name_id=2 function_name_id=6 line=139 end_line=139 column=19 end_column=19}
+
+StackFrames
+1 {file_location_id=1 parent_frame_id=1}
+2 {file_location_id=2 parent_frame_id=2}
+3 {file_location_id=3 parent_frame_id=3}
+4 {file_location_id=4 parent_frame_id=4}
+5 {file_location_id=5 parent_frame_id=5}
+6 {file_location_id=6 parent_frame_id=6}
+
+
+ENTRY %main.0_spmd (param: f16[128,512], param.1: f16[512,512]) -> f16[128,512] {
+  %param = f16[128,512]{1,0} parameter(0), sharding={devices=[8,1]<=[8]}, metadata={op_name="x"}
+  %param.1 = f16[512,512]{1,0} parameter(1), sharding={replicated}, metadata={op_name="w"}
+  ROOT %dot = f16[128,512]{1,0} dot(%param, %param.1), lhs_contracting_dims={1}, rhs_contracting_dims={0}, metadata={op_name="jit(sharding_dp)/dot_general" stack_frame_id=6}
+}
+

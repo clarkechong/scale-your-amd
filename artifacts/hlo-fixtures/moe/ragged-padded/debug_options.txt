@@ -1,0 +1,7 @@
+xla_cpu_enable_fast_min_max: false
+xla_gpu_cuda_data_dir: "None"
+xla_gpu_experimental_use_ragged_dot_grouped_gemm: false
+xla_dump_to: "/tmp/hlo-moe-ragged-padded-3q_i3ywx"
+xla_dump_hlo_as_text: true
+xla_dump_hlo_as_dot: true
+xla_detailed_logging: false

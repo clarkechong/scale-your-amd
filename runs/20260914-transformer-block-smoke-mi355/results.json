@@ -1,0 +1,73 @@
+{
+  "workload": "transformer-block",
+  "tag": "smoke-mi355",
+  "finished_at": "2026-09-14T16:45:29.440642+00:00",
+  "wall_seconds": 7.596590280532837,
+  "protocol": {
+    "warmup": 3,
+    "repeats": 10,
+    "statistic": "median"
+  },
+  "constants": {
+    "cus": 256,
+    "clock_ghz": 2.4,
+    "bf16_flops": 2516600000000000.0,
+    "fp16_flops": 2516600000000000.0,
+    "fp8_flops": 5033200000000000.0,
+    "mxfp4_flops": 1.00663e+16,
+    "fp32_flops": 157300000000000.0,
+    "hbm_bytes_per_s": 8000000000000.0,
+    "hbm_bytes": 309237645312,
+    "xgmi_links": 7,
+    "xgmi_link_unidir_bytes_per_s": 76800000000.0,
+    "xgmi_egress_unidir_bytes_per_s": 537600000000.0
+  },
+  "notes": {
+    "strategy": "dp",
+    "devices": 1,
+    "config": {
+      "d_model": 4096,
+      "d_ff": 14336,
+      "n_heads": 32,
+      "n_kv_heads": 8,
+      "head_dim": 128
+    },
+    "params_per_layer": 218103808,
+    "layers": 1,
+    "seq_len": 2048,
+    "annotated": true,
+    "roctx": true,
+    "rocprof_selected_step": null,
+    "latency_hiding_override": null
+  },
+  "measurements": [
+    {
+      "name": "dp-2048tok",
+      "warmup": 1,
+      "repeats": 2,
+      "times_s": [
+        0.004837165994103998,
+        0.0046084889909252524
+      ],
+      "median_s": 0.004722827492514625,
+      "mean_s": 0.004722827492514625,
+      "stdev_s": 0.00016169905964910863,
+      "min_s": 0.0046084889909252524,
+      "max_s": 0.004837165994103998,
+      "median_mean_gap_pct": 0.0,
+      "flops": 2783138807808.0,
+      "bytes": null,
+      "achieved_flops_per_s": 589295038241200.6,
+      "achieved_bytes_per_s": null,
+      "predicted_s": null,
+      "ratio_to_prediction": null,
+      "meta": {
+        "tokens_per_device": 2048,
+        "global_tokens": 2048,
+        "batch": 1,
+        "seq_len": 2048,
+        "mfu": 0.23416317183549257
+      }
+    }
+  ]
+}

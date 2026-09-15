@@ -1,0 +1,28 @@
+{
+  "additional_artifacts": {},
+  "command": [
+    "/opt/venv/bin/python3",
+    "-m",
+    "bench.hlo_feature_fixtures",
+    "sharding",
+    "dp"
+  ],
+  "environment": {
+    "HIP_VISIBLE_DEVICES": "0,1,2,3,4,5,6,7",
+    "JAX_PLATFORMS": "rocm",
+    "XLA_FLAGS": "--xla_dump_to=/tmp/hlo-sharding-dp-twxeluf3 --xla_dump_hlo_as_text --xla_dump_hlo_as_dot",
+    "XLA_PYTHON_CLIENT_PREALLOCATE": "false"
+  },
+  "feature": "sharding",
+  "fixture_module": "sharding_dp",
+  "kind": "explanatory-hlo-fixture",
+  "measured": false,
+  "raw_dot": "module_0000.jit_sharding_dp.after_spmd_partitioner.dot",
+  "raw_text": "module_0000.jit_sharding_dp.after_spmd_partitioner.txt",
+  "rendered_svg": "pages/img/hlo-sharding-dp.svg",
+  "renderer": "XLA DOT rendered by Graphviz",
+  "retained_stage": "after_spmd_partitioner",
+  "stderr": "",
+  "stdout": "compiled fixture=sharding variant=dp backend=gpu devices=8",
+  "variant": "dp"
+}

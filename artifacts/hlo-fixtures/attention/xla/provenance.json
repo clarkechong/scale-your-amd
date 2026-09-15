@@ -1,0 +1,28 @@
+{
+  "additional_artifacts": {},
+  "command": [
+    "/opt/venv/bin/python3",
+    "-m",
+    "bench.hlo_feature_fixtures",
+    "attention",
+    "xla"
+  ],
+  "environment": {
+    "HIP_VISIBLE_DEVICES": "0",
+    "JAX_PLATFORMS": "rocm",
+    "XLA_FLAGS": "--xla_dump_to=/tmp/hlo-attention-xla-e21lc0qk --xla_dump_hlo_as_text --xla_dump_hlo_as_dot",
+    "XLA_PYTHON_CLIENT_PREALLOCATE": "false"
+  },
+  "feature": "attention",
+  "fixture_module": "attention_xla",
+  "kind": "explanatory-hlo-fixture",
+  "measured": false,
+  "raw_dot": "module_0008.jit_attention_xla.before_optimizations.dot",
+  "raw_text": "module_0008.jit_attention_xla.before_optimizations.txt",
+  "rendered_svg": "pages/img/hlo-attention-xla.svg",
+  "renderer": "XLA DOT rendered by Graphviz",
+  "retained_stage": "before_optimizations",
+  "stderr": "",
+  "stdout": "compiled fixture=attention variant=xla backend=gpu devices=1",
+  "variant": "xla"
+}

@@ -21,6 +21,13 @@ toc:
   - name: "Frozen Experiment Manifest"
   - name: "Predicting FSDP Memory"
   - name: "Precision and Backend Paths"
+    subsections:
+      - name: "Prove the Precision Delta"
+      - name: "FP32: stock MaxText with two exceptions"
+      - name: "BF16 and FP16: stock paths"
+      - name: "FP8: Transformer Engine delayed scaling"
+      - name: "MXFP8: patched Transformer Engine workspace path"
+      - name: "MXFP4: ROCm MaxText branch and JAX-AITER FFI"
   - name: "Train-Step Results"
   - name: "Analysis Boundaries"
   - name: "One-Billion-Token Guardrail"
@@ -218,6 +225,41 @@ their high-water marks. Per-arm XProf memory output or device-memory telemetry
 is BLOCKED.
 
 ## Precision and Backend Paths
+
+### Prove the Precision Delta
+
+Every reduced-precision arm needs a captured compiler delta against BF16. The
+purpose is narrower than the numerical explanation in
+[Chapter 4]({{ '/pages/4-training-in-mixed-precision' | relative_url }}): prove
+which contractions changed route, which state and conversions were added, and
+which parts of the update remained BF16 or FP32.
+
+For one QKV projection, one MLP projection, and the vocabulary projection, retain:
+
+1. optimized HLO for the forward, activation-gradient, and weight-gradient
+   products;
+2. custom-call targets, operand and result dtypes, layouts, aliases, and workspace
+   outputs;
+3. scale, `amax` history, E8M0 metadata, packing, and conversion operations where
+   applicable;
+4. FSDP collective payload dtypes, proving whether quantization happens before or
+   after the AllGather; and
+5. the selected-step kernel trace proving the implementation below each opaque
+   call.
+
+The BF16 arm is the structural reference. FP8 delayed scaling should add its
+scale-history state and forward/backward extension calls. MXFP8 should additionally
+prove its block-scale workspace path. MXFP4 should expose the JAX-AITER forward and
+gradient FFI targets for the intended projection set while the attention core
+remains on the BF16 route. A target name proves entry into an extension, not the
+MFMA instruction that ran; instruction or counter claims need disassembly or
+hardware-counter evidence.
+
+Store this as the before/after/diff bundle defined by
+[Appendix F]({{ '/pages/f-case-study-artifact-schema' | relative_url }}), not as
+screenshots alone. If a nominally reduced-precision arm has the same optimized
+route as BF16, retain it as a fallback or no-effect result rather than inferring
+low-precision execution from the MaxText field.
 
 ### FP32: stock MaxText with two exceptions
 

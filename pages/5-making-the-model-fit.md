@@ -28,6 +28,8 @@ toc:
   - name: "Donate Replaced State"
   - name: "Scan and Rematerialization"
     subsections:
+      - name: "Scan in HLO"
+      - name: "Rematerialization in HLO"
       - name: "The Policy Surface"
       - name: "Interactions That Change the Answer"
   - name: "Gradient Accumulation"
@@ -296,6 +298,14 @@ The raw-JAX Llama 7B runner donates `params` and `opt_state` separately with
 `donate_argnums=(0, 1)`. MaxText donates train-state argument 0. Evaluation does not
 donate state because evaluation keeps it.
 
+The mathematical dataflow often remains identical with donation enabled: the step
+still computes the same new state from the same old state. The useful compiler delta
+is therefore often not a new HLO operation. Look instead for input-output alias
+metadata on the executable and for the resulting buffer assignment, where an output
+is assigned compatible storage formerly owned by a donated input. Compare
+`alias_size_in_bytes` and the assigned buffer/live range, not only an HLO instruction
+diff.
+
 Donation is present in the checked-in raw-JAX and MaxText paths. Its runtime effect
 still requires verification:
 
@@ -330,6 +340,87 @@ The raw-JAX Llama 7B model applies remat to the scanned layer body and sets
 rematerialization is less effective across forward and backward scans, so checkpointing
 the scan body is often useful, and CSE prevention is usually unnecessary inside scan
 **[cited]**.
+
+The lowering vocabulary used below is established in
+[Chapter 2]({{ '/pages/2-lowering-jax-jit-on-rocm' | relative_url }}#reading-a-compiler-delta).
+Use the matched dump procedure in
+[Appendix D]({{ '/pages/d-profiler-and-hlo-cookbook' | relative_url }}#feature-comparison-bundles)
+and compare
+the same before-optimization and optimized stages for every variant. The SVGs below
+are rendered directly from XLA's `--xla_dump_hlo_as_dot` output for the small
+fixtures in `bench/hlo_feature_fixtures.py`. Their raw HLO, DOT, debug options, and
+provenance are retained under `artifacts/hlo-fixtures/`. They are real gfx950
+compiler artifacts, but they are explanatory fixtures rather than Llama
+case-study measurements.
+
+### Scan in HLO
+
+With an unrolled Python loop, each layer has its own copy of the layer operations in
+the module. With scanned layers, the expected lowering is one `while` body plus an
+induction variable and `dynamic-slice` operations that select layer `i` from each
+stacked parameter. XLA may subsequently transform that structure, so verify it in the
+selected dump rather than inferring it from `scan_layers=true`.
+
+{% include figure.liquid path="pages/img/hlo-scan-unrolled.svg" class="img-fluid" zoomable=true alt="Literal XLA HLO graph for four unrolled matrix layers" caption="Captured `before_optimizations` HLO: four parameter slices feed four distinct `dot_general` operations. Raw artifact: `artifacts/hlo-fixtures/scan/unrolled/`." %}
+
+{% include figure.liquid path="pages/img/hlo-scan-scanned.svg" class="img-fluid" zoomable=true alt="Literal XLA HLO graph for the same matrix layers expressed with lax.scan" caption="Captured `before_optimizations` HLO: one `while` carries the activation and stacked weights; its body dynamically slices one weight and executes one `dot_general`. Raw artifact: `artifacts/hlo-fixtures/scan/scanned/`." %}
+
+The primal forward scan walks layer indices from 0 to `L - 1`. Reverse-mode
+transposition commonly produces a second scan/`while` that walks saved layer data in
+the opposite order while carrying cotangents. Its body may dynamically slice stacked
+parameters and saved residual arrays using `L - 1 - i`. A forward `while` in the
+primal is therefore not evidence that the complete training step contains only one
+loop; count the forward and reverse loops and inspect both carries.
+
+Use a fixed model, batch, sharding, remat policy, compiler flags, and cache state for
+the scan on/off pair:
+
+| Comparison target | Unrolled-layer expectation | Scanned-layer expectation | Required evidence |
+|---|---|---|---|
+| Optimized HLO instruction count and size | Layer body repeated approximately `L` times | One loop body plus tuple and slice machinery | Count all computations at the same dump stage; record HLO text/proto bytes |
+| Compile time | Usually grows with the repeated graph | Usually lower because the body is compiled once | Separate lowering and compilation wall times; do not time exhaustive dump I/O |
+| Runtime | No loop-index or parameter-slice overhead; more cross-layer optimization opportunities | Loop and dynamic-slice overhead; potentially less fusion across layers | Warmed step latency and tokens/s/GPU |
+| Memory | Autodiff may expose separate residuals from every unrolled layer | Reverse scan may still carry or stack residuals for every layer | `memory_analysis()`, buffer assignment/live ranges, and runtime HBM high-water |
+
+The first two directional statements are the motivation for scan, not measured
+results for these experiments. Scan can reduce HLO size and compile time while leaving
+activation memory unchanged or making runtime slower. Report all four comparisons;
+none is a proxy for another.
+
+### Rematerialization in HLO
+
+For a scanned, differentiated layer, no explicit remat commonly makes the forward
+loop tuple large: besides the hidden-state carry, it contains arrays into which the
+body writes normalization inputs, projections, attention context, MLP intermediates,
+or other residuals needed by the reverse loop. The reverse loop slices those saved
+arrays. A full-remat policy should retain a smaller checkpoint tuple, such as layer
+inputs, and clone the omitted forward computations into the backward body.
+
+{% include figure.liquid path="pages/img/hlo-remat-none.svg" class="img-fluid" zoomable=true alt="Literal XLA HLO graph for a two-layer differentiated function without explicit rematerialization" caption="Captured `before_optimizations` HLO without explicit remat. Forward `tanh` values feed the transpose calculation directly. Raw artifact: `artifacts/hlo-fixtures/remat/none/`." %}
+
+{% include figure.liquid path="pages/img/hlo-remat-full.svg" class="img-fluid" zoomable=true alt="Literal XLA HLO graph for the same differentiated function with jax checkpoint rematerialization" caption="Captured `before_optimizations` HLO with `jax.checkpoint`: `remat2` tuples and `checkpoint/rematted_computation` dots and `tanh` operations appear in backward. Raw artifact: `artifacts/hlo-fixtures/remat/full/`." %}
+
+These are three different observations:
+
+1. A jaxpr `remat`/`remat2` primitive records the autodiff policy's intent about which
+   values may be recomputed.
+2. Optimized HLO records the consequence after lowering, CSE, fusion, and other
+   rewrites. Evidence that the policy took effect is a smaller saved-residual
+   tuple/live set together with cloned or fused equivalent work in the backward
+   region; the literal `remat` name need not survive.
+3. XLA's compiler rematerialization is a separate memory-scheduling optimization. It
+   may recompute an operation even without `jax.remat`, and it may alter the final
+   schedule after the explicit policy has been lowered. Compiler rematerialization is
+   not proof that a JAX policy matched the intended checkpoint names.
+
+HLO operation counts alone are insufficient: fusion can reduce the count while
+extending a buffer lifetime, and a cloned recomputation can disappear through CSE.
+For a no-remat/selective/full comparison, require buffer-assignment evidence showing
+the allocation sizes and live ranges at the peak, the raw `memory_analysis()` fields,
+and the allocator high-water from warmed execution. Pair that memory evidence with
+the optimized HLO's forward/reverse loop carries and a runtime trace or tokens/s/GPU
+measurement. Without the buffer-lifetime evidence, describe the remat policy as
+configured, not as a demonstrated memory saving.
 
 ### The Policy Surface
 
@@ -412,6 +503,24 @@ MaxText reshapes the update batch into microbatches, runs forward and backward i
 `lax.scan`, sums gradients, and applies one optimizer update. Activation memory tracks
 one microbatch rather than the full update batch. Parameter, optimizer, and gradient
 accumulator memory does not shrink.
+
+At HLO level, inspect the microbatch loop carry. It should identify the induction
+variable, unchanged or donated train state, full gradient accumulator, scale/RNG
+state, and accumulated metrics. Extra carried activation arrays can defeat the
+expected one-microbatch lifetime.
+
+{% include figure.liquid path="pages/img/hlo-accumulation-direct.svg" class="img-fluid" zoomable=true alt="Literal XLA HLO graph for one gradient over the full update batch" caption="Captured `before_optimizations` HLO for a direct full-batch gradient. The reshaped update batch feeds one forward dot and one weight-gradient dot. Raw artifact: `artifacts/hlo-fixtures/accumulation/direct/`." %}
+
+{% include figure.liquid path="pages/img/hlo-accumulation-scanned.svg" class="img-fluid" zoomable=true alt="Literal XLA HLO graph for gradients accumulated through a microbatch scan" caption="Captured `before_optimizations` HLO for four microbatches. A `while` carries the gradient accumulator and stacked input, dynamically slices one microbatch, computes its forward and weight-gradient dots, and adds the result into the carry. Raw artifact: `artifacts/hlo-fixtures/accumulation/scanned/`." %}
+
+Collective placement is a separate comparison target. A gradient `all-reduce` or
+`reduce-scatter` inside the microbatch body executes once per microbatch; the same
+collective after the loop executes once per optimizer update, usually with a
+different overlap and accumulator requirement. FSDP weight gathers or other
+collectives may still execute per microbatch even when gradient reduction is outside.
+Record collective location and replica groups in optimized HLO, then use the trace to
+count dynamic executions and transferred bytes. One textual collective inside a
+`while` is not one runtime collective per update.
 
 There are two distinct experiments:
 
@@ -529,6 +638,13 @@ Current upstream MaxText source also contains pretraining paths for optimizer an
 parameter host placement. Parameter offload requires `param_scan_axis=0` in the
 inspected implementation, while the tested experiment configs use axis 1.
 
+In compiler artifacts, compare the program before and after memory-space assignment.
+A realized offload should assign the selected buffer to a host memory space and
+introduce `copy-start`/`copy-done` pairs, or the backend's equivalent asynchronous
+copy operations, around its next device use. Names and exact placement are
+backend-dependent, so absence of those literal strings in one dump is not by itself
+proof that no transfer exists.
+
 The API surface is current. The performance recommendation is not. None of the Llama or
 Mixtral experiment repositories measures host offload on MI355X, so this book marks all
 three offload routes experimental on the pinned ROCm stack.
@@ -544,9 +660,12 @@ byte read from HBM **[analytical]**. Offload helps only when the transfer:
 
 Measure host bytes, transfer intervals, overlap, tokens/s/GPU, and HBM high-water.
 `host_temp_size_in_bytes > 0` proves host memory exists in the compiled plan; it does
-not prove transfer is hidden. Prefer remat when recomputation is cheap. Prefer state
-sharding when another GPU can own the bytes. Use offload after those routes are
-insufficient or when capacity matters more than throughput.
+not prove transfer is hidden. Require trace proof of each host-to-device and
+device-to-host interval, its bytes and duration, and whether it overlaps useful
+compute; correlate those events with the HLO copy pairs. Prefer remat when
+recomputation is cheap. Prefer state sharding when another GPU can own the bytes. Use
+offload after those routes are insufficient or when capacity matters more than
+throughput.
 
 ## A Memory Decision Procedure
 

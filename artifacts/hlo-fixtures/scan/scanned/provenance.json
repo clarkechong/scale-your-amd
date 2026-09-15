@@ -1,0 +1,28 @@
+{
+  "additional_artifacts": {},
+  "command": [
+    "/opt/venv/bin/python3",
+    "-m",
+    "bench.hlo_feature_fixtures",
+    "scan",
+    "scanned"
+  ],
+  "environment": {
+    "HIP_VISIBLE_DEVICES": "0",
+    "JAX_PLATFORMS": "rocm",
+    "XLA_FLAGS": "--xla_dump_to=/tmp/hlo-scan-scanned-2hxnjp_o --xla_dump_hlo_as_text --xla_dump_hlo_as_dot",
+    "XLA_PYTHON_CLIENT_PREALLOCATE": "false"
+  },
+  "feature": "scan",
+  "fixture_module": "scan_scanned",
+  "kind": "explanatory-hlo-fixture",
+  "measured": false,
+  "raw_dot": "module_0011.jit_scan_scanned.before_optimizations.dot",
+  "raw_text": "module_0011.jit_scan_scanned.before_optimizations.txt",
+  "rendered_svg": "pages/img/hlo-scan-scanned.svg",
+  "renderer": "XLA DOT rendered by Graphviz",
+  "retained_stage": "before_optimizations",
+  "stderr": "",
+  "stdout": "compiled fixture=scan variant=scanned backend=gpu devices=1",
+  "variant": "scanned"
+}

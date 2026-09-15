@@ -1,0 +1,453 @@
+digraph G {
+rankdir = TB;
+compound = true;
+label = <<b>module_0046.jit_attention_te.before_optimizations<br/>Computation main.5<br/>ENTRY computation</b>>;
+labelloc = t;
+// Disable the tooltip.  Interestingly, "" doesn't work!
+tooltip = " ";
+// DOT graphs accept a stylesheet as a URI.  So naturally, an inline
+// stylesheet is a data URI!
+stylesheet=<
+  data:text/css,
+  @import url(https://fonts.googleapis.com/css?family=Roboto:400,700);
+  svg text {
+    font-family: 'Roboto';
+    font-size: 12px;
+  }
+
+    %23node20:hover ~ %23edge22 text { fill: %231976d2; }
+  %23node20:hover ~ %23edge22 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node20:hover ~ %23edge22 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node21:hover ~ %23edge22 text { fill: %23d32f2f; }
+  %23node21:hover ~ %23edge22 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node21:hover ~ %23edge22 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node19:hover ~ %23edge21 text { fill: %231976d2; }
+  %23node19:hover ~ %23edge21 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node19:hover ~ %23edge21 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node20:hover ~ %23edge21 text { fill: %23d32f2f; }
+  %23node20:hover ~ %23edge21 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node20:hover ~ %23edge21 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node4:hover ~ %23edge19 text { fill: %231976d2; }
+  %23node4:hover ~ %23edge19 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node4:hover ~ %23edge19 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node20:hover ~ %23edge19 text { fill: %23d32f2f; }
+  %23node20:hover ~ %23edge19 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node20:hover ~ %23edge19 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node3:hover ~ %23edge18 text { fill: %231976d2; }
+  %23node3:hover ~ %23edge18 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node3:hover ~ %23edge18 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node20:hover ~ %23edge18 text { fill: %23d32f2f; }
+  %23node20:hover ~ %23edge18 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node20:hover ~ %23edge18 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node9:hover ~ %23edge1 text { fill: %231976d2; }
+  %23node9:hover ~ %23edge1 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node9:hover ~ %23edge1 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node10:hover ~ %23edge1 text { fill: %23d32f2f; }
+  %23node10:hover ~ %23edge1 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node10:hover ~ %23edge1 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node18:hover ~ %23edge15 text { fill: %231976d2; }
+  %23node18:hover ~ %23edge15 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node18:hover ~ %23edge15 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node19:hover ~ %23edge15 text { fill: %23d32f2f; }
+  %23node19:hover ~ %23edge15 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node19:hover ~ %23edge15 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node11:hover ~ %23edge9 text { fill: %231976d2; }
+  %23node11:hover ~ %23edge9 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node11:hover ~ %23edge9 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node14:hover ~ %23edge9 text { fill: %23d32f2f; }
+  %23node14:hover ~ %23edge9 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node14:hover ~ %23edge9 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node17:hover ~ %23edge14 text { fill: %231976d2; }
+  %23node17:hover ~ %23edge14 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node17:hover ~ %23edge14 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node18:hover ~ %23edge14 text { fill: %23d32f2f; }
+  %23node18:hover ~ %23edge14 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node18:hover ~ %23edge14 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node6:hover ~ %23edge2 text { fill: %231976d2; }
+  %23node6:hover ~ %23edge2 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node6:hover ~ %23edge2 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node7:hover ~ %23edge2 text { fill: %23d32f2f; }
+  %23node7:hover ~ %23edge2 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node7:hover ~ %23edge2 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node13:hover ~ %23edge7 text { fill: %231976d2; }
+  %23node13:hover ~ %23edge7 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node13:hover ~ %23edge7 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node14:hover ~ %23edge7 text { fill: %23d32f2f; }
+  %23node14:hover ~ %23edge7 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node14:hover ~ %23edge7 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node20:hover ~ %23edge23 text { fill: %231976d2; }
+  %23node20:hover ~ %23edge23 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node20:hover ~ %23edge23 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node22:hover ~ %23edge23 text { fill: %23d32f2f; }
+  %23node22:hover ~ %23edge23 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node22:hover ~ %23edge23 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node7:hover ~ %23edge4 text { fill: %231976d2; }
+  %23node7:hover ~ %23edge4 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node7:hover ~ %23edge4 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node9:hover ~ %23edge4 text { fill: %23d32f2f; }
+  %23node9:hover ~ %23edge4 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node9:hover ~ %23edge4 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node5:hover ~ %23edge3 text { fill: %231976d2; }
+  %23node5:hover ~ %23edge3 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node5:hover ~ %23edge3 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node9:hover ~ %23edge3 text { fill: %23d32f2f; }
+  %23node9:hover ~ %23edge3 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node9:hover ~ %23edge3 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node1:hover ~ %23edge16 text { fill: %231976d2; }
+  %23node1:hover ~ %23edge16 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node1:hover ~ %23edge16 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node20:hover ~ %23edge16 text { fill: %23d32f2f; }
+  %23node20:hover ~ %23edge16 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node20:hover ~ %23edge16 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node8:hover ~ %23edge5 text { fill: %231976d2; }
+  %23node8:hover ~ %23edge5 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node8:hover ~ %23edge5 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node9:hover ~ %23edge5 text { fill: %23d32f2f; }
+  %23node9:hover ~ %23edge5 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node9:hover ~ %23edge5 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node2:hover ~ %23edge17 text { fill: %231976d2; }
+  %23node2:hover ~ %23edge17 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node2:hover ~ %23edge17 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node20:hover ~ %23edge17 text { fill: %23d32f2f; }
+  %23node20:hover ~ %23edge17 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node20:hover ~ %23edge17 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node12:hover ~ %23edge8 text { fill: %231976d2; }
+  %23node12:hover ~ %23edge8 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node12:hover ~ %23edge8 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node13:hover ~ %23edge8 text { fill: %23d32f2f; }
+  %23node13:hover ~ %23edge8 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node13:hover ~ %23edge8 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node14:hover ~ %23edge6 text { fill: %231976d2; }
+  %23node14:hover ~ %23edge6 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node14:hover ~ %23edge6 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node15:hover ~ %23edge6 text { fill: %23d32f2f; }
+  %23node15:hover ~ %23edge6 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node15:hover ~ %23edge6 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node10:hover ~ %23edge10 text { fill: %231976d2; }
+  %23node10:hover ~ %23edge10 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node10:hover ~ %23edge10 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node15:hover ~ %23edge10 text { fill: %23d32f2f; }
+  %23node15:hover ~ %23edge10 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node15:hover ~ %23edge10 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node15:hover ~ %23edge11 text { fill: %231976d2; }
+  %23node15:hover ~ %23edge11 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node15:hover ~ %23edge11 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node16:hover ~ %23edge11 text { fill: %23d32f2f; }
+  %23node16:hover ~ %23edge11 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node16:hover ~ %23edge11 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node16:hover ~ %23edge20 text { fill: %231976d2; }
+  %23node16:hover ~ %23edge20 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node16:hover ~ %23edge20 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node20:hover ~ %23edge20 text { fill: %23d32f2f; }
+  %23node20:hover ~ %23edge20 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node20:hover ~ %23edge20 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node9:hover ~ %23edge12 text { fill: %231976d2; }
+  %23node9:hover ~ %23edge12 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node9:hover ~ %23edge12 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node17:hover ~ %23edge12 text { fill: %23d32f2f; }
+  %23node17:hover ~ %23edge12 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node17:hover ~ %23edge12 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node14:hover ~ %23edge13 text { fill: %231976d2; }
+  %23node14:hover ~ %23edge13 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node14:hover ~ %23edge13 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node18:hover ~ %23edge13 text { fill: %23d32f2f; }
+  %23node18:hover ~ %23edge13 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node18:hover ~ %23edge13 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+>
+
+1095161520 [label=<<b>Parameter 0</b><br/>bf16[1,128,8,64]{3,2,1,0}>, shape=rect, tooltip="q", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
+1160752592 [label=<<b>Parameter 1</b><br/>bf16[1,128,8,64]{3,2,1,0}>, shape=rect, tooltip="k", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
+1138347040 [label=<<b>Parameter 2</b><br/>bf16[1,128,8,64]{3,2,1,0}>, shape=rect, tooltip="v", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
+1161198368 [label=<<b>broadcast.1</b><br/>dimensions={}<br/>u32[2]<br/><b>operand</b> = u32[] 0>, shape=rect, tooltip="", style="filled", fontcolor="black", color="#cbc693", fillcolor="#fff9c4"];
+subgraph cluster_1162556736 {
+style=rounded; color=black;
+label = <Subcomputation for <b>jit__where_.2</b><br/>_where.1>;
+labelloc = t;
+tooltip = " ";
+1161022416 [label=<<b>Parameter 0</b><br/>pred[1]>, shape=rect, tooltip="", style="filled", fontcolor="black", color="#cbae82", fillcolor="#ffe0b2"];
+1160753280 [label=<<b>Parameter 1</b><br/>s32[]>, shape=rect, tooltip="", style="filled", fontcolor="black", color="#cbae82", fillcolor="#ffe0b2"];
+1159898672 [label=<<b>broadcast_in_dim.1</b><br/>reshape<br/>s32[1]>, shape=rect, tooltip="broadcast_in_dim
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn:1248:16", style="filled", fontcolor="black", color="#97b498", fillcolor="#c8e6c9"];
+1163064960 [label=<<b>Parameter 2</b><br/>s32[1]>, shape=rect, tooltip="", style="filled", fontcolor="black", color="#cbae82", fillcolor="#ffe0b2"];
+1162205280 [label=<<b>select_n.1</b><br/>s32[1]>, shape=rect, tooltip="select_n
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn:1248:16", style="filled", fontcolor="black", color="#9e9e9e", fillcolor="white"];
+
+}  // cluster_1162556736
+
+1160127488 [label=<<b>jit__where_.2</b><br/>call<br/>s32[1]<br/><b>operand 0</b> = pred[1] {0}<br/><b>operand 1</b> = s32[] 0<br/><b>operand 2</b> = s32[1] {128}>, shape=rect, tooltip="jit(attention_te)/_TEAttention/te_attention/_FusedDotProductAttention_0/jit(_where)
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn:1248:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn:1248:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn:1248:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_legacy_fused_attn:1124:13
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:fused_attn:1614:15
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/flax/transformer.py:_FusedDotProductAttention.__call__:426:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/flax/transformer.py:DotProductAttention.__call__:902:16
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_TEAttention.__call__:251:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_te:292:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:294:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="white", color="#005005", fillcolor="#2e7d32"];
+subgraph cluster_1095160992 {
+style=rounded; color=black;
+label = <Subcomputation for <b>jit__cumsum_with_promotion_.2</b><br/>_cumsum_with_promotion.4>;
+labelloc = t;
+tooltip = " ";
+1162390432 [label=<<b>Parameter 0</b><br/>s32[1]>, shape=rect, tooltip="", style="filled", fontcolor="black", color="#cbae82", fillcolor="#ffe0b2"];
+subgraph cluster_1162559264 {
+style=rounded; color=black;
+label = <Subcomputation for <b>fused_attn_fwd.3</b><br/>cumsum.3>;
+labelloc = t;
+tooltip = " ";
+1163486448 [label=<<b>Parameter 0</b><br/><i>from Arg_0.3 in _cumsum_with_promotion.4</i><br/>s32[1]>, shape=rect, tooltip="fused_attn_fwd", style="filled", fontcolor="black", color="#cbae82", fillcolor="#ffe0b2"];
+1161198128 [label=<<b>reduce_window_sum.7</b><br/>reduce-window<br/>Subcomputation: <b>add</b><br/>window={size=1}<br/>s32[1]<br/><b>operand 1</b> = s32[] 0>, shape=rect, tooltip="reduce_window_sum
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn:1248:16", style="filled", fontcolor="black", color="#af8eb5", fillcolor="#e1bee7"];
+
+}  // cluster_1162559264
+
+1163043328 [label=<<b>fused_attn_fwd.3</b><br/>call<br/>s32[1]>, shape=rect, tooltip="fused_attn_fwd
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn:1248:16", style="filled", fontcolor="white", color="#005005", fillcolor="#2e7d32"];
+
+}  // cluster_1095160992
+
+1160909216 [label=<<b>jit__cumsum_with_promotion_.2</b><br/>call<br/>s32[1]>, shape=rect, tooltip="jit(attention_te)/_TEAttention/te_attention/_FusedDotProductAttention_0/jit(_cumsum_with_promotion)
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn:1248:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn:1248:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn:1248:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_legacy_fused_attn:1124:13
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:fused_attn:1614:15
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/flax/transformer.py:_FusedDotProductAttention.__call__:426:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/flax/transformer.py:DotProductAttention.__call__:902:16
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_TEAttention.__call__:251:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_te:292:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:294:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="white", color="#005005", fillcolor="#2e7d32"];
+1136190928 [label=<<b>concatenate.2</b><br/>dimensions={0}<br/>s32[2]<br/><b>operand 0</b> = s32[1] {0}>, shape=rect, tooltip="jit(attention_te)/_TEAttention/te_attention/_FusedDotProductAttention_0/concatenate
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn:1248:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn:1248:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn:1248:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_legacy_fused_attn:1124:13
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:fused_attn:1614:15
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/flax/transformer.py:_FusedDotProductAttention.__call__:426:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/flax/transformer.py:DotProductAttention.__call__:902:16
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_TEAttention.__call__:251:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_te:292:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:294:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#97b498", fillcolor="#c8e6c9"];
+1162396016 [label=<<b>jit__where_.3</b><br/>call<br/>s32[1]<br/><b>operand 0</b> = pred[1] {0}<br/><b>operand 1</b> = s32[] 0<br/><b>operand 2</b> = s32[1] {128}>, shape=rect, tooltip="jit(attention_te)/_TEAttention/te_attention/_FusedDotProductAttention_0/jit(_where)
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn:1248:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn:1248:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn:1248:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_legacy_fused_attn:1124:13
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:fused_attn:1614:15
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/flax/transformer.py:_FusedDotProductAttention.__call__:426:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/flax/transformer.py:DotProductAttention.__call__:902:16
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_TEAttention.__call__:251:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_te:292:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:294:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="white", color="#005005", fillcolor="#2e7d32"];
+1160108704 [label=<<b>jit__cumsum_with_promotion_.3</b><br/>call<br/>s32[1]>, shape=rect, tooltip="jit(attention_te)/_TEAttention/te_attention/_FusedDotProductAttention_0/jit(_cumsum_with_promotion)
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn:1248:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn:1248:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn:1248:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_legacy_fused_attn:1124:13
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:fused_attn:1614:15
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/flax/transformer.py:_FusedDotProductAttention.__call__:426:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/flax/transformer.py:DotProductAttention.__call__:902:16
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_TEAttention.__call__:251:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_te:292:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:294:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="white", color="#005005", fillcolor="#2e7d32"];
+1162417584 [label=<<b>concatenate.3</b><br/>dimensions={0}<br/>s32[2]<br/><b>operand 0</b> = s32[1] {0}>, shape=rect, tooltip="jit(attention_te)/_TEAttention/te_attention/_FusedDotProductAttention_0/concatenate
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn:1248:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn:1248:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn:1248:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_legacy_fused_attn:1124:13
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:fused_attn:1614:15
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/flax/transformer.py:_FusedDotProductAttention.__call__:426:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/flax/transformer.py:DotProductAttention.__call__:902:16
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_TEAttention.__call__:251:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_te:292:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:294:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#97b498", fillcolor="#c8e6c9"];
+1161221952 [label=<<b>te_fused_attn_forward_ffi.5</b><br/>custom-call<br/>custom_call_target=&quot;te_fused_attn_forward_ffi&quot;<br/>operand_layout_constraints={bf16[1,128,8,64]{3,2,1,0}, bf16[1,128,8,64]{3,2,1,0}, bf16[1,128,8,64]{3,2,1,0}, bf16[0]{0}, f32[0]{0}, u32[2]{0}, s32[2]{0}, s32[2]{0}, f32[0]{0}, f32[0]{0}, f32[0]{0}, f32[0]{0}, f32[0]{0}, f32[0]{0}}<br/>api_version=API_VERSION_TYPED_FFI<br/>(bf16[1,128,8,64]{3,2,1,0}, f32[1,8,128,1]{3,2,1,0}, u32[2,4]...<br/><b>operand 3</b> = {} (bf16[0])<br/><b>operand 4</b> = {} (f32[0])<br/><b>operand 8</b> = {} (f32[0])<br/><b>operand 9</b> = {} (f32[0])<br/><b>operand 10</b> = {} (f32[0])<br/><b>operand 11</b> = {} (f32[0])<br/><b>operand 12</b> = {} (f32[0])<br/><b>operand 13</b> = {} (f32[0])>, shape=rect, tooltip="jit(attention_te)/_TEAttention/te_attention/_FusedDotProductAttention_0/te_fused_attn_forward_ffi
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn:1248:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn:1248:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn:1248:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_legacy_fused_attn:1124:13
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:fused_attn:1614:15
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/flax/transformer.py:_FusedDotProductAttention.__call__:426:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/flax/transformer.py:DotProductAttention.__call__:902:16
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_TEAttention.__call__:251:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_te:292:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:294:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="white", color="#005005", fillcolor="#2e7d32"];
+1161261008 [label=<<b>te_fused_attn_forward_ffi.6</b><br/>get-tuple-element<br/>index=0<br/>bf16[1,128,8,64]{3,2,1,0}>, shape=rect, tooltip="jit(attention_te)/_TEAttention/te_attention/_FusedDotProductAttention_0/te_fused_attn_forward_ffi
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn:1248:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn:1248:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_fused_attn:1248:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:_legacy_fused_attn:1124:13
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/attention.py:fused_attn:1614:15
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/flax/transformer.py:_FusedDotProductAttention.__call__:426:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/flax/transformer.py:DotProductAttention.__call__:902:16
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_TEAttention.__call__:251:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture.<locals>.attention_te:292:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:attention_fixture:294:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#9e9e9e", fillcolor="white"];
+cluster_1162618336 [label=<ROOT>, shape=circle, tooltip=" ", style="filled", fontcolor="black", color="#8c7b75", fillcolor="#bcaaa4"];
+1162205280 -> 1160127488 [ltail="cluster_1162556736", style="dashed" tooltip="_where.1 -> jit__where_.2"];
+1160753280 -> 1159898672 [arrowhead=empty tooltip="Arg_1.1 -> broadcast_in_dim.1" ];
+1161022416 -> 1162205280 [arrowhead=empty tooltip="Arg_0.1 -> select_n.1"  headlabel="0", labeldistance=2];
+1159898672 -> 1162205280 [arrowhead=empty tooltip="broadcast_in_dim.1 -> select_n.1"  headlabel="1", labeldistance=2];
+1163064960 -> 1162205280 [arrowhead=empty tooltip="Arg_2.1 -> select_n.1"  headlabel="2", labeldistance=2];
+1163043328 -> 1160909216 [ltail="cluster_1095160992", style="dashed" tooltip="_cumsum_with_promotion.4 -> jit__cumsum_with_promotion_.2"];
+1161198128 -> 1163043328 [ltail="cluster_1162559264", style="dashed" tooltip="cumsum.3 -> fused_attn_fwd.3"];
+1163486448 -> 1161198128 [arrowhead=empty tooltip="fused_attn_fwd.1 -> reduce_window_sum.7"  headlabel="0", labeldistance=2];
+1162390432 -> 1163043328 [arrowhead=empty tooltip="Arg_0.3 -> fused_attn_fwd.3" ];
+1160127488 -> 1160909216 [arrowhead=empty tooltip="jit__where_.2 -> jit__cumsum_with_promotion_.2" ];
+1160909216 -> 1136190928 [arrowhead=empty tooltip="jit__cumsum_with_promotion_.2 -> concatenate.2"  headlabel="1", labeldistance=2];
+1162205280 -> 1162396016 [ltail="cluster_1162556736", style="dashed" tooltip="_where.1 -> jit__where_.3"];
+1163043328 -> 1160108704 [ltail="cluster_1095160992", style="dashed" tooltip="_cumsum_with_promotion.4 -> jit__cumsum_with_promotion_.3"];
+1162396016 -> 1160108704 [arrowhead=empty tooltip="jit__where_.3 -> jit__cumsum_with_promotion_.3" ];
+1160108704 -> 1162417584 [arrowhead=empty tooltip="jit__cumsum_with_promotion_.3 -> concatenate.3"  headlabel="1", labeldistance=2];
+1095161520 -> 1161221952 [arrowhead=normal tooltip="q.1 -> te_fused_attn_forward_ffi.5"  headlabel="0", labeldistance=2];
+1160752592 -> 1161221952 [arrowhead=normal tooltip="k.1 -> te_fused_attn_forward_ffi.5"  headlabel="1", labeldistance=2];
+1138347040 -> 1161221952 [arrowhead=normal tooltip="v.1 -> te_fused_attn_forward_ffi.5"  headlabel="2", labeldistance=2];
+1161198368 -> 1161221952 [arrowhead=empty tooltip="broadcast.1 -> te_fused_attn_forward_ffi.5"  headlabel="5", labeldistance=2];
+1136190928 -> 1161221952 [arrowhead=empty tooltip="concatenate.2 -> te_fused_attn_forward_ffi.5"  headlabel="6", labeldistance=2];
+1162417584 -> 1161221952 [arrowhead=empty tooltip="concatenate.3 -> te_fused_attn_forward_ffi.5"  headlabel="7", labeldistance=2];
+1161221952 -> 1161261008 [arrowhead=normal tooltip="te_fused_attn_forward_ffi.5 -> te_fused_attn_forward_ffi.6" ];
+1161221952 -> cluster_1162618336 [tooltip=" "];
+}

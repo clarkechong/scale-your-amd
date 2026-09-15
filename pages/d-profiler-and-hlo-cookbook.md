@@ -18,6 +18,7 @@ authors:
 
 toc:
   - name: HLO Dumps
+  - name: Feature Comparison Bundles
   - name: XProf
   - name: rocprofv3
   - name: rocprof-compute
@@ -64,6 +65,97 @@ rg -n "fusion|dot\\(" /tmp/hlo
 
 Record the exact dump flags because exhaustive pass dumps can change compile time and disk
 use.
+
+## Feature Comparison Bundles
+
+A feature comparison is two matched arms with one changed knob. Use the seven-item
+compiler-delta callout from
+[Chapter 2]({{ '/pages/2-lowering-jax-jit-on-rocm' | relative_url }}), and run each
+arm in a clean process with the same input signature, device set, cache policy, and
+unrelated XLA options.
+
+For every arm, retain the raw earliest IR named by the callout, raw optimized HLO,
+the `.debug_options` file, and the final proof artifact. Retain scheduled HLO for an
+ordering claim, buffer assignment and compiled-memory analysis for a memory claim,
+and a thunk dump or runtime trace for an execution claim. When the structural delta
+first appears inside optimization, keep the dump immediately before and after that
+pass in both arms. Do not retain only the visually interesting excerpt.
+
+Exhaustive dumps are useful for discovery. Once the responsible pass family is
+known, rerun both arms with a focused expression and save the exact expression:
+
+```bash
+FOCUS='.*(shardy|spmd|collective|layout|fusion|schedule|buffer).*'
+XLA_FLAGS="$XLA_FLAGS \
+  --xla_dump_to=/tmp/compiler-delta/before/raw \
+  --xla_dump_hlo_as_text \
+  --xla_dump_hlo_pass_re=$FOCUS" \
+python3 workload.py
+```
+
+Use the actual pass names found in the exhaustive dump; names and boundaries change
+between XLA revisions. Repeat the command for `after/` with only the declared knob
+changed.
+
+Keep raw files authoritative. A normalized diff may remove recorded timestamps,
+absolute dump roots, and unstable module or instruction IDs, but it must retain
+shape, dtype, layout, replica groups, channel IDs, and source metadata such as
+operation name, source file, and source line. Do not sort instructions or
+collectives to make a diff smaller: ordering can be the feature. Record every
+normalization rule beside the diff.
+
+```text
+hlo/compiler-delta/
+├── comparison.yaml
+├── before/
+│   ├── earliest-intent.{txt,mlir}
+│   ├── optimized.txt
+│   ├── scheduled.txt
+│   └── buffer-assignment.txt
+├── after/
+│   ├── earliest-intent.{txt,mlir}
+│   ├── optimized.txt
+│   ├── scheduled.txt
+│   └── buffer-assignment.txt
+└── diff/
+    ├── optimized.normalized.diff
+    ├── normalization-rules.txt
+    └── hlo-snippet.svg
+```
+
+The complete publication layout and claim-specific minimum are in
+[Appendix F]({{ '/pages/f-case-study-artifact-schema' | relative_url }}).
+
+For literal HLO SVGs, request DOT alongside text and render the retained file
+without redrawing its operations:
+
+```bash
+XLA_FLAGS="$XLA_FLAGS \
+  --xla_dump_to=/tmp/hlo \
+  --xla_dump_hlo_as_text \
+  --xla_dump_hlo_as_dot" \
+python3 workload.py
+
+dot -Tsvg /tmp/hlo/module.jit_name.after_spmd_partitioner.dot \
+  -o pages/img/jit-name-after-spmd.svg
+```
+
+Crop the retained graph when the full module is unreadable, but keep literal HLO
+operation labels, shapes, layouts, replica groups, and edges. Highlighting or
+schedule numbers may be added as annotation. Do not replace the selected nodes with
+generic boxes.
+
+The explanatory examples in Chapters 5 through 9 are reproducible with:
+
+```bash
+python3 tools/capture_hlo_feature_svgs.py
+```
+
+That tool runs each arm in a fresh process, retains the selected raw HLO and DOT
+under `artifacts/hlo-fixtures/`, and renders XLA's graph directly. Its LHS SVGs are
+the one exception to the direct DOT render: they extract literal top-level
+operation lines from `is_scheduled=true` HLO and place them in file order, because
+an ordinary dependency DAG does not encode the selected schedule.
 
 ## XProf
 

@@ -17,9 +17,9 @@ authors:
     url: "https://github.com/clarkechong"
 
 toc:
-  - name: "What `jax.jit` Actually Produces"
   - name: "JAX Transformations"
   - name: "The IR Ladder"
+  - name: "Reading a Compiler Delta"
   - name: "Shardy and Partitioning"
   - name: "The XLA GPU Pipeline"
     subsections:
@@ -30,12 +30,8 @@ toc:
   - name: "XLA FFI"
   - name: "PJRT and the Runtime"
   - name: "Autotuning and Caches"
-  - name: "Initialize the ROCm Backend Once"
-  - name: "Verify the Path"
-  - name: "Failure Taxonomy"
+  - name: "Configuring the Runtime Environment"
 ---
-
-## What `jax.jit` Actually Produces {#what-jax-jit-actually-produces}
 
 `jax.jit` does not map each JAX operation to one fixed ROCm library call. It
 specializes a function, partitions it across the selected devices, optimizes the
@@ -181,14 +177,63 @@ These text and analysis methods are debugging interfaces. JAX does not guarantee
 their availability or output format across backends and versions. Save the package
 manifest with every dump rather than parsing it as a stable API. `[cited]`
 
+## Reading a Compiler Delta
+
+A **compiler delta** is a matched before/after comparison for one performance
+feature. Start at the earliest representation where the feature's intent is
+legible, then follow it to the latest artifact that proves what executed. Do not
+force every comparison through every stage:
+
+- use **jaxpr** for JAX transformations such as autodiff, `scan`, rematerialization,
+  casts, and custom primitives;
+- use **StableHLO or Shardy MLIR** for global tensor semantics and propagated
+  shardings;
+- use **optimized HLO** for local shapes, collectives, custom calls, and fusions;
+- use **scheduled HLO** for execution order;
+- use **buffer assignment** for allocation, aliasing, and lifetime claims; and
+- use the **thunk sequence or a runtime trace** to prove execution.
+
+A feature comparison should use the following seven-item callout contract, in this
+order:
+
+1. **Knob.** The single feature, flag, API, or configuration change.
+2. **Stage.** The earliest useful IR and the final proof artifact.
+3. **Before.** The matched baseline excerpt and its artifact path.
+4. **After.** The changed excerpt and its artifact path.
+5. **Structural delta.** The operations, shapes, layouts, groups, calls, schedule,
+   or buffers that changed.
+6. **Expected effect.** The performance mechanism predicted from that structure.
+7. **Runtime proof.** The trace, counters, timing, and correctness evidence that
+   establish whether the prediction occurred.
+
+The small captured attention fixture in
+[Chapter 7]({{ '/pages/7-a-map-of-kernel-backends-on-jax' | relative_url }}#read-a-backend-delta)
+provides a concrete example:
+
+> **Compiler delta: XLA versus Transformer Engine attention fixture**
+>
+> 1. **Knob.** Enable an eligible fused-attention backend.
+> 2. **Stage.** `before_optimizations` HLO to kernel trace.
+> 3. **Before.** `artifacts/hlo-fixtures/attention/xla/`: the literal graph contains
+>    QK `dot_general`, causal masking, softmax reductions, and the value dot.
+> 4. **After.** `artifacts/hlo-fixtures/attention/te/`: Q/K/V and metadata feed
+>    `custom_call_target="te_fused_attn_forward_f5"`.
+> 5. **Structural delta.** Two dots and materialized intermediates become one opaque
+>    custom call.
+> 6. **Expected effect.** Fewer HBM round trips and dispatches.
+> 7. **Runtime proof.** Still required from the differentiated case-study step: a
+>    matched trace, dispatch count, forward/backward route, and output/gradient checks.
+
+Unless an excerpt links to a retained artifact, label it **illustrative** rather
+than `[measured]`. Captured snippets must name their bundle path and preserve the
+raw source around the excerpt. [Appendix D]({{ '/pages/d-profiler-and-hlo-cookbook'
+| relative_url }}) defines the comparison dump, and
+[Appendix F]({{ '/pages/f-case-study-artifact-schema' | relative_url }}) defines
+the publication bundle.
+
 ## Shardy and Partitioning
 
-JAX presents global arrays to `jit`. `NamedSharding`, `PartitionSpec`, input and
-output shardings, and explicit constraints describe how those arrays may be divided.
-[Shardy](https://openxla.org/shardy/overview) propagates that information through
-the program, resolves unspecified shardings, partitions the global computation into
-a per-device SPMD program, and inserts the data movement required between local
-shapes. `[cited]`
+JAX programs are typically written in terms of global arrays, which represent the logical tensor independent of how it is distributed across devices. NamedSharding, PartitionSpec, input and output shardings, and explicit sharding constraints describe how that global array may be partitioned. Shardy propagates these sharding specifications through the computation, infers unspecified shardings where possible, partitions the global computation into per-device SPMD programs, and inserts any communication required between shards.
 
 This distinction matters on an eight-MI355X node. A global dot can become smaller
 local dots with no communication, or it can require an AllGather, ReduceScatter, or
@@ -256,14 +301,11 @@ rematerialization may shorten lifetimes by recomputing values. `[cited]`
 
 Buffer assignment runs after scheduling because lifetimes depend on execution
 order. It maps logical HLO values to slices of device allocations and reuses a slice
-when lifetimes do not overlap. Donation adds legal input-output aliasing; it does not
-change the numerical function. JAX exposes the compiler estimate through
+when lifetimes do not overlap. JAX exposes the compiler estimate through
 `compiled.memory_analysis()` when the backend provides it.
 
 The useful artifacts are the optimized HLO and the file ending in
-`after_optimizations-buffer-assignment.txt`. Compare their layouts, copies, buffer
-lifetimes, and aliases with the runtime high-water mark. A static buffer plan and an
-allocator peak answer different questions.
+`after_optimizations-buffer-assignment.txt`. Compare their layouts, copies, buffer lifetimes, and aliases against the runtime peak memory footprint. A static buffer plan estimates how memory can be reused under the compiler's schedule, whereas the runtime peak reflects the memory actually allocated during execution.
 
 ### Code Generation and the Executable
 
@@ -437,8 +479,7 @@ jax.config.update(
 )
 ```
 
-The
-[persisted-autotuning guide](https://openxla.org/xla/persisted_autotuning) requires
+[XLA's persisted-autotuning guide](https://openxla.org/xla/persisted_autotuning) requires
 the directory to exist and places invalidation on the user. Separate caches by GPU
 type and XLA version. A different HLO can reuse matching fusion entries and tune the
 rest. A changed compiler can produce different fusions, making old entries
@@ -450,7 +491,7 @@ to a cold persistent cache unless a cache directory is explicitly configured. Th
 keeps compiler-route comparisons attributable; production restarts may prefer a
 versioned warm cache.
 
-## Initialize the ROCm Backend Once
+## Configuring the Runtime Environment
 
 Environment variables and XLA flags must be fixed before the ROCm backend is
 initialized. Some libraries import JAX or register FFI targets as a side effect, so
@@ -509,123 +550,6 @@ The last `client` field is a diagnostic interface and may change. Pair it with
 environment variable used by the launcher. XLA dumps also include a
 `.debug_options` artifact that records the options attached to each module.
 
-## Verify the Path
-
-Use the cheapest evidence that can disprove the intended route, then move down one
-level.
-
-**1. Backend and device.** Require `jax.default_backend() == "rocm"`, the expected
-device count, and `gfx950` in the ROCm hardware inventory. This catches CPU fallback,
-visibility mistakes, and the wrong partition mode.
-
-**2. Transformed program.** Inspect jaxpr when a cast, custom primitive, scan, or
-custom derivative is in doubt. Inspect StableHLO for operation types, static shapes,
-source locations, and initial sharding annotations.
-
-**3. Partitioned program.** Inspect the Shardy export and optimized HLO. Check local
-shapes, collectives, replica groups, copies, and layouts against the mesh. This
-catches a semantically valid but expensive sharding.
-
-**4. Backend route.** In optimized HLO, search for the relevant `custom_call_target`,
-fusion, and backend configuration. A custom-call name proves entry to a library or
-extension, not its internal kernel.
-
-**5. Dispatched kernel.** Capture a warmed execution with
-[`rocprofv3`](https://rocm.docs.amd.com/projects/rocprofiler-sdk/en/latest/how-to/using-rocprofv3.html):
-
-```bash
-rocprofv3 --kernel-trace --output-format csv -- python3 workload.py
-```
-
-Add `--rccl-trace` when the collective API call matters. Kernel names are
-implementation details and can change, so store the full trace and software
-manifest instead of matching one permanent string.
-
-**6. Generated code and counters.** For an XLA-generated kernel, inspect the dumped
-LLVM IR and any emitted HSACO. ROCm's LLVM tools can disassemble an available code
-object:
-
-```bash
-llvm-objdump -d --mcpu=gfx950 kernel.hsaco
-```
-
-Use `rocprofv3 --pmc` or `rocprof-compute` only after identifying the dispatch.
-Counters verify MFMA issue, memory traffic, occupancy, and cache behavior. Counter
-collection can serialize same-GPU streams, so its elapsed time is not a steady-run
-measurement.
-
-Create compiler artifacts in a new directory so runs cannot mix:
-
-```bash
-DUMP_DIR="/tmp/xla-dump-$$"
-mkdir -p "$DUMP_DIR"
-export XLA_FLAGS="${XLA_FLAGS:-} \
---xla_dump_to=$DUMP_DIR \
---xla_dump_hlo_as_text \
---xla_gpu_dump_llvmir"
-python3 workload.py
-```
-
-OpenXLA names the key files `before_optimizations.txt`,
-`after_optimizations.txt`, and
-`after_optimizations-buffer-assignment.txt`. LLVM files such as
-`.ir-no-opt.ll` and `.ir-with-opt.ll` apply to generated code paths.
-
-Two experiment routes illustrate the full proof:
-
-- For Mixtral's ragged dot, the config and flag show intent. A ragged operation in
-  early IR, `__cublas$lt$groupedMatmul` in optimized HLO, and a hipBLASLt kernel in
-  the trace prove the grouped route. If the custom call is absent, the operation
-  took another lowering.
-- For direct JAX-AITER attention, importing the package proves only that the wrapper
-  loaded. Forward and backward JAX-AITER targets in optimized HLO prove FFI
-  lowering. The AITER or CK dispatch names prove the kernel route.
-
-Chapter 3 applies this ladder to traces and counters. Later kernel and flag chapters
-own route-specific selection controls; this chapter owns the evidence that a control
-had an effect.
-
-## Failure Taxonomy
-
-Classify the failure before changing flags. Different classes require different
-evidence.
-
-**Unsupported.** The requested dtype, shape, layout, derivative, sharding rule, or
-collective has no implementation in the declared stack. Expect an explicit
-`UNIMPLEMENTED`, registration error, or validation error. Record the exact signature
-and version, then select a documented fallback or change the shape. Repeated flag
-changes cannot add a missing kernel.
-
-**Compile failure.** Tracing, StableHLO verification, Shardy propagation, an XLA
-pass, code generation, or compiler memory use fails before execution. Reduce to the
-smallest lowering reproducer and save `before_optimizations.txt`, logs, flags, and
-the package manifest. If only one sharding triggers it, include both mesh and input
-shardings.
-
-**Runtime or ABI failure.** Compilation succeeds, but loading a code object,
-resolving an FFI target, launching a kernel, or executing a collective fails. A
-missing shared object, invalid stream use, device illegal-address fault, or RCCL
-timeout belongs here. Keep the optimized HLO, runtime trace, first failing dispatch,
-and extension build manifest.
-
-**Silent fallback.** The program is correct, but the requested implementation never
-appears. The decisive evidence is the missing custom-call or unexpected kernel, not
-the selector setting. Check eligibility restrictions, package imports, registration,
-and deprecated or ignored controls.
-
-**Slow fallback.** The intended family appears, but a generic algorithm, poor tile,
-extra copy, materialization, or unfavorable local shape makes it slow. Inspect the
-selected algorithm and workspace, layouts around the call, dispatch count, local
-dimensions, and counters. This class cannot be diagnosed from the Python API name.
-
-**Numerical failure.** The intended path executes but outputs, gradients, or repeated
-updates diverge from a reference, produce NaNs, or corrupt memory. Compare the
-smallest forward and backward operation in a higher-precision reference, then test
-the composed step. Record tolerances, seeds, accumulation dtype, autotune cache, and
-the exact forward and backward kernels. A fast dispatch is not acceptable evidence
-of correctness.
-
-A path is accepted only when the backend, transformed program, partitioning,
-optimized HLO route, dispatched kernel, and numerical check agree. If one link is
-missing, report that link as unverified rather than treating a configuration field
-as proof.
+This chapter established where compilation, partitioning, kernel selection, and
+runtime dispatch decisions occur. Chapter 3 shows how to measure one training step
+and verify those decisions using optimized HLO, XProf, and ROCm profiling tools.

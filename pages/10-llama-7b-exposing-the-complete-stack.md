@@ -561,6 +561,16 @@ flags, and `minimal_with_context` remat fixed. Only the attention call changes.
 > allocator peaks, correctness comparisons, optimized HLO modules, and
 > selected-step kernel traces are absent.
 
+The publication artifact must include a compiler delta against the XLA arm.
+Retain jaxpr only when the frontend primitives differ, optimized HLO for every
+arm, buffer assignment for the score/workspace claim, and the selected-step
+trace. The explanatory comparison from
+[Chapter 7]({{ '/pages/7-a-map-of-kernel-backends-on-jax' | relative_url }})
+shows a literal QK-mask-softmax-PV graph for a small XLA fixture and an opaque
+forward-call boundary for its Transformer Engine counterpart. The case artifacts must show
+the actual target names, local shapes, layouts, and dispatch count; the
+fixture capture is not evidence that the complete Llama arm selected the same route.
+
 The XLA arm is the portability baseline. Its score state scales as \(T^2\). The
 three flash-style arms should reduce score materialization, but lower memory does
 not guarantee higher end-to-end throughput. Attention is only 7.52% of the
@@ -617,6 +627,19 @@ which layer intermediates survive the forward pass:
 > **BLOCKED — one-GPU remat:** the three logs, compiled-memory analyses, allocator
 > peaks, and traces are absent.
 
+For each policy, retain a normalized delta against `none` as described in
+[Chapter 5]({{ '/pages/5-making-the-model-fit' | relative_url }}):
+
+- jaxpr showing the explicit checkpoint boundary;
+- the forward and reverse scan bodies from optimized HLO;
+- the residual values carried from forward to backward;
+- repeated dots, fusions, or custom calls introduced by recomputation; and
+- buffer assignment showing which long-lived allocations disappeared.
+
+The comparison is incomplete if it contains only an HLO operation count.
+Recomputation can move work between fusions without changing a recognizable op
+name, while the memory claim depends on lifetimes and aliases.
+
 The decision should be made on the Pareto frontier:
 
 1. reject any policy that does not fit with operating headroom;
@@ -643,6 +666,14 @@ batch from four to 32.
 
 > **BLOCKED — FSDP-8 remat:** the three eight-GPU logs, per-device memory reports,
 > optimized HLO, collective replica groups, and RCCL traces are absent.
+
+This comparison requires a two-dimensional delta: remat policy and distributed
+execution. Use the same FSDP-8 arm as the baseline for all three policies, then
+record whether the backward scan gained recomputed local projections, repeated
+weight AllGathers, or only shorter activation lifetimes. Preserve scheduled HLO
+and buffer assignment as well as optimized HLO; start/done distance is an
+overlap opportunity, while the device trace is the proof that RCCL and compute
+overlapped.
 
 This is not a strong-scaling experiment: the global work increases by eight when
 the device count increases by eight. Tokens/s/GPU remains comparable because the

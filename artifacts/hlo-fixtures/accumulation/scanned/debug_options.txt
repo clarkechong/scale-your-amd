@@ -1,0 +1,5 @@
+xla_cpu_enable_fast_min_max: false
+xla_gpu_cuda_data_dir: "None"
+xla_dump_to: "/tmp/hlo-accumulation-scanned-srf5lb0p"
+xla_dump_hlo_as_text: true
+xla_dump_hlo_as_dot: true

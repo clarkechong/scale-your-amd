@@ -1,7 +1,7 @@
 ---
 layout: distill
 title: "Training in Mixed Precision"
-description: "Choose tensor dtypes, scaling recipes, and MI355X execution paths without mistaking a selected config for a low-precision kernel."
+description: "How storage, operand, accumulation, output, gradient, and optimizer dtypes combine into MI355X mixed-precision training."
 date: 2026-09-13
 
 section_number: 4
@@ -17,108 +17,204 @@ authors:
     url: "https://github.com/clarkechong"
 
 toc:
-  - name: "A Recipe Assigns Dtypes to Tensor Roles"
+  - name: "What Mixed-Precision Training Actually Means"
+    subsections:
+      - name: "A Matrix Instruction Already Mixes Precisions"
+      - name: "Casts, Conversions, and Emulation"
+      - name: "Precision in HLO"
+      - name: "Representative Training Recipes"
+  - name: "Precision Across a Llama Training Step"
   - name: "Formats and Scaling"
     subsections:
       - name: "BF16 and FP16"
       - name: "FP8"
       - name: "MXFP8, MXFP6, and MXFP4"
   - name: "MI355X Training Paths"
-  - name: "Compute and Memory Effects"
-  - name: "The Llama 70B Precision Sweep"
-  - name: "Verify the Executed Path"
-  - name: "Convergence Is the Guardrail"
-  - name: "A Precision Decision Procedure"
-  - name: "Decision Table"
+    subsections:
+      - name: "Published Matrix Peaks"
+      - name: "Amdahl Speedup Bound"
+      - name: "Compute, Memory, and Communication Effects"
+  - name: "Published Convergence and Time-to-Quality Evidence"
   - name: "References"
 ---
 
-Low-precision training is not a model-wide dtype switch. It is an assignment of
-storage, compute, accumulation, and scaling formats to individual tensor roles. On the
-MI355X, choosing `quantization=te_mxfp8` requests a recipe. It does not prove that every
-dense projection reached an MXFP8 matrix instruction, that attention used MXFP8, or that
-the optimizer stopped using FP32.
+Mixed-precision training is not a model-wide dtype switch. It is a contract assigning
+formats to storage, matrix operands, accumulators, outputs, gradients, reductions,
+optimizer state, and scale metadata. Saying that a model "trains in FP8" hides most of
+that contract.
 
-This chapter separates four kinds of evidence:
+The distinction matters on MI355X because the Matrix Core instruction already has
+separate operand and accumulator formats, and a JAX-facing library can add conversions
+on both sides. A BF16 graph can therefore contain an MXFP4 matrix operation with an FP32
+accumulator and a BF16 result, while its master parameters and optimizer remain FP32.
 
-- **[source]** comes from checked-in code, configuration, or a manifest.
-- **[measured]** requires a complete Appendix F bundle from an MI355X run.
-- **[analytical]** follows from format widths, published peaks, or arithmetic and has
-  not been confirmed by a profile.
-- **[cited]** is a result or behavior reported by a named external source.
-
-Support statements are verified against
-`rocm/jax-training:maxtext-v26.6`, JAX/JAXLIB and ROCm PJRT/plugin 0.11.0,
-[Transformer Engine 2.17 with the gfx950 workspace patch](https://github.com/clarkechong/TransformerEngine/tree/fix/jax-gfx950-mxfp8-workspace),
-the ROCm [MaxText MXFP4 branch at `b437942a`](https://github.com/ROCm/maxtext/tree/b437942a),
+The software examples are pinned to `rocm/jax-training:maxtext-v26.6`,
+JAX/JAXLIB and ROCm PJRT/plugin 0.11.0, Transformer Engine 2.17, the ROCm
+[MaxText MXFP4 branch at `b437942a`](https://github.com/ROCm/maxtext/tree/b437942a),
 and [JAX-AITER alpha2 at `35b7175c`](https://github.com/ROCm/jax-aiter/tree/35b7175c),
-on **13 September 2026**. A hardware format can be native while the required JAX
-training integration is absent.
+checked on **13 September 2026**. The chapter describes the available execution
+shapes; the later case study measures them.
 
-## A Recipe Assigns Dtypes to Tensor Roles
+## What Mixed-Precision Training Actually Means
 
-Start by writing a dtype ledger. These MaxText fields control different objects:
+A useful recipe starts with a dtype ledger rather than one headline format:
 
-```yaml
-dtype: "bfloat16"
-weight_dtype: "float32"
-grad_dtype: "float32"
-mu_dtype: "float32"
-quantization: "te_fp8_delayedscaling"
+| Role | Question | Representative choice |
+|---|---|---|
+| Master parameter | What does the optimizer update and retain? | FP32 |
+| GEMM weight operand | What format enters the matrix instruction? | BF16, FP16, FP8, or MX |
+| Activation or residual | What format flows between layers? | BF16 or FP16 |
+| GEMM activation operand | What format enters the matrix instruction? | BF16, FP16, FP8, or MX |
+| Accumulator | In what format are partial products summed? | commonly FP32 on the MI355X paths here |
+| GEMM output | What format is written back to the graph? | commonly BF16 or FP16 |
+| Gradient | What format is retained after backward? | BF16 or FP32 |
+| Collective payload | What bytes cross RCCL? | BF16 or FP32 unless explicitly reduced |
+| Optimizer state | What formats hold moments and update arithmetic? | commonly FP32 |
+| Scale metadata | What describes the low-precision range? | FP32 scale, `amax` history, or E8M0 |
+
+These roles can differ within one operation and again across operations. `dtype`,
+`weight_dtype`, `grad_dtype`, `mu_dtype`, and `quantization` are therefore not
+synonyms. They control different portions of the training state and graph.
+
+### A Matrix Instruction Already Mixes Precisions
+
+[Chapter 1]({{ '/pages/1-mi355x-as-a-training-machine' | relative_url }}#mfma-lane-fragments)
+showed that an MFMA instruction names both its operand family and its accumulator.
+For example, the CDNA 4 scaled forms are named like:
+
+```text
+v_mfma_scale_f32_16x16x128_f8f6f4
 ```
 
-`dtype` is the ordinary activation and compute dtype. A quantization recipe can replace
-eligible `dot_general` calls with lower-precision operations while the rest of the model
-continues to use `dtype`.
+The `f8f6f4` portion describes the allowed low-precision operand encodings. The
+leading `f32` describes the accumulator and result tile held in registers. All 64
+lanes contribute low-precision fragments while the instruction updates FP32 partial
+sums.
 
-`weight_dtype` is the stored trainable parameter dtype. In the Llama 70B experiments it
-is FP32, so each step casts or quantizes from an FP32 parameter to the compute format.
-This is the master copy that the optimizer updates.
+A library call can surround that instruction with a wider graph-level interface:
 
-`grad_dtype` is a conditional cast in the pinned MaxText trainer: a gradient leaf is
-cast only when it arrives in FP32. The trainer does not upcast a BF16 gradient to
-FP32. Reducing `grad_dtype` can save memory and communication for FP32 leaves, but
-setting it to FP32 does not prove that every stored gradient is FP32. Record gradient
-dtypes from the lowered program or runtime state.
-
-`mu_dtype` controls Adam's first moment. In the pinned MaxText source, Adam's second
-moment has no independent field and inherits `weight_dtype`. Lowering `mu_dtype` does
-not lower the second moment.
-
-`quantization` selects the dense-dot implementation and its scaling recipe. It does not
-change every operation in the layer. Norm reductions, softmax, loss evaluation, gradient
-accumulation, optimizer arithmetic, and scale or `amax` calculations commonly stay at
-BF16 or FP32.
-
-The raw-JAX Llama 7B model makes the exception list visible:
-
-- parameters and Adam moments are FP32;
-- dense and attention inputs use `dtype`, normally BF16;
-- RMSNorm computes the variance in FP32;
-- logits are cast to FP32 before cross-entropy;
-- the optimizer update is applied to the FP32 parameter tree.
-
-That is a mixed-precision recipe even though it has no `quantization` value. The
-[Llama 7B source](https://github.com/clarkechong/llama7b-jax-fundamentals/tree/5f996a88)
-is useful because each cast is explicit.
-
-The Mixtral recipe is different:
-
-```yaml
-dtype: "bfloat16"
-weight_dtype: "bfloat16"
-grad_dtype: "float32"
-mu_dtype: "bfloat16"
-quantization: ""
+```text
+FP32 master weight ─quantize─┐
+                             ├─ low × low MFMA ─ FP32 accumulator ─cast─ BF16 output
+BF16 activation   ─quantize─┘
 ```
 
-Its parameters and both Adam moments are BF16 in the pinned MaxText implementation.
-Although the config requests `grad_dtype: float32`, the trainer does not upcast BF16
-parameter gradients. Treat those gradients as BF16 unless the lowered program or
-runtime state proves otherwise. Expert sparsity changes how many weights execute per
-token, but optimizer state still exists for all eight experts. Precision and memory
-must therefore be accounted for against total parameters, not the two experts selected
-for one token.
+The persistent parameter is still FP32, the activation arriving at the layer is still
+BF16, and the result returned to the residual stream is still BF16. Only the operands
+inside the eligible matrix operation are MXFP4 in this example. Writing simply
+`weights: MXFP4` is ambiguous unless it states whether it means the master parameter,
+a cached packed copy, or the transient GEMM operand.
+
+Backward introduces the same distinctions again. The activation-gradient and
+weight-gradient GEMMs can have their own operand recipes, accumulator format, and
+output dtype. The final gradient tree, its RCCL reduction, and the optimizer update
+are separate choices.
+
+### Casts, Conversions, and Emulation
+
+A cast is one mechanism used to cross a precision boundary. It is often part of a
+mixed-precision recipe, but it is not itself the definition of mixed precision.
+
+Three superficially similar graphs can mean different things:
+
+1. A BF16 tensor is quantized to FP8, consumed by an FP8 MFMA, accumulated in FP32,
+   and converted back to BF16. This is a genuine low-precision matrix route.
+2. A low-precision stored tensor is converted to BF16 before an ordinary BF16 GEMM.
+   Storage changed, but the matrix computation did not.
+3. A requested numerical mode is implemented using another hardware mode. CDNA 4,
+   for example, implements TF32 semantics in software through BF16. That is backend
+   emulation, not by itself a model-level mixed-precision training recipe. FP32 matrix
+   arithmetic itself remains a native MI355X path.
+
+An input cast and output cast therefore do not prove which instruction executed. The
+meaningful description is the complete route:
+
+```text
+stored dtype → operand conversion → matrix operand dtype
+             → accumulator dtype → output conversion → graph dtype
+```
+
+### Precision in HLO
+
+Optimized HLO is mainly a route-and-scope check for a precision recipe. It can show
+which contractions stayed on a BF16 `dot` or GEMM custom call and which entered a
+low-precision custom call. Around the latter, look for FP8 `convert` operations,
+scale and `amax` calculations, or MX operands accompanied by E8M0 metadata.
+Use [Chapter 2's compiler-delta convention]({{ '/pages/2-lowering-jax-jit-on-rocm' | relative_url }}#reading-a-compiler-delta)
+and retain the matched arm layout from
+[Appendix D]({{ '/pages/d-profiler-and-hlo-cookbook' | relative_url }}#feature-comparison-bundles).
+
+There is deliberately no generic low-precision HLO drawing here. Transformer
+Engine FP8, Transformer Engine MXFP8, and JAX-AITER MXFP4 expose different literal
+targets, state tuples, scale layouts, and workspaces. Replacing those artifacts
+with one invented custom call would hide the part this comparison is meant to
+verify. Chapter 11 therefore owns the captured BF16/FP8/MXFP8/MXFP4 SVG excerpts
+from its pinned stack.
+
+Inspect the complete training computation, not only the first matching target. The
+forward contraction, activation-gradient contraction, and weight-gradient contraction
+can take different routes:
+
+```text
+forward:              x  @ w
+activation gradient:  dy @ transpose(w)
+weight gradient:      transpose(x) @ dy
+```
+
+For each direction, record operand and result layouts, copies or transposes at the
+boundary, scale-metadata shapes, output dtype, and declared workspace. A matching
+custom-call name with an unexpected local layout or insufficient workspace can still
+select another internal implementation or fail eligibility.
+
+HLO does not prove the matrix instruction inside an opaque library or FFI call. Actual
+instruction proof requires a device trace to identify the launched kernel, disassembly
+of its code object, and relevant instruction counters from a separate counter run.
+
+### Representative Training Recipes
+
+The following are representative BF16-surrounded recipes, not universal standards:
+
+| Recipe | Master parameters | Surrounding tensors | Eligible GEMM operands | Accumulator | GEMM output | Optimizer |
+|---|---|---|---|---|---|---|
+| FP32 reference | FP32 | FP32 | FP32 | FP32 | FP32 | FP32 |
+| BF16 mixed | FP32 | BF16 | BF16 | FP32 | BF16 | FP32 |
+| FP16 mixed | FP32 | FP16 | FP16 | FP32 | FP16 | FP32, commonly with loss scaling |
+| FP8 delayed | FP32 | BF16 | FP8, recipe-specific E4M3/E5M2 | FP32 | BF16 | FP32 |
+| MXFP8 | FP32 | BF16 | MXFP8 plus block scales | FP32 | BF16 | FP32 |
+| MXFP4 | FP32 | BF16 | MXFP4 plus block scales | FP32 | BF16 | FP32 |
+
+Norms, softmax, loss, residual additions, collectives, and optimizer state can make
+different choices from the dense projections. A recipe also decides which forward,
+activation-gradient, and weight-gradient contractions receive the low-precision path.
+
+## Precision Across a Llama Training Step
+
+A standard Transformer block diagram is useful for locating projections, but it
+cannot show the full training recipe by itself: accumulators live inside kernels,
+while gradients, optimizer moments, master parameters, and scaling state live outside
+the forward block. The figure separates those three views.
+
+{% include figure.liquid path="pages/img/mixed-precision-llama-attribution.png" class="img-fluid" alt="A Llama training graph annotated with surrounding BF16 tensors, low-precision matrix operands, FP32 reductions and accumulators, and optimizer state" caption="An illustrative BF16-surrounded FP8 or MX recipe. Eligible projections quantize their operands, accumulate in FP32, and return BF16. Norms, attention softmax, residuals, loss, gradients, collectives, master parameters, and optimizer state retain independent dtype choices." %}
+
+The important boundaries are:
+
+- **Projections:** Q/K/V/O and the MLP contain the large GEMMs most likely to use
+  FP8 or MX operands. The vocabulary projection may or may not be included.
+- **Attention core:** QK, softmax, and probability-value multiplication are a separate
+  backend path. Low-precision projections do not imply low-precision attention.
+- **Norms and loss:** reductions commonly promote to FP32 even when their inputs and
+  outputs are BF16.
+- **Residual stream:** activations commonly remain BF16 between blocks rather than
+  staying packed as FP8 or MX.
+- **Backward and collectives:** gradient GEMMs may use the recipe, but retained
+  gradients and RCCL payloads have their own dtype.
+- **Optimizer state:** FP32 master parameters and Adam moments can dominate persistent
+  memory even when the matrix operands are four bits.
+
+The raw-JAX Llama 7B model makes one concrete BF16 recipe explicit: parameters and Adam
+moments are FP32, dense inputs and outputs are BF16, RMSNorm variance is FP32, logits
+are promoted to FP32 before cross-entropy, and the optimizer updates the FP32 parameter
+tree. That is already mixed-precision training without an FP8 or MX quantization mode.
 
 ## Formats and Scaling
 
@@ -138,14 +234,9 @@ backpropagation and divides the resulting gradients before the optimizer update.
 addresses gradient underflow; it does not repair overflow in activations, logits, or
 optimizer state.
 
-The Llama 70B FP16 arm sets `dtype=float16` and keeps FP32 parameters, gradients, and
-moments. It does not add a separate loss-scaling control. That makes finite gradients,
-gradient norms, and validation behavior part of the acceptance test rather than
-something inferred from the name FP16.
-
 BF16 is the baseline in this book because it uses the two-byte tensor path without
-requiring scale metadata and has enough range for the tested models. This is a
-numerical default, not a claim that every BF16 kernel is fast.
+requiring scale metadata and has enough range for the models considered here. This is
+a numerical default, not a claim that every BF16 kernel is fast.
 
 ### FP8
 
@@ -173,20 +264,12 @@ Current scaling reads the current tensor to find its range before casting. Delay
 scaling predicts the next scale from an `amax` history. Transformer Engine documents
 that delayed scaling avoids the extra range-finding read, but it adds persistent
 history and scale variables that must be threaded through the JAX step
-**[cited]**. Dropping those variables while retaining only `params` silently changes the
-recipe.
+**[cited]**. The scaling state is part of the training state: dropping it while
+retaining only the parameters changes the numerical recipe.
 
-The tested MaxText path is:
-
-```yaml
-dtype: "bfloat16"
-quantization: "te_fp8_delayedscaling"
-```
-
-BF16 remains the surrounding dtype. Eligible dense dots use Transformer Engine's FP8
-delayed-scaling recipe. Treat the exact E4M3/E5M2 assignment, backward coverage, and
-collective dtype as properties to inspect in the pinned implementation and HLO, not as
-facts implied by `dtype=bfloat16`.
+The exact E4M3/E5M2 assignment, scaling interval, clipping behavior, and forward versus
+backward coverage are recipe choices. "FP8" names a family of encodings, not one
+complete training algorithm.
 
 ### MXFP8, MXFP6, and MXFP4
 
@@ -208,296 +291,236 @@ weight workspaces, stochastic-rounding state, and alignment padding. Do not use 
 table as an allocator prediction.
 
 MXFP8 uses eight-bit elements with local block scales. Transformer Engine's
-`MXFP8BlockScaling` recipe is stateless across steps, unlike delayed scaling, and uses a
-block size of 32. The Llama 70B arm selects it with:
+`MXFP8BlockScaling` recipe uses a block size of 32 and, unlike delayed FP8 scaling,
+does not require an `amax` history across steps.
 
-```yaml
-dtype: "bfloat16"
-quantization: "te_mxfp8"
-```
+MXFP6 and MXFP4 share the same published MI355X dense matrix peak: approximately
+10 PFLOP/s, versus 5 PFLOP/s for FP8/MXFP8 and 2.5 PFLOP/s for BF16/FP16. Bit width
+alone therefore does not define throughput. The instruction family, operand layout,
+conversion route, and available library kernel matter.
 
-On the tested gfx950 stack it also requires:
-
-```bash
-export NVTE_ROCM_ENABLE_MXFP8=1
-```
-
-and a Transformer Engine workspace-size patch. The runner probes the installed Python
-source and stops if the patch is missing. This is a useful pattern: fail before timing
-rather than let an unpatched path run slowly and call it MXFP8.
-
-MXFP6 has native MI355X matrix instructions and the same published dense matrix peak as
-MXFP4: 10 PFLOP/s, versus 5 PFLOP/s for FP8/MXFP8 and 2.5 PFLOP/s for
-BF16/FP16 **[analytical]** from AMD's published peak table. MXFP6 may therefore be the preferable
-numerical format when both routes are equally optimized. The tested MaxText,
-Transformer Engine, and JAX-AITER integrations do not expose an MXFP6 training recipe,
-so that comparison is theory, not a runnable recommendation.
-
-The tested MXFP4 route is not Transformer Engine's `te_nvfp4`; NVFP4 is a different
-format and hardware path. It uses ROCm's MaxText feature branch and JAX-AITER alpha2:
-
-```yaml
-dtype: "bfloat16"
-quantization: "aiter_fp4"
-use_jax_aiter: true
-aiter_attention: false
-```
-
-`jax_aiter.gemm_fp4_bf16` accepts BF16 tensors, performs MXFP4 casts and matrix
-operations, returns BF16, and supplies custom gradients for forward, activation
-gradient, and weight gradient. The pinned MaxText branch applies MXFP4 to MLP and
-Q/K/V/O projections; the logits projection remains unquantized. The fused attention
-core remains Transformer Engine BF16. The
-`AITER_FP4_ATTN=1` environment variable refers to attention *projections* in this
-recipe, not the score/softmax/value attention kernel.
+Scaled MFMA consumes the low-bit blocks and their E8M0 scales as part of the matrix
+operation. That does not make quantization free: a training route must generate scales,
+pack both operand layouts needed by forward and backward, handle tails, and return the
+requested graph dtype.
 
 ## MI355X Training Paths
 
-Hardware support and framework support are separate:
+Native hardware support and a complete training path are different layers. The table
+below describes the intended dataflow of the routes used in this book, without treating
+availability as a performance result:
 
-| Requested compute | MI355X hardware | Tested JAX route | Current status |
-|---|---|---|---|
-| BF16 | Native | XLA/hipBLASLt; TE or JAX-AITER for selected ops | Unverified under Appendix F |
-| FP16 | Native | XLA/hipBLASLt with `dtype=float16` | Unverified under Appendix F |
-| FP8 | Native OCP E4M3/E5M2 | Transformer Engine delayed scaling | Unverified under Appendix F |
-| MXFP8 | Native, 32-value blocks | Transformer Engine block scaling | Experimental patch; post-patch run unverified |
-| MXFP6 | Native, 32-value blocks | No recipe in the tested repositories | Unsupported in the tested stack |
-| MXFP4 | Native, 32-value blocks | ROCm MaxText feature branch plus JAX-AITER alpha2 FFI | Experimental; artifact bundle blocked |
+| Route | Ordinary graph tensors | Eligible matrix operands | Accumulator and output | JAX-facing path |
+|---|---|---|---|---|
+| BF16 | BF16 | BF16 | FP32 accumulate, BF16 output | XLA or hipBLASLt |
+| FP16 | FP16 | FP16 | FP32 accumulate, FP16 output | XLA or hipBLASLt |
+| FP8 delayed | BF16 | OCP FP8 with per-tensor scales | FP32 accumulate, BF16 output | Transformer Engine delayed scaling |
+| MXFP8 | BF16 | MXFP8 with 32-value scales | FP32 accumulate, BF16 output | Transformer Engine block scaling |
+| MXFP6 | recipe-dependent | MXFP6 with 32-value scales | FP32 accumulate, higher-precision output | native hardware; no tested recipe here |
+| MXFP4 | BF16 | MXFP4 with 32-value scales | FP32 accumulate, BF16 output | MaxText plus JAX-AITER FFI |
 
-The table is about training the dense projections in these experiments. It does not
-claim equal coverage for attention, norms, embeddings, loss, collectives, or optimizer
-updates.
+These routes describe eligible dense contractions. They do not imply identical
+coverage for the attention core, vocabulary projection, norms, loss, collectives, or
+optimizer.
 
-MaxText has three layers of controls:
+MaxText exposes three layers of control:
 
-1. `dtype`, `weight_dtype`, `grad_dtype`, and `mu_dtype` set the ordinary tensor roles.
-2. `quantization` selects the dot implementation and scale recipe.
-3. Backend-specific environment variables control which implementation is reachable.
+1. `dtype`, `weight_dtype`, `grad_dtype`, and `mu_dtype` assign ordinary tensor roles.
+2. `quantization` selects a matrix implementation and scaling recipe.
+3. Backend environment variables and installed libraries determine which route can be
+   constructed.
 
-Transformer Engine also has a direct JAX API. A custom model can create a
-`DelayedScaling` or `MXFP8BlockScaling` recipe and pass it through `te.autocast`, or use
-`te_flax.make_dot_general_cls(recipe)` for selected dense layers. With delayed scaling,
-initialize the layer inside the autocast context and carry the full variable collection.
+Transformer Engine provides delayed FP8 and MXFP8 recipes. JAX-AITER exposes lower-level
+FFI operations and custom gradients for the MXFP4 integration. Both still present a
+higher-precision interface to most of the surrounding JAX graph.
 
-JAX-AITER is lower level. It exposes JAX functions backed by XLA FFI and supplies
-`custom_vjp` rules and sharding behavior. That makes it suitable for a MaxText
-integration, but it also means the integration owns restrictions on shape, layout,
-workspace caching, rematerialization, and FSDP weight gradients.
+### Published Matrix Peaks
 
-## Compute and Memory Effects
+AMD publishes the following dense matrix ceilings for one MI355X OAM:
 
-AMD publishes these dense matrix peaks for MI355X:
-
-| Matrix format | Published peak | Relative to BF16 |
+| Matrix operand format | Published peak | Relative to BF16 |
 |---|---:|---:|
-| BF16 or FP16 | 2.5 PFLOP/s | 1x |
-| FP8 or MXFP8 | 5.0 PFLOP/s | 2x |
-| MXFP6 or MXFP4 | 10.0 PFLOP/s | 4x |
+| FP32 | 157.3 TFLOP/s | 0.0625x |
+| BF16 or FP16 | 2.5166 PFLOP/s | 1x |
+| OCP FP8 or MXFP8 | 5.0332 PFLOP/s | 2x |
+| MXFP6 or MXFP4 | 10.0663 PFLOP/s | 4x |
 
-These are **[analytical]** ceilings, not expected train-step ratios. A lower-precision
-matrix unit does not accelerate the data loader, FP32 optimizer, norms, unfused casts,
-scale calculation, BF16 attention, collectives that remain high precision, or host
-gaps.
+The table describes the Matrix Core ceiling for supported operand formats. It does not
+say that an FP32 master parameter occupies four bytes and somehow executes at the FP32
+matrix rate: if it is quantized into an MXFP4 operand before MFMA, the relevant matrix
+ceiling is the MXFP4 row.
 
-If a fraction `f` of BF16 step time can accelerate by `r`, the ideal Amdahl bound is:
+Likewise, the peak says nothing about how much of a training step consists of eligible
+matrix instructions. Vector operations, reductions, memory movement, scale generation,
+collectives, optimizer arithmetic, and launch gaps have different ceilings.
 
-```text
-speedup <= 1 / ((1 - f) + f / r)
-```
+### Amdahl Speedup Bound
 
-For FP8 or MXFP8, `r` is at most 2 against BF16. For MXFP4, `r` is at most 4. Casts,
-scale reductions, layout conversions, extra workspaces, and slower fallback kernels
-make the achieved ratio smaller. A profile supplies `f`; the hardware peak table does
-not.
+Let `p` be the fraction of the BF16 baseline step spent in operations that a recipe
+actually accelerates, and let `r` be their achieved speedup. If the rest of the step is
+unchanged, Amdahl's law gives:
 
-Low precision changes more than compute:
+$$
+S_{\mathrm{step}}=\frac{1}{(1-p)+p/r}.
+$$
 
-- Encoded weights and activations use fewer HBM bytes while they are in the low format.
-- FSDP weight AllGathers can shrink if the gathered buffer is the quantized operand.
-- Gradient and activation collectives do not shrink when they remain BF16 or FP32.
-- FP32 master weights and optimizer state dominate persistent memory in the Llama 70B
-  recipe, so an FP8 GEMM does not make the model state eight bits wide.
-- Scale histories, block scales, dual layouts, and workspaces add memory that a
-  bytes-per-element estimate omits.
-- A faster matrix path can expose communication or fixed-cost kernels that were hidden
-  in the BF16 run.
+Using the published matrix ratios as optimistic values of `r` produces these upper
+bounds:
 
-Chapter 5 builds the complete state and activation ledgers. The useful rule here is
-that a compute format saves persistent memory only when the stored tensor role also
-changes.
+| Accelerated share `p` | FP8/MXFP8, `r=2` | MXFP6/MXFP4, `r=4` |
+|---:|---:|---:|
+| 60% | 1.43x | 1.82x |
+| 70% | 1.54x | 2.11x |
+| 80% | 1.67x | 2.50x |
+| 85% | 1.74x | 2.76x |
+| 90% | 1.82x | 3.08x |
 
-## The Llama 70B Precision Sweep
+Even an ideal four-times-faster matrix route cannot give a four-times-faster step when
+15% of the baseline remains unchanged. At `p=85%`, the Amdahl ceiling is 2.76x.
 
-The [Llama 70B repository](https://github.com/clarkechong/llama70b-mixed-precision-training/tree/f3dab369)
-defines a current fixed train-step study: 8x MI355X, FSDP-8, sequence length
-4096, 491,520 token positions per update, and 30 synthetic steps.
-
-The point estimates below are a historical source record, not measurements under
-Appendix B. An audit traced them to
-`archive/v26.6-migration-20260908`, where all six arms used the feature-branch
-MaxText tree at `b437942a`. BF16, FP16, FP8, and MXFP8 were marked
-noncanonical because completion was not verified. MXFP4 has a separate retained
-row, but no active Appendix F bundle. The current main-branch launchers request
-stock MaxText for BF16, FP16, and FP8, so these historical values cannot rank the
-current cohort.
-
-| Arm | Tokens/s/GPU | Seconds/update | Ratio to BF16 | Historical qualification |
-|---|---:|---:|---:|---|
-| FP32 | BLOCKED | BLOCKED | — | Archived result invalid; no current timing |
-| BF16 | 2,319.7 | 26.486 | 1.000x | **[source]** feature-branch cohort; completion unverified |
-| FP16 | 2,502.4 | 24.552 | 1.079x | **[source]** feature-branch cohort; completion unverified |
-| FP8 delayed scaling | 4,109.7 | 14.950 | 1.772x | **[source]** feature-branch cohort; completion unverified |
-| MXFP8, unpatched | 2,052.2 | 29.938 | 0.885x | **[source]** three fallbacks per layer; completion unverified |
-| MXFP4 | 5,254.9 | 11.692 | 2.265x | **[source]** feature branch; MLP and Q/K/V/O projections |
-
-Tokens/s/GPU is `491,520 / (seconds/update * 8)`. No post-patch MXFP8 timing is present,
-so there is no valid MXFP8 performance result to compare. The unpatched value is
-retained as a fallback warning, not as an MXFP8 result.
-
-The historical FP8 ratio is 1.772x against a 2x matrix ceiling; the historical
-MXFP4 ratio is 2.265x against a 4x ceiling. **[analytical]** Amdahl's law says
-that lower whole-step ratios are expected
-whenever attention, optimizer work, casts, communication, or other fixed paths occupy a
-material fraction of the step. Attributing the gap among those causes requires a
-matched, accepted profile. These values do not supply one.
-
-The FP16/BF16 peak ratio is 1x. The historical 1.079x difference is therefore a
-kernel, schedule, or run-level observation, not an FP16 hardware-throughput
-entitlement.
-
-None of the current launchers sets `RCCL_WARP_SPEED_AUTO=0`, which AMD's MI355X
-MaxText guidance requires to avoid a documented NaN-loss hazard. The historical
-environment has not been recovered. The current timing and convergence cohorts
-must be rerun with this value frozen or prove that it was present in the captured
-environment.
-
-## Verify the Executed Path
-
-Treat each low-precision run as a proof obligation.
-
-First, record the effective configuration and exact binaries:
-
-```bash
-python3 -c "import jax; print(jax.__version__, jax.devices())"
-python3 -c "import transformer_engine; print(transformer_engine.__version__)"
-```
-
-For MXFP8, retain the runner's source probe and stop if the workspace patch is absent.
-For MXFP4, check for the MaxText integration and the three required JAX-AITER FFI
-libraries before starting the run.
-
-Second, inspect lowered HLO. Find the eligible projections and answer:
-
-- Are their operands represented in the requested format or passed to the expected
-  custom call?
-- Are block-scale tensors present for MX formats?
-- Does an unexpected `convert` return the operands to BF16 before the dot?
-- Did sharding insert a BF16 AllGather followed by local quantization, or move the
-  quantized representation?
-- Which attention operations remain BF16?
-
-Third, capture a warmed train step with `rocprofv3 --kernel-trace`. Positive evidence is
-the expected Transformer Engine or JAX-AITER custom-call kernel at the projection
-shapes. Negative evidence is equally important: only BF16 hipBLASLt GEMMs, repeated
-quantize/dequantize fusions around a BF16 dot, or a generic fallback dominating the
-step.
-
-Fourth, check numerics:
+For a representative MXFP4 recipe, the attribution might be:
 
 ```text
-loss is finite
-gradient norm is finite
-parameter and optimizer trees contain the intended dtypes
-scale or amax state changes when the recipe requires it
-fraction clipped or saturated is logged
+Master parameters       FP32
+Residual activations    BF16
+Eligible weight operand MXFP4
+Eligible input operand  MXFP4
+MFMA accumulation       FP32
+GEMM output             BF16
+Attention core          BF16 / backend-specific
+Gradients/collectives   BF16 or FP32
+Adam state and update   FP32
 ```
 
-Finally, report tokens/s/GPU before MFU. Performance alone is not proof of a format, but
-a large regression against BF16 is a reason to stop and inspect the path before running
-convergence.
+Only the contractions that receive MXFP4 operands belong in the accelerated fraction
+`p`. A BF16 attention core, an unquantized vocabulary projection, norms, loss, optimizer,
+and exposed collectives remain outside it.
 
-## Convergence Is the Guardrail
+The peak ratio is also only an optimistic value of `r`. Quantization, scale reduction,
+packing, layout conversion, tail handling, and a slower kernel can reduce the achieved
+matrix speedup. Conversely, reduced operand traffic can help a bandwidth-limited matrix
+by more than a FLOP-only model predicts. The baseline profile determines `p`; a matched
+kernel comparison determines `r`.
 
-The train-step sweep uses synthetic reused data and says nothing about model quality.
-The separate convergence launchers request C4, one verified Llama 2 tokenizer, five
-precision arms, 2,034 updates, 491,520 token positions per update, 5% warmup,
-cosine decay, and 20 validation batches every 100 steps. The product
-`2,034 × 491,520 = 999,751,680` is nominal packed-sequence capacity; actual
-non-padding training tokens require the retained weight or segmentation metrics.
+### Compute, Memory, and Communication Effects
 
-The experiment owner reports that the completed curves were near-identical over
-this horizon. The current branch and archived result inventory do not contain the
-metric files, plot, immutable data/tokenizer revisions, or arm-to-run mapping.
-This is therefore recorded project status, not a publishable **[measured]** claim.
+Mixed precision changes three different budgets:
 
-Once those artifacts are retained, the result can serve as a descriptive guardrail:
+**Compute.**
 
-- it rejects immediate divergence and large short-horizon regressions for this exact
-  Llama 2 70B recipe;
-- it does not prove equal final quality after a full pretraining token budget;
-- it does not establish seed variance;
-- it does not transfer automatically to a different model, optimizer, scale policy,
-  dataset order, sequence length, or sharding;
-- it does not turn the unpatched MXFP8 throughput result into an acceptable execution
-  path.
+- Eligible matrix operands select a higher-throughput MFMA family.
+- FP32 accumulation preserves wider partial sums without paying the FP32 operand rate.
+- Casts, scales, packing, and fallback kernels add work around the matrix instruction.
+- Faster projections increase the visible share of attention, normalization, optimizer,
+  communication, and launch overhead.
 
-No retained pre-run equivalence threshold has been identified. The current
-description must remain “near-identical curves” rather than “equivalent
-convergence.”
+**Memory.**
 
-For a new recipe, compare against BF16 with the same tokens, data order, initialization,
-optimizer, and evaluation batches. Log training and validation loss, gradient norm,
-non-finite counts, and range saturation. Stop on persistent divergence from the BF16
-curve, repeated overflows, scale collapse, or a gradient-norm regime change. A faster
-step that needs more tokens to reach the target can increase total training time.
+- A transient FP8 or MX operand uses fewer bytes while it remains encoded.
+- FP32 master parameters and Adam moments do not shrink merely because GEMMs quantize
+  their operands.
+- BF16 residuals and GEMM outputs continue to occupy two bytes when the graph returns to
+  BF16 after each contraction.
+- Scale histories, E8M0 blocks, dual row/column layouts, alignment padding, and
+  workspaces consume memory omitted by a simple bits-per-value calculation.
+- Persistent memory falls only when the stored tensor role changes, not when a temporary
+  compute operand changes.
 
-## A Precision Decision Procedure
+**Communication.**
 
-1. Start with BF16 compute and high-precision loss, reductions, gradients, and optimizer
-   state. Confirm the model and input pipeline are correct.
-2. Write the tensor-role ledger. Do not use one phrase such as "FP8 training" in place
-   of `dtype`, `weight_dtype`, `grad_dtype`, `mu_dtype`, quantized operations, scaling,
-   and exceptions.
-3. Choose the hardware route. On MI355X use OCP FP8 or MX formats; do not reuse a
-   gfx942 FNUZ recipe.
-4. Select the narrowest low-precision scope that covers the expensive dense dots.
-   Keep norms, loss, reductions, and the optimizer high precision until evidence
-   supports changing them.
-5. Compile one warmed step and prove the path from effective config, HLO, scale state,
-   and kernel trace.
-6. Measure tokens/s/GPU, step-time distribution, peak memory, and the fixed-time
-   fraction. Use Amdahl's bound to explain the maximum useful speedup.
-7. Run a fixed-token convergence comparison against BF16. Preserve raw metric files,
-   seeds, data order, and saturation statistics.
-8. Adopt the format when it raises tokens/s/GPU at the fixed workload, the intended
-   kernels execute, and the predeclared convergence guardrail passes. Report
-   time-to-quality only when all arms reach a target chosen before reading the final
-   curves.
+- An FSDP AllGather shrinks only if quantization occurs before communication and the
+  low-precision representation is what crosses RCCL.
+- Quantizing after an FP32 or BF16 AllGather saves matrix traffic but not collective
+  traffic.
+- Gradient and activation collectives remain unchanged when their payloads stay BF16 or
+  FP32.
+- Faster local GEMMs can expose collectives that were previously hidden behind compute.
 
-## Decision Table
+[Chapter 5]({{ '/pages/5-making-the-model-fit' | relative_url }}) builds the complete
+memory ledger. The later Llama 70B case study measures `p`, `r`, transient workspace,
+collective payloads, and the resulting end-to-end speedup rather than assuming them
+from the peak table.
 
-Status applies to the pinned MI355X JAX stack, not to all ROCm software.
+## Published Convergence and Time-to-Quality Evidence
 
-| Knob | What it buys | What it costs | How to set it | Status on ROCm | Verified on |
-|---|---|---|---|---|---|
-| BF16 compute | Safe two-byte baseline | Lower matrix peak than FP8/MX | `dtype=bfloat16`, `quantization=` | Unverified under Appendix F | Source recipe, v26.6, 2026-09-13 |
-| FP16 compute | Two-byte path with more significand bits | Narrow range; monitor underflow/overflow | `dtype=float16`, `quantization=` | Unverified under Appendix F | Source recipe, v26.6, 2026-09-13 |
-| FP8 delayed scaling | Up to 2x BF16 matrix peak; one-byte dot operands | Scale history, casts, convergence check | `dtype=bfloat16 quantization=te_fp8_delayedscaling` | Unverified current cohort | Source recipe, v26.6, 2026-09-13 |
-| MXFP8 block scaling | Up to 2x BF16 peak with local 32-value scales | Scale/layout metadata; patched workspace sizing | `quantization=te_mxfp8`, `NVTE_ROCM_ENABLE_MXFP8=1` | Experimental; post-patch run unverified | TE 2.17 patch source, 2026-09-13 |
-| MXFP6 | Up to 4x BF16 peak; more precision than MXFP4 at the same published peak | No tested JAX training integration | No field in tested stack | Unsupported in tested stack | Repository audit, 2026-09-13 |
-| MXFP4 dense projections | Up to 4x BF16 matrix peak; smallest encoded payload here | Alpha FFI, branch patch, dual-layout/workspace and remat constraints | `quantization=aiter_fp4 use_jax_aiter=true` plus the pinned environment | Experimental; current artifact blocked | MaxText `b437942a`, JAX-AITER `35b7175c`, 2026-09-13 |
-| FP32 gradients | Stable gradient storage and reduction where gradient leaves are FP32 | Four bytes per FP32 gradient and larger collectives | `grad_dtype=float32` | Unverified per leaf | Llama configs request FP32; Mixtral requires HLO/runtime verification, 2026-09-13 |
-| FP32 master and Adam state | Stable updates | Dominates persistent memory | `weight_dtype=float32 mu_dtype=float32` | Unverified runtime state | Llama 7B/70B source configs, 2026-09-13 |
-| BF16 optimizer state | Lower persistent state memory | Changes optimizer numerics | `weight_dtype=bfloat16 mu_dtype=bfloat16` | Unverified runtime state | Mixtral source config, 2026-09-13 |
+The literature does not support one blanket claim that low-precision training is
+lossless. Results depend on which tensor roles are quantized, the scaling granularity,
+and whether the comparison is made at equal tokens or equal wall time.
 
-**Recommendation status: BLOCKED.** BF16 remains the control recipe. FP8 and
-MXFP4 are candidates for a fixed-workload rerun; no current arm has the required
-throughput, memory, kernel-proof, environment, and convergence artifacts. The
-fallback is BF16. Retest after any ROCm, JAX, MaxText, Transformer Engine,
-JAX-AITER, or RCCL change.
+- Micikevicius et al.,
+  [*Mixed Precision Training*](https://arxiv.org/abs/1710.03740) (ICLR 2018),
+  matched FP32 accuracy across vision, speech, and language tasks using FP32 master
+  weights, FP32 accumulation, and loss scaling. The experiments show that loss
+  scaling can determine whether FP16 converges, but they do not establish a
+  hardware-independent time-to-quality ratio.
+
+- Kalamkar et al.,
+  [*A Study of BFLOAT16 for Deep Learning Training*](https://arxiv.org/abs/1905.12322),
+  reported FP32-matching results in the same number of iterations across image,
+  speech, language, generative, and recommendation workloads without loss scaling
+  or hyperparameter changes. This is the main empirical basis for treating BF16 as
+  the control format.
+
+- Micikevicius et al.,
+  [*FP8 Formats for Deep Learning*](https://arxiv.org/abs/2209.05433), reported
+  quality close to FP16/BF16 for CNNs, RNNs, Transformers, and GPT models up to
+  175B parameters with unchanged hyperparameters. Their hybrid recipe uses E4M3
+  in the forward pass and E5M2 for gradients.
+
+- Wortsman et al.,
+  [*Stable and Low-Precision Training for Large-Scale Vision-Language Models*](https://proceedings.neurips.cc/paper_files/paper/2023/hash/20bd42d82998bc61732c00452228e814-Abstract.html)
+  (NeurIPS 2023), kept weight-gradient GEMMs in higher precision while quantizing
+  forward and activation-gradient GEMMs. SwitchBack matched BF16 within 0.1
+  percentage points on a 1B-parameter CLIP model and improved end-to-end speed by
+  13–25%. This result identifies weight gradients as a numerically sensitive path.
+
+- Peng et al.,
+  [*FP8-LM: Training FP8 Large Language Models*](https://arxiv.org/abs/2310.18313),
+  reported BF16-comparable pretraining and downstream results from GPT-7B through
+  GPT-175B. For GPT-175B, their system reduced training time by 37% relative to
+  Transformer Engine and used 42% less memory. This is a preprint, and its
+  distributed system differs from the JAX/ROCm path used here.
+
+- The
+  [*DeepSeek-V3 Technical Report*](https://arxiv.org/abs/2412.19437) describes a
+  14.8T-token FP8 run without irrecoverable loss spikes or rollbacks. A controlled
+  DeepSeek-V2 experiment over approximately one trillion tokens kept relative loss
+  error below 0.25% against BF16. The full V3 run demonstrates feasibility at
+  scale, but it is not a paired BF16 time-to-quality experiment.
+
+- Rouhani et al.,
+  [*Recipes for Pre-training LLMs with MXFP8*](https://arxiv.org/abs/2506.08027),
+  found that E4M3 operands with upward-rounded E8M0 scales matched BF16 accuracy
+  on models up to 8B parameters. Its convergence recipe is relevant to MI355X.
+  Its Blackwell throughput results are not directly portable to ROCm.
+
+- [*Pretraining Large Language Models with MXFP4 on Native FP4 Hardware*](https://arxiv.org/abs/2605.09825)
+  reports Llama 3.1-8B pretraining on MI355X. Quantizing forward and
+  activation-gradient GEMMs required approximately 8–11% more tokens to reach the
+  target perplexity. Adding MXFP4 weight gradients increased token overhead to
+  26–27%; a deterministic Hadamard transform reduced it to 8–9%. A 20% increase
+  in step throughput then produced approximately 9–10% lower time to target than
+  FP8. This is the closest external comparison to the MXFP4 path considered here.
+
+Two adjacent results clarify the role of scaling granularity. Dettmers et al.,
+[*8-bit Optimizers via Block-wise Quantization*](https://arxiv.org/abs/2110.02861)
+(ICLR 2022), retained FP32-level optimizer behavior while reducing optimizer-state
+memory. Xi et al.,
+[*Jetfire*](https://proceedings.mlr.press/v235/xi24b.html) (ICML 2024), found that
+per-block INT8 data flow preserved FP16-level quality more reliably than coarser
+quantization and reported a 1.42x transformer-block speedup. Neither paper proves
+that an equivalent JAX/ROCm route is available.
+
+These results motivate three reporting requirements for the Llama 70B case study:
+
+1. compare loss against consumed tokens;
+2. report step throughput separately; and
+3. report time to a fixed quality target only when every precision arm reaches it.
 
 ## References
 
+- [AMD CDNA 4 ISA](https://www.amd.com/content/dam/amd/en/documents/instinct-tech-docs/instruction-set-architectures/amd-instinct-cdna4-instruction-set-architecture.pdf).
+  Operand, accumulator, and scale layouts for dense and scaled MFMA.
 - [AMD Instinct MI300/MI350 workload optimization](https://rocm.docs.amd.com/projects/ai-ecosystem/en/latest/optimization/workload-optimization.html).
   MI355X peaks, OCP FP8, and native MXFP8/MXFP6/MXFP4 support.
 - [OCP Microscaling Formats specification](https://www.opencompute.org/documents/ocp-microscaling-formats-mx-v1-0-spec-final-pdf).
@@ -512,9 +535,5 @@ JAX-AITER, or RCCL change.
   Dtype, quantization, and optimizer fields.
 - [JAX-AITER alpha2](https://github.com/ROCm/jax-aiter/tree/35b7175c).
   The gfx950 MXFP4 FFI, custom gradients, and supported operation surface.
-- [Llama 70B mixed-precision experiments](https://github.com/clarkechong/llama70b-mixed-precision-training/tree/f3dab369).
-  Fixed recipes, timing summary, and convergence runners.
 - [Llama 7B JAX fundamentals](https://github.com/clarkechong/llama7b-jax-fundamentals/tree/5f996a88).
   Explicit tensor-role casts and optimizer state.
-- [Mixtral 8x22B distributed strategies](https://github.com/clarkechong/mixtral8-22b-distributed-strategies/tree/a32b51d6).
-  BF16/FP32 state assignment for the MoE case.

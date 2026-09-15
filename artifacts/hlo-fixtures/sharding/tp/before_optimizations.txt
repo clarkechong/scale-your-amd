@@ -1,0 +1,55 @@
+HloModule jit_sharding_tp, entry_computation_layout={(f16[1024,512]{1,0}, f16[512,512]{1,0})->f16[1024,512]{1,0}}, allow_spmd_sharding_propagation_to_parameters={false,false}, allow_spmd_sharding_propagation_to_output={true}, num_partitions=8, frontend_attributes={xla.sdy.meshes={mesh = #sdy.mesh<["mesh"=8]>}}
+
+FileNames
+1 "/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py"
+2 "<frozen runpy>"
+
+FunctionNames
+1 "sharding_fixture.<locals>.sharding_tp"
+2 "_run_module_as_main"
+3 "_run_code"
+4 "<module>"
+5 "main"
+6 "sharding_fixture"
+
+FileLocations
+1 {file_name_id=1 function_name_id=1 line=183 end_line=183 column=19 end_column=48}
+2 {file_name_id=1 function_name_id=1 line=182 end_line=182 column=22 end_column=39}
+3 {file_name_id=2 function_name_id=2 line=198 end_line=199 column=11 end_column=42}
+4 {file_name_id=2 function_name_id=3 line=88 end_line=88 column=4 end_column=27}
+5 {file_name_id=1 function_name_id=4 line=369 end_line=369 column=4 end_column=10}
+6 {file_name_id=1 function_name_id=5 line=361 end_line=361 column=4 end_column=40}
+7 {file_name_id=1 function_name_id=6 line=185 end_line=185 column=19 end_column=51}
+
+StackFrames
+1 {file_location_id=1 parent_frame_id=1}
+2 {file_location_id=1 parent_frame_id=2}
+3 {file_location_id=2 parent_frame_id=1}
+4 {file_location_id=3 parent_frame_id=1}
+5 {file_location_id=4 parent_frame_id=5}
+6 {file_location_id=5 parent_frame_id=6}
+7 {file_location_id=6 parent_frame_id=7}
+8 {file_location_id=7 parent_frame_id=8}
+
+
+%region_0.1 (psum_invariant.2: f16[], psum_invariant.3: f16[]) -> f16[] {
+  %psum_invariant.2 = f16[] parameter(0), metadata={op_name="psum_invariant"}
+  %psum_invariant.3 = f16[] parameter(1), metadata={op_name="psum_invariant"}
+  ROOT %add.1 = f16[] add(%psum_invariant.2, %psum_invariant.3), metadata={op_name="add" stack_frame_id=2}
+}
+
+%xla.sdy.manual_computation_body.2 (shard_map.5: f16[1024,64], shard_map.6: f16[64,512]) -> f16[1024,512] {
+  %shard_map.5 = f16[1024,64]{1,0} parameter(0), metadata={op_name="shard_map"}
+  %shard_map.6 = f16[64,512]{1,0} parameter(1), metadata={op_name="shard_map"}
+  %dot_general.1 = f16[1024,512]{1,0} dot(%shard_map.5, %shard_map.6), lhs_contracting_dims={1}, rhs_contracting_dims={0}, metadata={op_name="dot_general" stack_frame_id=3}
+  ROOT %psum_invariant.5 = f16[1024,512]{1,0} all-reduce(%dot_general.1), channel_id=1, replica_groups=mesh['mesh'=8] {'mesh'}, use_global_device_ids=true, to_apply=%region_0.1, metadata={op_name="psum_invariant" stack_frame_id=1}
+}
+
+ENTRY %main.3 (x_local.1: f16[1024,512], w_local.1: f16[512,512]) -> f16[1024,512] {
+  %x_local.1 = f16[1024,512]{1,0} parameter(0), sharding={devices=[1,8]<=[8]}, frontend_attributes={xla.sdy.sharding="#sdy.sharding<@mesh, [{}, {\"mesh\"}]>"}, metadata={op_name="x_local"}
+  %w_local.1 = f16[512,512]{1,0} parameter(1), sharding={devices=[8,1]<=[8]}, frontend_attributes={xla.sdy.sharding="#sdy.sharding<@mesh, [{\"mesh\"}, {}]>"}, metadata={op_name="w_local"}
+  %shard_map.9 = (f16[1024,64]{1,0}, f16[64,512]{1,0}) custom-call(%x_local.1, %w_local.1), custom_call_target="xla.sdy.GlobalToLocalShape", custom_call_has_side_effect=true, frontend_attributes={xla.sdy.in_shardings="#sdy.sharding_per_value<[<@mesh, [{}, {\"mesh\"}]>, <@mesh, [{\"mesh\"}, {}]>]>",xla.sdy.manual_axes="#sdy<manual_axes{\"mesh\"}>"}, metadata={op_name="jit(sharding_tp)/shard_map" stack_frame_id=8}
+  %shard_map.12 = f16[1024,512]{1,0} call(%shard_map.9#0, %shard_map.9#1), to_apply=%xla.sdy.manual_computation_body.2, frontend_attributes={inlineable="xla_late"}, metadata={op_name="jit(sharding_tp)/shard_map" stack_frame_id=8}
+  ROOT %shard_map.13 = f16[1024,512]{1,0} custom-call(%shard_map.12), custom_call_target="xla.sdy.LocalToGlobalShape", custom_call_has_side_effect=true, frontend_attributes={xla.sdy.manual_axes="#sdy<manual_axes{\"mesh\"}>",xla.sdy.out_shardings="#sdy.sharding_per_value<[<@mesh, [{}, {}]>]>"}, metadata={op_name="jit(sharding_tp)/shard_map" stack_frame_id=8}
+}
+

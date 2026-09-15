@@ -1,0 +1,99 @@
+HloModule jit_accumulation_scanned, entry_computation_layout={(bf16[128,128]{1,0}, bf16[4,32,128]{2,1,0})->bf16[128,128]{1,0}}, allow_spmd_sharding_propagation_to_parameters={true,true}, allow_spmd_sharding_propagation_to_output={true}
+
+FileNames
+1 "/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py"
+2 "<frozen runpy>"
+
+FunctionNames
+1 "accumulation_fixture.<locals>.accumulation_scanned"
+2 "accumulation_fixture.<locals>.accumulation_scanned.<locals>.body"
+3 "accumulation_fixture.<locals>.microbatch_loss"
+4 "_run_module_as_main"
+5 "_run_code"
+6 "<module>"
+7 "main"
+8 "accumulation_fixture"
+9 "_compile_and_run"
+
+FileLocations
+1 {file_name_id=1 function_name_id=1 line=112 end_line=112 column=19 end_column=60}
+2 {file_name_id=1 function_name_id=2 line=108 end_line=108 column=29 end_column=74}
+3 {file_name_id=1 function_name_id=3 line=94 end_line=94 column=23 end_column=47}
+4 {file_name_id=1 function_name_id=3 line=94 end_line=94 column=32 end_column=46}
+5 {file_name_id=1 function_name_id=2 line=109 end_line=109 column=23 end_column=44}
+6 {file_name_id=2 function_name_id=4 line=198 end_line=199 column=11 end_column=42}
+7 {file_name_id=2 function_name_id=5 line=88 end_line=88 column=4 end_column=27}
+8 {file_name_id=1 function_name_id=6 line=369 end_line=369 column=4 end_column=10}
+9 {file_name_id=1 function_name_id=7 line=361 end_line=361 column=4 end_column=40}
+10 {file_name_id=1 function_name_id=8 line=114 end_line=114 column=15 end_column=75}
+11 {file_name_id=1 function_name_id=9 line=27 end_line=27 column=15 end_column=70}
+12 {file_name_id=1 function_name_id=1 line=111 end_line=111 column=22 end_column=44}
+
+StackFrames
+1 {file_location_id=1 parent_frame_id=1}
+2 {file_location_id=2 parent_frame_id=1}
+3 {file_location_id=3 parent_frame_id=3}
+4 {file_location_id=4 parent_frame_id=3}
+5 {file_location_id=5 parent_frame_id=1}
+6 {file_location_id=6 parent_frame_id=1}
+7 {file_location_id=7 parent_frame_id=7}
+8 {file_location_id=8 parent_frame_id=8}
+9 {file_location_id=9 parent_frame_id=9}
+10 {file_location_id=10 parent_frame_id=10}
+11 {file_location_id=11 parent_frame_id=11}
+12 {file_location_id=1 parent_frame_id=12}
+13 {file_location_id=1 parent_frame_id=13}
+14 {file_location_id=1 parent_frame_id=14}
+15 {file_location_id=12 parent_frame_id=12}
+
+
+%dynamic_index_in_dim.1 (Arg_0.1: bf16[4,32,128], Arg_1.1: s32[]) -> bf16[32,128] {
+  %Arg_0.1 = bf16[4,32,128]{2,1,0} parameter(0)
+  %Arg_1.1 = s32[] parameter(1)
+  %constant.4 = s32[] constant(0)
+  %dynamic_slice.1 = bf16[1,32,128]{2,1,0} dynamic-slice(%Arg_0.1, %Arg_1.1, %constant.4, %constant.4), dynamic_slice_sizes={1,32,128}, metadata={op_name="dynamic_slice" stack_frame_id=1}
+  ROOT %squeeze.1 = bf16[32,128]{1,0} reshape(%dynamic_slice.1), metadata={op_name="squeeze" stack_frame_id=1}
+}
+
+%closed_call.2 (Arg_0.3: bf16[128,128], Arg_1.3: bf16[128,128], Arg_2.1: bf16[32,128]) -> bf16[128,128] {
+  %Arg_1.3 = bf16[128,128]{1,0} parameter(1)
+  %constant.6 = bf16[] constant(1)
+  %sub.2 = bf16[32,128]{1,0} broadcast(%constant.6), dimensions={}, metadata={op_name="jvp()/sub" stack_frame_id=3}
+  %Arg_2.1 = bf16[32,128]{1,0} parameter(2)
+  %Arg_0.3 = bf16[128,128]{1,0} parameter(0)
+  %dot_general.2 = bf16[32,128]{1,0} dot(%Arg_2.1, %Arg_0.3), lhs_contracting_dims={1}, rhs_contracting_dims={0}, metadata={op_name="jvp()/dot_general" stack_frame_id=4}
+  %tanh.1 = bf16[32,128]{1,0} tanh(%dot_general.2), metadata={op_name="jvp()/tanh" stack_frame_id=3}
+  %sub.3 = bf16[32,128]{1,0} subtract(%sub.2, %tanh.1), metadata={op_name="jvp()/sub" stack_frame_id=3}
+  %mul.1 = bf16[32,128]{1,0} multiply(%sub.3, %tanh.1), metadata={op_name="transpose(jvp())/mul" stack_frame_id=3}
+  %add_any.1 = bf16[32,128]{1,0} add(%sub.3, %mul.1), metadata={op_name="transpose(jvp())/add_any" stack_frame_id=3}
+  %dot_general.3 = bf16[128,128]{1,0} dot(%add_any.1, %Arg_2.1), lhs_contracting_dims={0}, rhs_contracting_dims={0}, metadata={op_name="transpose(jvp())/dot_general" stack_frame_id=4}
+  %transpose.1 = bf16[128,128]{0,1} transpose(%dot_general.3), dimensions={1,0}, metadata={op_name="transpose(jvp())/transpose" stack_frame_id=4}
+  ROOT %add.1 = bf16[128,128]{1,0} add(%Arg_1.3, %transpose.1), metadata={op_name="add" stack_frame_id=5}
+}
+
+%region_0.3 (arg_tuple.1: (s32[], bf16[128,128], bf16[4,32,128], bf16[128,128])) -> (s32[], bf16[128,128], bf16[4,32,128], bf16[128,128]) {
+  %arg_tuple.1 = (s32[], bf16[128,128]{1,0}, bf16[4,32,128]{2,1,0}, bf16[128,128]{1,0}) parameter(0)
+  %constant.7 = s32[] constant(1)
+  %add.3 = s32[] add(%arg_tuple.1#0, %constant.7), metadata={op_name="jit(accumulation_scanned)/while/body/add" stack_frame_id=14}
+  %jit_dynamic_index_in_dim_.1 = bf16[32,128]{1,0} call(%arg_tuple.1#2, %arg_tuple.1#0), to_apply=%dynamic_index_in_dim.1, metadata={op_name="jit(accumulation_scanned)/while/body/jit(dynamic_index_in_dim)" stack_frame_id=14}
+  %closed_call.1 = bf16[128,128]{1,0} call(%arg_tuple.1#3, %arg_tuple.1#1, %jit_dynamic_index_in_dim_.1), to_apply=%closed_call.2, metadata={op_name="jit(accumulation_scanned)/while/body/closed_call" stack_frame_id=14}
+  ROOT %tuple.1 = (s32[], bf16[128,128]{1,0}, bf16[4,32,128]{2,1,0}, bf16[128,128]{1,0}) tuple(%add.3, %closed_call.1, %arg_tuple.1#2, %arg_tuple.1#3)
+}
+
+%region_1.4 (arg_tuple.3: (s32[], bf16[128,128], bf16[4,32,128], bf16[128,128])) -> pred[] {
+  %arg_tuple.3 = (s32[], bf16[128,128]{1,0}, bf16[4,32,128]{2,1,0}, bf16[128,128]{1,0}) parameter(0)
+  %constant.9 = s32[] constant(4)
+  ROOT %lt.1 = pred[] compare(%arg_tuple.3#0, %constant.9), direction=LT, metadata={op_name="jit(accumulation_scanned)/while/cond/lt" stack_frame_id=14}
+}
+
+ENTRY %main.5 (weight.1: bf16[128,128], microbatches.1: bf16[4,32,128]) -> bf16[128,128] {
+  %constant.10 = s32[] constant(0)
+  %constant.11 = bf16[] constant(0)
+  %broadcast_in_dim.1 = bf16[128,128]{1,0} broadcast(%constant.11), dimensions={}, metadata={op_name="jit(accumulation_scanned)/broadcast_in_dim" stack_frame_id=15}
+  %microbatches.1 = bf16[4,32,128]{2,1,0} parameter(1), metadata={op_name="microbatches"}
+  %weight.1 = bf16[128,128]{1,0} parameter(0), metadata={op_name="weight"}
+  %while.4 = (s32[], bf16[128,128]{1,0}, bf16[4,32,128]{2,1,0}, bf16[128,128]{1,0}) tuple(%constant.10, %broadcast_in_dim.1, %microbatches.1, %weight.1), metadata={op_name="jit(accumulation_scanned)/while" stack_frame_id=13}
+  %while.5 = (s32[], bf16[128,128]{1,0}, bf16[4,32,128]{2,1,0}, bf16[128,128]{1,0}) while(%while.4), condition=%region_1.4, body=%region_0.3, metadata={op_name="jit(accumulation_scanned)/while" stack_frame_id=13}
+  ROOT %while.7 = bf16[128,128]{1,0} get-tuple-element(%while.5), index=1, metadata={op_name="jit(accumulation_scanned)/while" stack_frame_id=13}
+}
+

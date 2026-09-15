@@ -19,6 +19,9 @@ authors:
 toc:
   - name: "The Decision"
   - name: "How a JAX Operation Reaches a Kernel"
+    subsections:
+      - name: "Selection evidence"
+      - name: "Read a Backend Delta"
   - name: "Dense GEMM"
   - name: "Attention Routes"
   - name: "Fused Pointwise and Reduction Work"
@@ -98,6 +101,40 @@ For a Triton GEMM, the optimized HLO normally contains a fusion kind such as
 `__triton_gemm` and its selected tile. For a library GEMM, look for a GEMM custom
 call, then identify the rocBLAS or hipBLASLt launch in the trace. For an FFI route,
 prove both the FFI target and the AITER kernel below it.
+
+### Read a Backend Delta
+
+Compare post-optimization HLO from two runs with the operation contract frozen. Follow
+[Chapter 2's compiler-delta convention]({{ '/pages/2-lowering-jax-jit-on-rocm' | relative_url }}#reading-a-compiler-delta):
+StableHLO is the portable input, while optimized HLO is the artifact that shows final
+fusions, layouts, and custom calls.
+[Appendix D]({{ '/pages/d-profiler-and-hlo-cookbook' | relative_url }}#feature-comparison-bundles)
+defines the matched dump and normalized-diff bundle.
+
+The graphs below are literal `before_optimizations` HLO rendered from XLA DOT
+output for matched BF16 forward-attention fixtures on one MI355X. Raw HLO, DOT,
+debug options, and invocation provenance are retained under
+`artifacts/hlo-fixtures/attention/`. They establish the compiler boundary for
+these small fixtures, not the performance or full training route of a case study.
+
+{% include figure.liquid path="pages/img/hlo-attention-xla.svg" class="img-fluid" zoomable=true alt="Literal XLA HLO graph for JAX dot-product attention" caption="Captured XLA-attention HLO. The graph exposes QK `dot_general`, causal-mask selection, reduction, exponential and normalization operations, followed by the probability-value `dot_general`. Raw artifact: `artifacts/hlo-fixtures/attention/xla/`." %}
+
+{% include figure.liquid path="pages/img/hlo-attention-te.svg" class="img-fluid" zoomable=true alt="Literal XLA HLO graph for Transformer Engine fused attention on ROCm" caption="Captured Transformer Engine HLO. Q, K, V and metadata feed the opaque `te_fused_attn_forward_f5` custom call; the internal CK/AITER kernels are outside the HLO graph. Raw artifact: `artifacts/hlo-fixtures/attention/te/`." %}
+
+The captured fixture is forward-only so that the literal graph remains readable.
+A training route additionally requires the corresponding backward target in the
+real differentiated step. In both arms, check local Q/K/V layouts, mask semantics,
+auxiliary outputs, result layouts, and workspace rather than matching only a target
+substring. Apply the same capture method to dense GEMMs: preserve the actual
+post-optimization `dot`, library custom call, Triton fusion, or FFI call selected
+for the exact local shape instead of drawing possible routes.
+
+A custom call is opaque to HLO. Its operands, results, layouts, aliases, target, and
+backend configuration prove the entry route, but not the implementation inside the
+library or FFI handler. One HLO custom call can enqueue multiple kernels, so neither
+the number of custom calls nor this delta is a launch count. Preserve the evidence
+boundary: optimized HLO is route evidence; a warmed device trace supplies kernel
+evidence.
 
 ## Dense GEMM
 

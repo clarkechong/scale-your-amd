@@ -1,0 +1,110 @@
+HloModule jit_attention_xla, entry_computation_layout={(bf16[1,128,8,64]{3,2,1,0}, bf16[1,128,8,64]{3,2,1,0}, bf16[1,128,8,64]{3,2,1,0})->bf16[1,128,8,64]{3,2,1,0}}, allow_spmd_sharding_propagation_to_parameters={true,true,true}, allow_spmd_sharding_propagation_to_output={true}
+
+FileNames
+1 "<frozen runpy>"
+2 "/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py"
+
+FunctionNames
+1 "_run_module_as_main"
+2 "_run_code"
+3 "<module>"
+4 "main"
+5 "attention_fixture"
+6 "_compile_and_run"
+7 "attention_fixture.<locals>.attention_xla"
+
+FileLocations
+1 {file_name_id=1 function_name_id=1 line=198 end_line=199 column=11 end_column=42}
+2 {file_name_id=1 function_name_id=2 line=88 end_line=88 column=4 end_column=27}
+3 {file_name_id=2 function_name_id=3 line=369 end_line=369 column=4 end_column=10}
+4 {file_name_id=2 function_name_id=4 line=361 end_line=361 column=4 end_column=40}
+5 {file_name_id=2 function_name_id=5 line=285 end_line=285 column=15 end_column=55}
+6 {file_name_id=2 function_name_id=6 line=27 end_line=27 column=15 end_column=70}
+7 {file_name_id=2 function_name_id=7 line=276 end_line=283 column=19 end_column=13}
+
+StackFrames
+1 {file_location_id=1 parent_frame_id=1}
+2 {file_location_id=2 parent_frame_id=2}
+3 {file_location_id=3 parent_frame_id=3}
+4 {file_location_id=4 parent_frame_id=4}
+5 {file_location_id=5 parent_frame_id=5}
+6 {file_location_id=6 parent_frame_id=6}
+7 {file_location_id=7 parent_frame_id=7}
+
+
+%tril.1 (Arg_0.1: pred[128,128]) -> pred[128,128] {
+  %iota.4 = s32[128]{0} iota(), iota_dimension=0, metadata={op_name="iota"}
+  %iota.5 = s32[128,128]{1,0} broadcast(%iota.4), dimensions={0}, metadata={op_name="iota"}
+  %iota.6 = s32[128]{0} iota(), iota_dimension=0, metadata={op_name="iota"}
+  %iota.7 = s32[128,128]{1,0} broadcast(%iota.6), dimensions={1}, metadata={op_name="iota"}
+  %ge.1 = pred[128,128]{1,0} compare(%iota.5, %iota.7), direction=GE, metadata={op_name="ge"}
+  %Arg_0.1 = pred[128,128]{1,0} parameter(0)
+  %constant.7 = pred[] constant(false)
+  %broadcast_in_dim.2 = pred[128,128]{1,0} broadcast(%constant.7), dimensions={}, metadata={op_name="broadcast_in_dim"}
+  ROOT %select_n.1 = pred[128,128]{1,0} select(%ge.1, %Arg_0.1, %broadcast_in_dim.2), metadata={op_name="select_n"}
+}
+
+%_where.2 (Arg_0.3: pred[1,8,128,128], Arg_1.1: f32[1,8,128,1,128], Arg_2.1: f32[]) -> f32[1,1,8,128,128] {
+  %Arg_0.3 = pred[1,8,128,128]{3,2,1,0} parameter(0)
+  %broadcast_in_dim.6 = pred[1,1,8,128,128]{4,3,2,1,0} reshape(%Arg_0.3), metadata={op_name="broadcast_in_dim"}
+  %Arg_1.1 = f32[1,8,128,1,128]{4,3,2,1,0} parameter(1)
+  %transpose.1 = f32[1,1,8,128,128]{4,3,2,1,0} reshape(%Arg_1.1), metadata={op_name="transpose"}
+  %Arg_2.1 = f32[] parameter(2)
+  %broadcast_in_dim.7 = f32[1,1,8,128,128]{4,3,2,1,0} broadcast(%Arg_2.1), dimensions={}, metadata={op_name="broadcast_in_dim"}
+  ROOT %select_n.3 = f32[1,1,8,128,128]{4,3,2,1,0} select(%broadcast_in_dim.6, %transpose.1, %broadcast_in_dim.7), metadata={op_name="select_n"}
+}
+
+%region_0.3 (reduce_max.3: f32[], reduce_max.4: f32[]) -> f32[] {
+  %reduce_max.3 = f32[] parameter(0), metadata={op_name="reduce_max"}
+  %reduce_max.4 = f32[] parameter(1), metadata={op_name="reduce_max"}
+  ROOT %reduce_max.5 = f32[] maximum(%reduce_max.3, %reduce_max.4), metadata={op_name="jit(attention_xla)/vmap()/reduce_max" stack_frame_id=7}
+}
+
+%region_1.4 (reduce_sum.3: f32[], reduce_sum.4: f32[]) -> f32[] {
+  %reduce_sum.3 = f32[] parameter(0), metadata={op_name="reduce_sum"}
+  %reduce_sum.4 = f32[] parameter(1), metadata={op_name="reduce_sum"}
+  ROOT %reduce_sum.5 = f32[] add(%reduce_sum.3, %reduce_sum.4), metadata={op_name="jit(attention_xla)/vmap()/reduce_sum" stack_frame_id=7}
+}
+
+ENTRY %main.5 (q.1: bf16[1,128,8,64], k.1: bf16[1,128,8,64], v.1: bf16[1,128,8,64]) -> bf16[1,128,8,64] {
+  %v.1 = bf16[1,128,8,64]{3,2,1,0} parameter(2), metadata={op_name="v"}
+  %constant.9 = pred[] constant(true)
+  %broadcast_in_dim.10 = pred[128,128]{1,0} broadcast(%constant.9), dimensions={}, metadata={op_name="jit(attention_xla)/vmap()/broadcast_in_dim" stack_frame_id=7}
+  %vmap_jit_tril__.1 = pred[128,128]{1,0} call(%broadcast_in_dim.10), to_apply=%tril.1, metadata={op_name="jit(attention_xla)/vmap(jit(tril))" stack_frame_id=7}
+  %broadcast_in_dim.11 = pred[1,1,128,128]{3,2,1,0} reshape(%vmap_jit_tril__.1), metadata={op_name="jit(attention_xla)/vmap()/broadcast_in_dim" stack_frame_id=7}
+  %and.3 = pred[1,1,128,128]{3,2,1,0} broadcast(%broadcast_in_dim.11), dimensions={0,1,2,3}, metadata={op_name="jit(attention_xla)/vmap()/and" stack_frame_id=7}
+  %and.4 = pred[1,128,128]{2,1,0} reshape(%and.3), metadata={op_name="jit(attention_xla)/vmap()/and" stack_frame_id=7}
+  %and.5 = pred[1,8,128,128]{3,2,1,0} broadcast(%and.4), dimensions={0,2,3}, metadata={op_name="jit(attention_xla)/vmap()/and" stack_frame_id=7}
+  %q.1 = bf16[1,128,8,64]{3,2,1,0} parameter(0), metadata={op_name="q"}
+  %reshape.2 = bf16[1,128,8,1,64]{4,3,2,1,0} reshape(%q.1), metadata={op_name="jit(attention_xla)/reshape" stack_frame_id=7}
+  %k.1 = bf16[1,128,8,64]{3,2,1,0} parameter(1), metadata={op_name="k"}
+  %dot_general.2 = f32[1,8,128,1,128]{4,3,2,1,0} dot(%reshape.2, %k.1), lhs_batch_dims={0,2}, lhs_contracting_dims={4}, rhs_batch_dims={0,2}, rhs_contracting_dims={3}, algorithm=dot_bf16_bf16_f32, metadata={op_name="jit(attention_xla)/vmap(BTNH,BSNH->BNTS)/dot_general" stack_frame_id=7}
+  %constant.10 = f32[] constant(0.125)
+  %mul.2 = f32[1,8,128,1,128]{4,3,2,1,0} broadcast(%constant.10), dimensions={}, metadata={op_name="jit(attention_xla)/vmap()/mul" stack_frame_id=7}
+  %mul.3 = f32[1,8,128,1,128]{4,3,2,1,0} multiply(%dot_general.2, %mul.2), metadata={op_name="jit(attention_xla)/vmap()/mul" stack_frame_id=7}
+  %constant.13 = f32[] constant(-2.38197633e+38)
+  %vmap_jit__where__.1 = f32[1,1,8,128,128]{4,3,2,1,0} call(%and.5, %mul.3, %constant.13), to_apply=%_where.2, metadata={op_name="jit(attention_xla)/vmap(jit(_where))" stack_frame_id=7}
+  %constant.12 = f32[] constant(-inf)
+  %reduce_max.7 = f32[1,1,8,128]{3,2,1,0} reduce(%vmap_jit__where__.1, %constant.12), dimensions={4}, to_apply=%region_0.3, metadata={op_name="jit(attention_xla)/vmap()/reduce_max" stack_frame_id=7}
+  %constant.8 = f32[] constant(-inf)
+  %max.2 = f32[1,1,8,128]{3,2,1,0} broadcast(%constant.8), dimensions={}, metadata={op_name="jit(attention_xla)/vmap()/max" stack_frame_id=7}
+  %max.3 = f32[1,1,8,128]{3,2,1,0} maximum(%reduce_max.7, %max.2), metadata={op_name="jit(attention_xla)/vmap()/max" stack_frame_id=7}
+  %broadcast_in_dim.12 = f32[1,1,8,128,1]{4,3,2,1,0} reshape(%max.3), metadata={op_name="jit(attention_xla)/vmap()/broadcast_in_dim" stack_frame_id=7}
+  %sub.4 = f32[1,1,8,128,1]{4,3,2,1,0} broadcast(%broadcast_in_dim.12), dimensions={0,1,2,3,4}, metadata={op_name="jit(attention_xla)/vmap()/sub" stack_frame_id=7}
+  %sub.5 = f32[1,1,8,128]{3,2,1,0} reshape(%sub.4), metadata={op_name="jit(attention_xla)/vmap()/sub" stack_frame_id=7}
+  %sub.6 = f32[1,1,8,128,128]{4,3,2,1,0} broadcast(%sub.5), dimensions={0,1,2,3}, metadata={op_name="jit(attention_xla)/vmap()/sub" stack_frame_id=7}
+  %sub.7 = f32[1,1,8,128,128]{4,3,2,1,0} subtract(%vmap_jit__where__.1, %sub.6), metadata={op_name="jit(attention_xla)/vmap()/sub" stack_frame_id=7}
+  %exp.1 = f32[1,1,8,128,128]{4,3,2,1,0} exponential(%sub.7), metadata={op_name="jit(attention_xla)/vmap()/exp" stack_frame_id=7}
+  %constant.11 = f32[] constant(0)
+  %reduce_sum.7 = f32[1,1,8,128]{3,2,1,0} reduce(%exp.1, %constant.11), dimensions={4}, to_apply=%region_1.4, metadata={op_name="jit(attention_xla)/vmap()/reduce_sum" stack_frame_id=7}
+  %broadcast_in_dim.13 = f32[1,1,8,128,1]{4,3,2,1,0} reshape(%reduce_sum.7), metadata={op_name="jit(attention_xla)/vmap()/broadcast_in_dim" stack_frame_id=7}
+  %div.4 = f32[1,1,8,128,1]{4,3,2,1,0} broadcast(%broadcast_in_dim.13), dimensions={0,1,2,3,4}, metadata={op_name="jit(attention_xla)/vmap()/div" stack_frame_id=7}
+  %div.5 = f32[1,1,8,128]{3,2,1,0} reshape(%div.4), metadata={op_name="jit(attention_xla)/vmap()/div" stack_frame_id=7}
+  %div.6 = f32[1,1,8,128,128]{4,3,2,1,0} broadcast(%div.5), dimensions={0,1,2,3}, metadata={op_name="jit(attention_xla)/vmap()/div" stack_frame_id=7}
+  %div.7 = f32[1,1,8,128,128]{4,3,2,1,0} divide(%exp.1, %div.6), metadata={op_name="jit(attention_xla)/vmap()/div" stack_frame_id=7}
+  %convert_element_type.1 = bf16[1,1,8,128,128]{4,3,2,1,0} convert(%div.7), metadata={op_name="jit(attention_xla)/vmap()/convert_element_type" stack_frame_id=7}
+  %dot_general.3 = bf16[1,8,64,1,128]{4,3,2,1,0} dot(%v.1, %convert_element_type.1), lhs_batch_dims={0,2}, lhs_contracting_dims={1}, rhs_batch_dims={1,2}, rhs_contracting_dims={4}, metadata={op_name="jit(attention_xla)/vmap(BNTS,BSNH->BTNH)/dot_general" stack_frame_id=7}
+  %transpose.3 = bf16[1,128,8,1,64]{1,3,4,2,0} transpose(%dot_general.3), dimensions={0,4,1,3,2}, metadata={op_name="jit(attention_xla)/vmap()/transpose;jit(attention_xla)/vmap(BNTS,BSNH->BTNH)/transpose"}
+  ROOT %reshape.3 = bf16[1,128,8,64]{3,2,1,0} reshape(%transpose.3), metadata={op_name="jit(attention_xla)/reshape" stack_frame_id=7}
+}
+

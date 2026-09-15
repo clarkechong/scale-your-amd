@@ -427,6 +427,16 @@ against XLA's buffer assignment rather than against parameter storage alone.
 The config states what was requested. Optimized HLO records what the compiler built.
 Each mesh cell passes only after the following checks.
 
+Treat the four FSDP/EP cells as compiler deltas against the FSDP-1/EP-8 baseline,
+not four unrelated inventories. Retain the global sharding intent, post-Shardy
+local representation, optimized HLO, scheduled HLO, and buffer assignment for
+each cell. The normalized diff should preserve local tensor shapes, collective
+opcodes, replica groups, channel IDs, layouts, and source metadata. This lets the
+write-up identify exactly where increasing FSDP replaced expert-axis token
+movement with weight or gradient communication. The didactic method is defined
+in [Chapter 6]({{ '/pages/6-jax-shardings-to-a-training-mesh' | relative_url }});
+the files here are the real-model proof.
+
 ### Parameter layout
 
 Record representative shardings and local shapes for:
@@ -627,6 +637,23 @@ The expected trade is simple:
 
 The HLO operation set should remain mathematically equivalent. The useful evidence is
 the schedule, buffer assignment, and trace overlap.
+
+The compiler delta must keep the transformation stages separate. Partitioning
+introduces the semantic token collectives; an asynchronous-collective pass may
+split them into start/done operations; LHS chooses whether independent work is
+scheduled between those operations. Compare:
+
+1. optimized HLO to confirm equivalent collective kinds, payloads, and groups;
+2. scheduled HLO to show the start/compute/done order;
+3. buffer assignment to quantify any longer live ranges; and
+4. the device trace to measure actual RCCL/compute overlap.
+
+Also record the number and size of collectives after combining. A single combined
+collective at the edge of the step may leave no legal overlap window, in which
+case an enabled LHS has no mechanism to help. Chapter 9's
+[scheduled-HLO comparison]({{ '/pages/9-compiler-runtime-and-rccl-controls' | relative_url }}#read-lhs-in-scheduled-hlo)
+shows that signature in a literal small-fixture schedule; this case study must
+replace it with the complete Mixtral scheduled HLO and trace timestamps.
 
 ### LHS achieved result
 

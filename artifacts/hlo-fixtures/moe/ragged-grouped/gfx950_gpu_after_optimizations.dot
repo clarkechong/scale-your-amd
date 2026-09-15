@@ -1,0 +1,85 @@
+digraph G {
+rankdir = TB;
+compound = true;
+label = <<b>module_0013.jit_moe_ragged_grouped.gfx950_gpu_after_optimizations<br/>Computation main.1<br/>ENTRY computation</b>>;
+labelloc = t;
+// Disable the tooltip.  Interestingly, "" doesn't work!
+tooltip = " ";
+// DOT graphs accept a stylesheet as a URI.  So naturally, an inline
+// stylesheet is a data URI!
+stylesheet=<
+  data:text/css,
+  @import url(https://fonts.googleapis.com/css?family=Roboto:400,700);
+  svg text {
+    font-family: 'Roboto';
+    font-size: 12px;
+  }
+
+    %23node4:hover ~ %23edge5 text { fill: %231976d2; }
+  %23node4:hover ~ %23edge5 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node4:hover ~ %23edge5 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node6:hover ~ %23edge5 text { fill: %23d32f2f; }
+  %23node6:hover ~ %23edge5 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node6:hover ~ %23edge5 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node4:hover ~ %23edge4 text { fill: %231976d2; }
+  %23node4:hover ~ %23edge4 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node4:hover ~ %23edge4 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node5:hover ~ %23edge4 text { fill: %23d32f2f; }
+  %23node5:hover ~ %23edge4 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node5:hover ~ %23edge4 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node3:hover ~ %23edge3 text { fill: %231976d2; }
+  %23node3:hover ~ %23edge3 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node3:hover ~ %23edge3 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node4:hover ~ %23edge3 text { fill: %23d32f2f; }
+  %23node4:hover ~ %23edge3 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node4:hover ~ %23edge3 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node2:hover ~ %23edge2 text { fill: %231976d2; }
+  %23node2:hover ~ %23edge2 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node2:hover ~ %23edge2 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node4:hover ~ %23edge2 text { fill: %23d32f2f; }
+  %23node4:hover ~ %23edge2 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node4:hover ~ %23edge2 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node1:hover ~ %23edge1 text { fill: %231976d2; }
+  %23node1:hover ~ %23edge1 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node1:hover ~ %23edge1 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node4:hover ~ %23edge1 text { fill: %23d32f2f; }
+  %23node4:hover ~ %23edge1 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node4:hover ~ %23edge1 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+>
+
+903447664 [label=<<b>Parameter 0</b><br/>f16[64,128]{1,0}>, shape=rect, tooltip="tokens", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
+910994512 [label=<<b>Parameter 1</b><br/>f16[4,128,128]{2,1,0}>, shape=rect, tooltip="experts", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
+905232768 [label=<<b>Parameter 2</b><br/>s32[4]>, shape=rect, tooltip="group_sizes", style="filled", fontcolor="black", color="#cbae82", fillcolor="#ffe0b2"];
+902329408 [label=<<b>custom-call.1</b><br/>custom_call_target=&quot;__cublas$lt$groupedMatmul&quot;<br/>(f16[64,128]{1,0}, s8[784]{0})<br/><br/>alpha=0<br/>lhs_contracting_dims={}<br/>rhs_contracting_dims={}>, shape=rect, tooltip="jit(moe_ragged_grouped)/ragged_dot_general
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:moe_fixture.<locals>.moe_ragged_grouped:337:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:moe_fixture:340:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="white", color="#005005", fillcolor="#2e7d32"];
+910700000 [label=<<b>get-tuple-element.1</b><br/>index=0<br/>f16[64,128]{1,0}>, shape=rect, tooltip="jit(moe_ragged_grouped)/ragged_dot_general
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:moe_fixture.<locals>.moe_ragged_grouped:337:19
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:moe_fixture:340:15
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:main:361:4
+/home/clchong/work/scale-your-amd/bench/hlo_feature_fixtures.py:<module>:369:4
+<frozen runpy>:_run_code:88:4
+<frozen runpy>:_run_module_as_main:198:11", style="filled", fontcolor="black", color="#9e9e9e", fillcolor="white"];
+cluster_903031136 [label=<ROOT>, shape=circle, tooltip=" ", style="filled", fontcolor="black", color="#8c7b75", fillcolor="#bcaaa4"];
+903447664 -> 902329408 [arrowhead=normal tooltip="tokens.1 -> custom-call.1"  headlabel="0", labeldistance=2];
+910994512 -> 902329408 [arrowhead=normal tooltip="experts.1 -> custom-call.1"  headlabel="1", labeldistance=2];
+905232768 -> 902329408 [arrowhead=empty tooltip="group_sizes.1 -> custom-call.1"  headlabel="2", labeldistance=2];
+902329408 -> 910700000 [arrowhead=normal tooltip="custom-call.1 -> get-tuple-element.1" ];
+902329408 -> cluster_903031136 [tooltip=" "];
+}
