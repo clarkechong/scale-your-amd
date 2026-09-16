@@ -1,0 +1,721 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml-stylesheet href="
+  data:text/css,
+  @import url(https://fonts.googleapis.com/css?family=Roboto:400,700);
+  svg text {
+    font-family: 'Roboto';
+    font-size: 12px;
+  }
+
+    %23node20:hover ~ %23edge22 text { fill: %231976d2; }
+  %23node20:hover ~ %23edge22 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node20:hover ~ %23edge22 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node21:hover ~ %23edge22 text { fill: %23d32f2f; }
+  %23node21:hover ~ %23edge22 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node21:hover ~ %23edge22 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node19:hover ~ %23edge21 text { fill: %231976d2; }
+  %23node19:hover ~ %23edge21 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node19:hover ~ %23edge21 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node20:hover ~ %23edge21 text { fill: %23d32f2f; }
+  %23node20:hover ~ %23edge21 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node20:hover ~ %23edge21 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node4:hover ~ %23edge19 text { fill: %231976d2; }
+  %23node4:hover ~ %23edge19 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node4:hover ~ %23edge19 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node20:hover ~ %23edge19 text { fill: %23d32f2f; }
+  %23node20:hover ~ %23edge19 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node20:hover ~ %23edge19 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node3:hover ~ %23edge18 text { fill: %231976d2; }
+  %23node3:hover ~ %23edge18 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node3:hover ~ %23edge18 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node20:hover ~ %23edge18 text { fill: %23d32f2f; }
+  %23node20:hover ~ %23edge18 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node20:hover ~ %23edge18 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node9:hover ~ %23edge1 text { fill: %231976d2; }
+  %23node9:hover ~ %23edge1 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node9:hover ~ %23edge1 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node10:hover ~ %23edge1 text { fill: %23d32f2f; }
+  %23node10:hover ~ %23edge1 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node10:hover ~ %23edge1 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node18:hover ~ %23edge15 text { fill: %231976d2; }
+  %23node18:hover ~ %23edge15 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node18:hover ~ %23edge15 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node19:hover ~ %23edge15 text { fill: %23d32f2f; }
+  %23node19:hover ~ %23edge15 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node19:hover ~ %23edge15 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node11:hover ~ %23edge9 text { fill: %231976d2; }
+  %23node11:hover ~ %23edge9 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node11:hover ~ %23edge9 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node14:hover ~ %23edge9 text { fill: %23d32f2f; }
+  %23node14:hover ~ %23edge9 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node14:hover ~ %23edge9 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node17:hover ~ %23edge14 text { fill: %231976d2; }
+  %23node17:hover ~ %23edge14 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node17:hover ~ %23edge14 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node18:hover ~ %23edge14 text { fill: %23d32f2f; }
+  %23node18:hover ~ %23edge14 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node18:hover ~ %23edge14 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node6:hover ~ %23edge2 text { fill: %231976d2; }
+  %23node6:hover ~ %23edge2 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node6:hover ~ %23edge2 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node7:hover ~ %23edge2 text { fill: %23d32f2f; }
+  %23node7:hover ~ %23edge2 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node7:hover ~ %23edge2 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node13:hover ~ %23edge7 text { fill: %231976d2; }
+  %23node13:hover ~ %23edge7 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node13:hover ~ %23edge7 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node14:hover ~ %23edge7 text { fill: %23d32f2f; }
+  %23node14:hover ~ %23edge7 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node14:hover ~ %23edge7 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node20:hover ~ %23edge23 text { fill: %231976d2; }
+  %23node20:hover ~ %23edge23 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node20:hover ~ %23edge23 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node22:hover ~ %23edge23 text { fill: %23d32f2f; }
+  %23node22:hover ~ %23edge23 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node22:hover ~ %23edge23 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node7:hover ~ %23edge4 text { fill: %231976d2; }
+  %23node7:hover ~ %23edge4 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node7:hover ~ %23edge4 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node9:hover ~ %23edge4 text { fill: %23d32f2f; }
+  %23node9:hover ~ %23edge4 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node9:hover ~ %23edge4 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node5:hover ~ %23edge3 text { fill: %231976d2; }
+  %23node5:hover ~ %23edge3 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node5:hover ~ %23edge3 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node9:hover ~ %23edge3 text { fill: %23d32f2f; }
+  %23node9:hover ~ %23edge3 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node9:hover ~ %23edge3 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node1:hover ~ %23edge16 text { fill: %231976d2; }
+  %23node1:hover ~ %23edge16 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node1:hover ~ %23edge16 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node20:hover ~ %23edge16 text { fill: %23d32f2f; }
+  %23node20:hover ~ %23edge16 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node20:hover ~ %23edge16 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node8:hover ~ %23edge5 text { fill: %231976d2; }
+  %23node8:hover ~ %23edge5 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node8:hover ~ %23edge5 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node9:hover ~ %23edge5 text { fill: %23d32f2f; }
+  %23node9:hover ~ %23edge5 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node9:hover ~ %23edge5 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node2:hover ~ %23edge17 text { fill: %231976d2; }
+  %23node2:hover ~ %23edge17 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node2:hover ~ %23edge17 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node20:hover ~ %23edge17 text { fill: %23d32f2f; }
+  %23node20:hover ~ %23edge17 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node20:hover ~ %23edge17 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node12:hover ~ %23edge8 text { fill: %231976d2; }
+  %23node12:hover ~ %23edge8 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node12:hover ~ %23edge8 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node13:hover ~ %23edge8 text { fill: %23d32f2f; }
+  %23node13:hover ~ %23edge8 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node13:hover ~ %23edge8 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node14:hover ~ %23edge6 text { fill: %231976d2; }
+  %23node14:hover ~ %23edge6 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node14:hover ~ %23edge6 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node15:hover ~ %23edge6 text { fill: %23d32f2f; }
+  %23node15:hover ~ %23edge6 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node15:hover ~ %23edge6 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node10:hover ~ %23edge10 text { fill: %231976d2; }
+  %23node10:hover ~ %23edge10 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node10:hover ~ %23edge10 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node15:hover ~ %23edge10 text { fill: %23d32f2f; }
+  %23node15:hover ~ %23edge10 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node15:hover ~ %23edge10 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node15:hover ~ %23edge11 text { fill: %231976d2; }
+  %23node15:hover ~ %23edge11 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node15:hover ~ %23edge11 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node16:hover ~ %23edge11 text { fill: %23d32f2f; }
+  %23node16:hover ~ %23edge11 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node16:hover ~ %23edge11 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node16:hover ~ %23edge20 text { fill: %231976d2; }
+  %23node16:hover ~ %23edge20 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node16:hover ~ %23edge20 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node20:hover ~ %23edge20 text { fill: %23d32f2f; }
+  %23node20:hover ~ %23edge20 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node20:hover ~ %23edge20 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node9:hover ~ %23edge12 text { fill: %231976d2; }
+  %23node9:hover ~ %23edge12 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node9:hover ~ %23edge12 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node17:hover ~ %23edge12 text { fill: %23d32f2f; }
+  %23node17:hover ~ %23edge12 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node17:hover ~ %23edge12 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node14:hover ~ %23edge13 text { fill: %231976d2; }
+  %23node14:hover ~ %23edge13 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node14:hover ~ %23edge13 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node18:hover ~ %23edge13 text { fill: %23d32f2f; }
+  %23node18:hover ~ %23edge13 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node18:hover ~ %23edge13 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+" type="text/css"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: G Pages: 1 -->
+<svg width="1713pt" height="1087pt"
+ viewBox="0.00 0.00 1713.00 1086.69" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 1082.69)">
+<title>G</title>
+<g id="a_graph0"><a xlink:title=" ">
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-1082.69 1709,-1082.69 1709,4 -4,4"/>
+<text text-anchor="start" x="653" y="-1064.49" font-family="Times,serif" font-weight="bold" font-size="14.00">module_0046.jit_attention_te.before_optimizations</text>
+<text text-anchor="start" x="771.5" y="-1050.49" font-family="Times,serif" font-weight="bold" font-size="14.00">Computation main.5</text>
+<text text-anchor="start" x="772.5" y="-1036.49" font-family="Times,serif" font-weight="bold" font-size="14.00">ENTRY computation</text>
+</a>
+</g>
+<g id="clust1" class="cluster">
+<title>cluster_1162556736</title>
+<g id="a_clust1"><a xlink:title=" ">
+<path fill="none" stroke="black" d="M1202.5,-686.69C1202.5,-686.69 1625.5,-686.69 1625.5,-686.69 1631.5,-686.69 1637.5,-692.69 1637.5,-698.69 1637.5,-698.69 1637.5,-1008.69 1637.5,-1008.69 1637.5,-1014.69 1631.5,-1020.69 1625.5,-1020.69 1625.5,-1020.69 1202.5,-1020.69 1202.5,-1020.69 1196.5,-1020.69 1190.5,-1014.69 1190.5,-1008.69 1190.5,-1008.69 1190.5,-698.69 1190.5,-698.69 1190.5,-692.69 1196.5,-686.69 1202.5,-686.69"/>
+<text text-anchor="start" x="1290.5" y="-1006.49" font-family="Times,serif" font-size="14.00">Subcomputation for </text>
+<text text-anchor="start" x="1437.5" y="-1006.49" font-family="Times,serif" font-weight="bold" font-size="14.00">jit__where_.2</text>
+<text text-anchor="start" x="1381.5" y="-992.49" font-family="Times,serif" font-size="14.00">_where.1</text>
+</a>
+</g>
+</g>
+<g id="clust2" class="cluster">
+<title>cluster_1095160992</title>
+<g id="a_clust2"><a xlink:title=" ">
+<path fill="none" stroke="black" d="M639.5,-551.69C639.5,-551.69 1101.5,-551.69 1101.5,-551.69 1107.5,-551.69 1113.5,-557.69 1113.5,-563.69 1113.5,-563.69 1113.5,-920.69 1113.5,-920.69 1113.5,-926.69 1107.5,-932.69 1101.5,-932.69 1101.5,-932.69 639.5,-932.69 639.5,-932.69 633.5,-932.69 627.5,-926.69 627.5,-920.69 627.5,-920.69 627.5,-563.69 627.5,-563.69 627.5,-557.69 633.5,-551.69 639.5,-551.69"/>
+<text text-anchor="start" x="672" y="-918.49" font-family="Times,serif" font-size="14.00">Subcomputation for </text>
+<text text-anchor="start" x="819" y="-918.49" font-family="Times,serif" font-weight="bold" font-size="14.00">jit__cumsum_with_promotion_.2</text>
+<text text-anchor="start" x="771" y="-904.49" font-family="Times,serif" font-size="14.00">_cumsum_with_promotion.4</text>
+</a>
+</g>
+</g>
+<g id="clust3" class="cluster">
+<title>cluster_1162559264</title>
+<g id="a_clust3"><a xlink:title=" ">
+<path fill="none" stroke="black" d="M769.5,-658.69C769.5,-658.69 1093.5,-658.69 1093.5,-658.69 1099.5,-658.69 1105.5,-664.69 1105.5,-670.69 1105.5,-670.69 1105.5,-876.69 1105.5,-876.69 1105.5,-882.69 1099.5,-888.69 1093.5,-888.69 1093.5,-888.69 769.5,-888.69 769.5,-888.69 763.5,-888.69 757.5,-882.69 757.5,-876.69 757.5,-876.69 757.5,-670.69 757.5,-670.69 757.5,-664.69 763.5,-658.69 769.5,-658.69"/>
+<text text-anchor="start" x="791.5" y="-874.49" font-family="Times,serif" font-size="14.00">Subcomputation for </text>
+<text text-anchor="start" x="938.5" y="-874.49" font-family="Times,serif" font-weight="bold" font-size="14.00">fused_attn_fwd.3</text>
+<text text-anchor="start" x="894.5" y="-860.49" font-family="Times,serif" font-size="14.00">cumsum.3</text>
+</a>
+</g>
+</g>
+<!-- 1095161520 -->
+<g id="node1" class="node">
+<title>1095161520</title>
+<g id="a_node1"><a xlink:title="q">
+<polygon fill="#ffb74d" stroke="#c88719" points="414,-402.69 211,-402.69 211,-366.69 414,-366.69 414,-402.69"/>
+<text text-anchor="start" x="263.5" y="-388.49" font-family="Times,serif" font-weight="bold" font-size="14.00">Parameter 0</text>
+<text text-anchor="start" x="219" y="-374.49" font-family="Times,serif" font-size="14.00">bf16[1,128,8,64]{3,2,1,0}</text>
+</a>
+</g>
+</g>
+<!-- 1161221952 -->
+<g id="node20" class="node">
+<title>1161221952</title>
+<g id="a_node20"><a xlink:title="jit(attention_te)/_TEAttention/te_attention/_FusedDotProductAttention_0/te_fused_attn_forward_ffi&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn:1248:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn:1248:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn:1248:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_legacy_fused_attn:1124:13&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:fused_attn:1614:15&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/flax/transformer.py:_FusedDotProductAttention.__call__:426:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/flax/transformer.py:DotProductAttention.__call__:902:16&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_TEAttention.__call__:251:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:attention_fixture.&lt;locals&gt;.attention_te:292:19&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:attention_fixture:294:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="#2e7d32" stroke="#005005" points="1705,-316.69 0,-316.69 0,-112.69 1705,-112.69 1705,-316.69"/>
+<text text-anchor="start" x="747" y="-302.49" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="white">te_fused_attn_forward_ffi.5</text>
+<text text-anchor="start" x="811.5" y="-288.49" font-family="Times,serif" font-size="14.00" fill="white">custom&#45;call</text>
+<text text-anchor="start" x="682.5" y="-274.49" font-family="Times,serif" font-size="14.00" fill="white">custom_call_target=&quot;te_fused_attn_forward_ffi&quot;</text>
+<text text-anchor="start" x="8" y="-260.49" font-family="Times,serif" font-size="14.00" fill="white">operand_layout_constraints={bf16[1,128,8,64]{3,2,1,0}, bf16[1,128,8,64]{3,2,1,0}, bf16[1,128,8,64]{3,2,1,0}, bf16[0]{0}, f32[0]{0}, u32[2]{0}, s32[2]{0}, s32[2]{0}, f32[0]{0}, f32[0]{0}, f32[0]{0}, f32[0]{0}, f32[0]{0}, f32[0]{0}}</text>
+<text text-anchor="start" x="711.5" y="-246.49" font-family="Times,serif" font-size="14.00" fill="white">api_version=API_VERSION_TYPED_FFI</text>
+<text text-anchor="start" x="626" y="-232.49" font-family="Times,serif" font-size="14.00" fill="white">(bf16[1,128,8,64]{3,2,1,0}, f32[1,8,128,1]{3,2,1,0}, u32[2,4]...</text>
+<text text-anchor="start" x="760" y="-218.49" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="white">operand 3</text>
+<text text-anchor="start" x="839" y="-218.49" font-family="Times,serif" font-size="14.00" fill="white"> = {} (bf16[0])</text>
+<text text-anchor="start" x="764.5" y="-204.49" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="white">operand 4</text>
+<text text-anchor="start" x="843.5" y="-204.49" font-family="Times,serif" font-size="14.00" fill="white"> = {} (f32[0])</text>
+<text text-anchor="start" x="764.5" y="-190.49" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="white">operand 8</text>
+<text text-anchor="start" x="843.5" y="-190.49" font-family="Times,serif" font-size="14.00" fill="white"> = {} (f32[0])</text>
+<text text-anchor="start" x="764.5" y="-176.49" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="white">operand 9</text>
+<text text-anchor="start" x="843.5" y="-176.49" font-family="Times,serif" font-size="14.00" fill="white"> = {} (f32[0])</text>
+<text text-anchor="start" x="759.5" y="-162.49" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="white">operand 10</text>
+<text text-anchor="start" x="848.5" y="-162.49" font-family="Times,serif" font-size="14.00" fill="white"> = {} (f32[0])</text>
+<text text-anchor="start" x="759.5" y="-148.49" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="white">operand 11</text>
+<text text-anchor="start" x="848.5" y="-148.49" font-family="Times,serif" font-size="14.00" fill="white"> = {} (f32[0])</text>
+<text text-anchor="start" x="759.5" y="-134.49" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="white">operand 12</text>
+<text text-anchor="start" x="848.5" y="-134.49" font-family="Times,serif" font-size="14.00" fill="white"> = {} (f32[0])</text>
+<text text-anchor="start" x="759.5" y="-120.49" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="white">operand 13</text>
+<text text-anchor="start" x="848.5" y="-120.49" font-family="Times,serif" font-size="14.00" fill="white"> = {} (f32[0])</text>
+</a>
+</g>
+</g>
+<!-- 1095161520&#45;&gt;1161221952 -->
+<g id="edge16" class="edge">
+<title>1095161520&#45;&gt;1161221952</title>
+<g id="a_edge16"><a xlink:title="q.1 &#45;&gt; te_fused_attn_forward_ffi.5">
+<path fill="none" stroke="black" d="M367.25,-366.66C405.29,-354.83 459.49,-337.96 517.99,-319.76"/>
+<polygon fill="black" stroke="black" points="519.29,-323.02 527.8,-316.71 517.21,-316.34 519.29,-323.02"/>
+</a>
+</g>
+<text text-anchor="middle" x="513" y="-326.47" font-family="Times,serif" font-size="14.00">0</text>
+</g>
+<!-- 1160752592 -->
+<g id="node2" class="node">
+<title>1160752592</title>
+<g id="a_node2"><a xlink:title="k">
+<polygon fill="#ffb74d" stroke="#c88719" points="635,-402.69 432,-402.69 432,-366.69 635,-366.69 635,-402.69"/>
+<text text-anchor="start" x="484.5" y="-388.49" font-family="Times,serif" font-weight="bold" font-size="14.00">Parameter 1</text>
+<text text-anchor="start" x="440" y="-374.49" font-family="Times,serif" font-size="14.00">bf16[1,128,8,64]{3,2,1,0}</text>
+</a>
+</g>
+</g>
+<!-- 1160752592&#45;&gt;1161221952 -->
+<g id="edge17" class="edge">
+<title>1160752592&#45;&gt;1161221952</title>
+<g id="a_edge17"><a xlink:title="k.1 &#45;&gt; te_fused_attn_forward_ffi.5">
+<path fill="none" stroke="black" d="M565.84,-366.66C587.58,-355.21 618.26,-339.05 651.53,-321.54"/>
+<polygon fill="black" stroke="black" points="653.28,-324.56 660.5,-316.81 650.02,-318.37 653.28,-324.56"/>
+</a>
+</g>
+<text text-anchor="middle" x="648.4" y="-329.03" font-family="Times,serif" font-size="14.00">1</text>
+</g>
+<!-- 1138347040 -->
+<g id="node3" class="node">
+<title>1138347040</title>
+<g id="a_node3"><a xlink:title="v">
+<polygon fill="#ffb74d" stroke="#c88719" points="856,-402.69 653,-402.69 653,-366.69 856,-366.69 856,-402.69"/>
+<text text-anchor="start" x="705.5" y="-388.49" font-family="Times,serif" font-weight="bold" font-size="14.00">Parameter 2</text>
+<text text-anchor="start" x="661" y="-374.49" font-family="Times,serif" font-size="14.00">bf16[1,128,8,64]{3,2,1,0}</text>
+</a>
+</g>
+</g>
+<!-- 1138347040&#45;&gt;1161221952 -->
+<g id="edge18" class="edge">
+<title>1138347040&#45;&gt;1161221952</title>
+<g id="a_edge18"><a xlink:title="v.1 &#45;&gt; te_fused_attn_forward_ffi.5">
+<path fill="none" stroke="black" d="M764.44,-366.66C770.55,-356.17 778.98,-341.73 788.2,-325.92"/>
+<polygon fill="black" stroke="black" points="791.39,-327.4 793.4,-317 785.34,-323.88 791.39,-327.4"/>
+</a>
+</g>
+<text text-anchor="middle" x="791.57" y="-333.22" font-family="Times,serif" font-size="14.00">2</text>
+</g>
+<!-- 1161198368 -->
+<g id="node4" class="node">
+<title>1161198368</title>
+<polygon fill="#fff9c4" stroke="#cbc693" points="1028.5,-416.69 874.5,-416.69 874.5,-352.69 1028.5,-352.69 1028.5,-416.69"/>
+<text text-anchor="start" x="905.5" y="-402.49" font-family="Times,serif" font-weight="bold" font-size="14.00">broadcast.1</text>
+<text text-anchor="start" x="895.5" y="-388.49" font-family="Times,serif" font-size="14.00">dimensions={}</text>
+<text text-anchor="start" x="928" y="-374.49" font-family="Times,serif" font-size="14.00">u32[2]</text>
+<text text-anchor="start" x="882.5" y="-360.49" font-family="Times,serif" font-weight="bold" font-size="14.00">operand</text>
+<text text-anchor="start" x="947.5" y="-360.49" font-family="Times,serif" font-size="14.00"> = u32[] 0</text>
+</g>
+<!-- 1161198368&#45;&gt;1161221952 -->
+<g id="edge19" class="edge">
+<title>1161198368&#45;&gt;1161221952</title>
+<g id="a_edge19"><a xlink:title="broadcast.1 &#45;&gt; te_fused_attn_forward_ffi.5">
+<path fill="none" stroke="black" d="M933.11,-352.49C928.35,-344.41 922.95,-335.25 917.25,-325.57"/>
+<polygon fill="none" stroke="black" points="920.26,-323.79 912.17,-316.95 914.23,-327.35 920.26,-323.79"/>
+</a>
+</g>
+<text text-anchor="middle" x="928.66" y="-324.58" font-family="Times,serif" font-size="14.00">5</text>
+</g>
+<!-- 1161022416 -->
+<g id="node5" class="node">
+<title>1161022416</title>
+<polygon fill="#ffe0b2" stroke="#cbae82" points="1312.5,-837.69 1198.5,-837.69 1198.5,-801.69 1312.5,-801.69 1312.5,-837.69"/>
+<text text-anchor="start" x="1206.5" y="-823.49" font-family="Times,serif" font-weight="bold" font-size="14.00">Parameter 0</text>
+<text text-anchor="start" x="1229" y="-809.49" font-family="Times,serif" font-size="14.00">pred[1]</text>
+</g>
+<!-- 1162205280 -->
+<g id="node9" class="node">
+<title>1162205280</title>
+<g id="a_node9"><a xlink:title="select_n&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn:1248:16">
+<polygon fill="white" stroke="#9e9e9e" points="1435,-730.69 1340,-730.69 1340,-694.69 1435,-694.69 1435,-730.69"/>
+<text text-anchor="start" x="1348" y="-716.49" font-family="Times,serif" font-weight="bold" font-size="14.00">select_n.1</text>
+<text text-anchor="start" x="1364.5" y="-702.49" font-family="Times,serif" font-size="14.00">s32[1]</text>
+</a>
+</g>
+</g>
+<!-- 1161022416&#45;&gt;1162205280 -->
+<g id="edge3" class="edge">
+<title>1161022416&#45;&gt;1162205280</title>
+<g id="a_edge3"><a xlink:title="Arg_0.1 &#45;&gt; select_n.1">
+<path fill="none" stroke="black" d="M1277,-801.59C1299.06,-784.05 1333.52,-756.64 1358.09,-737.09"/>
+<polygon fill="none" stroke="black" points="1360.36,-739.75 1366.01,-730.79 1356,-734.28 1360.36,-739.75"/>
+</a>
+</g>
+<text text-anchor="middle" x="1357.08" y="-744.99" font-family="Times,serif" font-size="14.00">0</text>
+</g>
+<!-- 1160753280 -->
+<g id="node6" class="node">
+<title>1160753280</title>
+<polygon fill="#ffe0b2" stroke="#cbae82" points="1603.5,-976.69 1489.5,-976.69 1489.5,-940.69 1603.5,-940.69 1603.5,-976.69"/>
+<text text-anchor="start" x="1497.5" y="-962.49" font-family="Times,serif" font-weight="bold" font-size="14.00">Parameter 1</text>
+<text text-anchor="start" x="1528" y="-948.49" font-family="Times,serif" font-size="14.00">s32[]</text>
+</g>
+<!-- 1159898672 -->
+<g id="node7" class="node">
+<title>1159898672</title>
+<g id="a_node7"><a xlink:title="broadcast_in_dim&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn:1248:16">
+<polygon fill="#c8e6c9" stroke="#97b498" points="1630,-844.69 1463,-844.69 1463,-794.69 1630,-794.69 1630,-844.69"/>
+<text text-anchor="start" x="1471" y="-830.49" font-family="Times,serif" font-weight="bold" font-size="14.00">broadcast_in_dim.1</text>
+<text text-anchor="start" x="1517.5" y="-816.49" font-family="Times,serif" font-size="14.00">reshape</text>
+<text text-anchor="start" x="1523.5" y="-802.49" font-family="Times,serif" font-size="14.00">s32[1]</text>
+</a>
+</g>
+</g>
+<!-- 1160753280&#45;&gt;1159898672 -->
+<g id="edge2" class="edge">
+<title>1160753280&#45;&gt;1159898672</title>
+<g id="a_edge2"><a xlink:title="Arg_1.1 &#45;&gt; broadcast_in_dim.1">
+<path fill="none" stroke="black" d="M1546.5,-940.62C1546.5,-919.34 1546.5,-882.47 1546.5,-855.21"/>
+<polygon fill="none" stroke="black" points="1550,-854.92 1546.5,-844.92 1543,-854.92 1550,-854.92"/>
+</a>
+</g>
+</g>
+<!-- 1159898672&#45;&gt;1162205280 -->
+<g id="edge4" class="edge">
+<title>1159898672&#45;&gt;1162205280</title>
+<g id="a_edge4"><a xlink:title="broadcast_in_dim.1 &#45;&gt; select_n.1">
+<path fill="none" stroke="black" d="M1510.02,-794.6C1483.5,-777.09 1447.83,-753.53 1421.82,-736.36"/>
+<polygon fill="none" stroke="black" points="1423.67,-733.39 1413.4,-730.8 1419.81,-739.23 1423.67,-733.39"/>
+</a>
+</g>
+<text text-anchor="middle" x="1433.18" y="-730.03" font-family="Times,serif" font-size="14.00">1</text>
+</g>
+<!-- 1163064960 -->
+<g id="node8" class="node">
+<title>1163064960</title>
+<polygon fill="#ffe0b2" stroke="#cbae82" points="1444.5,-837.69 1330.5,-837.69 1330.5,-801.69 1444.5,-801.69 1444.5,-837.69"/>
+<text text-anchor="start" x="1338.5" y="-823.49" font-family="Times,serif" font-weight="bold" font-size="14.00">Parameter 2</text>
+<text text-anchor="start" x="1364.5" y="-809.49" font-family="Times,serif" font-size="14.00">s32[1]</text>
+</g>
+<!-- 1163064960&#45;&gt;1162205280 -->
+<g id="edge5" class="edge">
+<title>1163064960&#45;&gt;1162205280</title>
+<g id="a_edge5"><a xlink:title="Arg_2.1 &#45;&gt; select_n.1">
+<path fill="none" stroke="black" d="M1387.5,-801.35C1387.5,-784.92 1387.5,-759.97 1387.5,-740.89"/>
+<polygon fill="none" stroke="black" points="1391,-740.71 1387.5,-730.71 1384,-740.71 1391,-740.71"/>
+</a>
+</g>
+<text text-anchor="middle" x="1395.95" y="-745.14" font-family="Times,serif" font-size="14.00">2</text>
+</g>
+<!-- 1160127488 -->
+<g id="node10" class="node">
+<title>1160127488</title>
+<g id="a_node10"><a xlink:title="jit(attention_te)/_TEAttention/te_attention/_FusedDotProductAttention_0/jit(_where)&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn:1248:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn:1248:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn:1248:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_legacy_fused_attn:1124:13&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:fused_attn:1614:15&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/flax/transformer.py:_FusedDotProductAttention.__call__:426:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/flax/transformer.py:DotProductAttention.__call__:902:16&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_TEAttention.__call__:251:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:attention_fixture.&lt;locals&gt;.attention_te:292:19&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:attention_fixture:294:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="#2e7d32" stroke="#005005" points="1562,-630.69 1351,-630.69 1351,-538.69 1562,-538.69 1562,-630.69"/>
+<text text-anchor="start" x="1406.5" y="-616.49" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="white">jit__where_.2</text>
+<text text-anchor="start" x="1444" y="-602.49" font-family="Times,serif" font-size="14.00" fill="white">call</text>
+<text text-anchor="start" x="1433.5" y="-588.49" font-family="Times,serif" font-size="14.00" fill="white">s32[1]</text>
+<text text-anchor="start" x="1364" y="-574.49" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="white">operand 0</text>
+<text text-anchor="start" x="1443" y="-574.49" font-family="Times,serif" font-size="14.00" fill="white"> = pred[1] {0}</text>
+<text text-anchor="start" x="1381.5" y="-560.49" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="white">operand 1</text>
+<text text-anchor="start" x="1460.5" y="-560.49" font-family="Times,serif" font-size="14.00" fill="white"> = s32[] 0</text>
+<text text-anchor="start" x="1359" y="-546.49" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="white">operand 2</text>
+<text text-anchor="start" x="1438" y="-546.49" font-family="Times,serif" font-size="14.00" fill="white"> = s32[1] {128}</text>
+</a>
+</g>
+</g>
+<!-- 1162205280&#45;&gt;1160127488 -->
+<g id="edge1" class="edge">
+<title>1162205280&#45;&gt;1160127488</title>
+<g id="a_edge1"><a xlink:title="_where.1 &#45;&gt; jit__where_.2">
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M1401.19,-686.69C1408.55,-673.26 1417.92,-656.14 1426.85,-639.83"/>
+<polygon fill="black" stroke="black" points="1430,-641.37 1431.74,-630.91 1423.86,-638 1430,-641.37"/>
+</a>
+</g>
+</g>
+<!-- 1162396016 -->
+<g id="node17" class="node">
+<title>1162396016</title>
+<g id="a_node17"><a xlink:title="jit(attention_te)/_TEAttention/te_attention/_FusedDotProductAttention_0/jit(_where)&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn:1248:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn:1248:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn:1248:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_legacy_fused_attn:1124:13&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:fused_attn:1614:15&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/flax/transformer.py:_FusedDotProductAttention.__call__:426:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/flax/transformer.py:DotProductAttention.__call__:902:16&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_TEAttention.__call__:251:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:attention_fixture.&lt;locals&gt;.attention_te:292:19&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:attention_fixture:294:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="#2e7d32" stroke="#005005" points="1333,-630.69 1122,-630.69 1122,-538.69 1333,-538.69 1333,-630.69"/>
+<text text-anchor="start" x="1177.5" y="-616.49" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="white">jit__where_.3</text>
+<text text-anchor="start" x="1215" y="-602.49" font-family="Times,serif" font-size="14.00" fill="white">call</text>
+<text text-anchor="start" x="1204.5" y="-588.49" font-family="Times,serif" font-size="14.00" fill="white">s32[1]</text>
+<text text-anchor="start" x="1135" y="-574.49" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="white">operand 0</text>
+<text text-anchor="start" x="1214" y="-574.49" font-family="Times,serif" font-size="14.00" fill="white"> = pred[1] {0}</text>
+<text text-anchor="start" x="1152.5" y="-560.49" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="white">operand 1</text>
+<text text-anchor="start" x="1231.5" y="-560.49" font-family="Times,serif" font-size="14.00" fill="white"> = s32[] 0</text>
+<text text-anchor="start" x="1130" y="-546.49" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="white">operand 2</text>
+<text text-anchor="start" x="1209" y="-546.49" font-family="Times,serif" font-size="14.00" fill="white"> = s32[1] {128}</text>
+</a>
+</g>
+</g>
+<!-- 1162205280&#45;&gt;1162396016 -->
+<g id="edge12" class="edge">
+<title>1162205280&#45;&gt;1162396016</title>
+<g id="a_edge12"><a xlink:title="_where.1 &#45;&gt; jit__where_.3">
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M1355.75,-686.69C1337.77,-672.53 1314.58,-654.27 1292.88,-637.18"/>
+<polygon fill="black" stroke="black" points="1294.94,-634.35 1284.92,-630.91 1290.61,-639.85 1294.94,-634.35"/>
+</a>
+</g>
+</g>
+<!-- 1160909216 -->
+<g id="node15" class="node">
+<title>1160909216</title>
+<g id="a_node15"><a xlink:title="jit(attention_te)/_TEAttention/te_attention/_FusedDotProductAttention_0/jit(_cumsum_with_promotion)&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn:1248:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn:1248:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn:1248:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_legacy_fused_attn:1124:13&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:fused_attn:1614:15&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/flax/transformer.py:_FusedDotProductAttention.__call__:426:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/flax/transformer.py:DotProductAttention.__call__:902:16&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_TEAttention.__call__:251:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:attention_fixture.&lt;locals&gt;.attention_te:292:19&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:attention_fixture:294:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="#2e7d32" stroke="#005005" points="1541.5,-502.69 1275.5,-502.69 1275.5,-452.69 1541.5,-452.69 1541.5,-502.69"/>
+<text text-anchor="start" x="1283.5" y="-488.49" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="white">jit__cumsum_with_promotion_.2</text>
+<text text-anchor="start" x="1396" y="-474.49" font-family="Times,serif" font-size="14.00" fill="white">call</text>
+<text text-anchor="start" x="1385.5" y="-460.49" font-family="Times,serif" font-size="14.00" fill="white">s32[1]</text>
+</a>
+</g>
+</g>
+<!-- 1160127488&#45;&gt;1160909216 -->
+<g id="edge10" class="edge">
+<title>1160127488&#45;&gt;1160909216</title>
+<g id="a_edge10"><a xlink:title="jit__where_.2 &#45;&gt; jit__cumsum_with_promotion_.2">
+<path fill="none" stroke="black" d="M1435.87,-538.55C1431.8,-529.67 1427.61,-520.5 1423.76,-512.08"/>
+<polygon fill="none" stroke="black" points="1426.94,-510.6 1419.6,-502.96 1420.57,-513.51 1426.94,-510.6"/>
+</a>
+</g>
+</g>
+<!-- 1162390432 -->
+<g id="node11" class="node">
+<title>1162390432</title>
+<polygon fill="#ffe0b2" stroke="#cbae82" points="749.5,-730.69 635.5,-730.69 635.5,-694.69 749.5,-694.69 749.5,-730.69"/>
+<text text-anchor="start" x="643.5" y="-716.49" font-family="Times,serif" font-weight="bold" font-size="14.00">Parameter 0</text>
+<text text-anchor="start" x="669.5" y="-702.49" font-family="Times,serif" font-size="14.00">s32[1]</text>
+</g>
+<!-- 1163043328 -->
+<g id="node14" class="node">
+<title>1163043328</title>
+<g id="a_node14"><a xlink:title="fused_attn_fwd&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn:1248:16">
+<polygon fill="#2e7d32" stroke="#005005" points="1079,-609.69 930,-609.69 930,-559.69 1079,-559.69 1079,-609.69"/>
+<text text-anchor="start" x="938" y="-595.49" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="white">fused_attn_fwd.3</text>
+<text text-anchor="start" x="992" y="-581.49" font-family="Times,serif" font-size="14.00" fill="white">call</text>
+<text text-anchor="start" x="981.5" y="-567.49" font-family="Times,serif" font-size="14.00" fill="white">s32[1]</text>
+</a>
+</g>
+</g>
+<!-- 1162390432&#45;&gt;1163043328 -->
+<g id="edge9" class="edge">
+<title>1162390432&#45;&gt;1163043328</title>
+<g id="a_edge9"><a xlink:title="Arg_0.3 &#45;&gt; fused_attn_fwd.3">
+<path fill="none" stroke="black" d="M708.35,-694.45C719.87,-682.85 736.38,-668.03 753.5,-658.69 805.42,-630.38 869.52,-611.98 919.95,-600.73"/>
+<polygon fill="none" stroke="black" points="920.82,-604.12 929.84,-598.58 919.33,-597.29 920.82,-604.12"/>
+</a>
+</g>
+</g>
+<!-- 1163486448 -->
+<g id="node12" class="node">
+<title>1163486448</title>
+<g id="a_node12"><a xlink:title="fused_attn_fwd">
+<polygon fill="#ffe0b2" stroke="#cbae82" points="1097,-844.69 766,-844.69 766,-794.69 1097,-794.69 1097,-844.69"/>
+<text text-anchor="start" x="882.5" y="-830.49" font-family="Times,serif" font-weight="bold" font-size="14.00">Parameter 0</text>
+<text text-anchor="start" x="774" y="-816.49" font-family="Times,serif" font-style="italic" font-size="14.00">from Arg_0.3 in _cumsum_with_promotion.4</text>
+<text text-anchor="start" x="908.5" y="-802.49" font-family="Times,serif" font-size="14.00">s32[1]</text>
+</a>
+</g>
+</g>
+<!-- 1161198128 -->
+<g id="node13" class="node">
+<title>1161198128</title>
+<g id="a_node13"><a xlink:title="reduce_window_sum&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn:1248:16">
+<polygon fill="#e1bee7" stroke="#af8eb5" points="1051,-758.69 860,-758.69 860,-666.69 1051,-666.69 1051,-758.69"/>
+<text text-anchor="start" x="868" y="-744.49" font-family="Times,serif" font-weight="bold" font-size="14.00">reduce_window_sum.7</text>
+<text text-anchor="start" x="901" y="-730.49" font-family="Times,serif" font-size="14.00">reduce&#45;window</text>
+<text text-anchor="start" x="877.5" y="-716.49" font-family="Times,serif" font-size="14.00">Subcomputation: </text>
+<text text-anchor="start" x="1004.5" y="-716.49" font-family="Times,serif" font-weight="bold" font-size="14.00">add</text>
+<text text-anchor="start" x="888.5" y="-702.49" font-family="Times,serif" font-size="14.00">window={size=1}</text>
+<text text-anchor="start" x="932.5" y="-688.49" font-family="Times,serif" font-size="14.00">s32[1]</text>
+<text text-anchor="start" x="880.5" y="-674.49" font-family="Times,serif" font-weight="bold" font-size="14.00">operand 1</text>
+<text text-anchor="start" x="959.5" y="-674.49" font-family="Times,serif" font-size="14.00"> = s32[] 0</text>
+</a>
+</g>
+</g>
+<!-- 1163486448&#45;&gt;1161198128 -->
+<g id="edge8" class="edge">
+<title>1163486448&#45;&gt;1161198128</title>
+<g id="a_edge8"><a xlink:title="fused_attn_fwd.1 &#45;&gt; reduce_window_sum.7">
+<path fill="none" stroke="black" d="M937.01,-794.6C938.79,-786.78 940.86,-777.75 942.95,-768.62"/>
+<polygon fill="none" stroke="black" points="946.39,-769.26 945.21,-758.73 939.57,-767.7 946.39,-769.26"/>
+</a>
+</g>
+<text text-anchor="middle" x="949.41" y="-774.58" font-family="Times,serif" font-size="14.00">0</text>
+</g>
+<!-- 1161198128&#45;&gt;1163043328 -->
+<g id="edge7" class="edge">
+<title>1161198128&#45;&gt;1163043328</title>
+<g id="a_edge7"><a xlink:title="cumsum.3 &#45;&gt; fused_attn_fwd.3">
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M976.11,-658.69C981.26,-645.45 986.65,-631.6 991.33,-619.56"/>
+<polygon fill="black" stroke="black" points="994.67,-620.62 995.03,-610.04 988.15,-618.09 994.67,-620.62"/>
+</a>
+</g>
+</g>
+<!-- 1163043328&#45;&gt;1160909216 -->
+<g id="edge6" class="edge">
+<title>1163043328&#45;&gt;1160909216</title>
+<g id="a_edge6"><a xlink:title="_cumsum_with_promotion.4 &#45;&gt; jit__cumsum_with_promotion_.2">
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M1076.55,-551.7C1088.74,-546.93 1101.37,-542.39 1113.5,-538.69 1142.74,-529.77 1206.86,-516.48 1267.88,-504.66"/>
+<polygon fill="black" stroke="black" points="1268.88,-508.04 1278.03,-502.71 1267.55,-501.16 1268.88,-508.04"/>
+</a>
+</g>
+</g>
+<!-- 1160108704 -->
+<g id="node18" class="node">
+<title>1160108704</title>
+<g id="a_node18"><a xlink:title="jit(attention_te)/_TEAttention/te_attention/_FusedDotProductAttention_0/jit(_cumsum_with_promotion)&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn:1248:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn:1248:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn:1248:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_legacy_fused_attn:1124:13&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:fused_attn:1614:15&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/flax/transformer.py:_FusedDotProductAttention.__call__:426:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/flax/transformer.py:DotProductAttention.__call__:902:16&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_TEAttention.__call__:251:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:attention_fixture.&lt;locals&gt;.attention_te:292:19&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:attention_fixture:294:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="#2e7d32" stroke="#005005" points="1257.5,-502.69 991.5,-502.69 991.5,-452.69 1257.5,-452.69 1257.5,-502.69"/>
+<text text-anchor="start" x="999.5" y="-488.49" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="white">jit__cumsum_with_promotion_.3</text>
+<text text-anchor="start" x="1112" y="-474.49" font-family="Times,serif" font-size="14.00" fill="white">call</text>
+<text text-anchor="start" x="1101.5" y="-460.49" font-family="Times,serif" font-size="14.00" fill="white">s32[1]</text>
+</a>
+</g>
+</g>
+<!-- 1163043328&#45;&gt;1160108704 -->
+<g id="edge13" class="edge">
+<title>1163043328&#45;&gt;1160108704</title>
+<g id="a_edge13"><a xlink:title="_cumsum_with_promotion.4 &#45;&gt; jit__cumsum_with_promotion_.3">
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M1041.07,-551.7C1056.33,-538.34 1073.99,-522.89 1089.12,-509.65"/>
+<polygon fill="black" stroke="black" points="1091.46,-512.25 1096.68,-503.03 1086.85,-506.98 1091.46,-512.25"/>
+</a>
+</g>
+</g>
+<!-- 1136190928 -->
+<g id="node16" class="node">
+<title>1136190928</title>
+<g id="a_node16"><a xlink:title="jit(attention_te)/_TEAttention/te_attention/_FusedDotProductAttention_0/concatenate&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn:1248:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn:1248:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn:1248:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_legacy_fused_attn:1124:13&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:fused_attn:1614:15&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/flax/transformer.py:_FusedDotProductAttention.__call__:426:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/flax/transformer.py:DotProductAttention.__call__:902:16&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_TEAttention.__call__:251:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:attention_fixture.&lt;locals&gt;.attention_te:292:19&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:attention_fixture:294:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="#c8e6c9" stroke="#97b498" points="1487,-416.69 1294,-416.69 1294,-352.69 1487,-352.69 1487,-416.69"/>
+<text text-anchor="start" x="1335" y="-402.49" font-family="Times,serif" font-weight="bold" font-size="14.00">concatenate.2</text>
+<text text-anchor="start" x="1330" y="-388.49" font-family="Times,serif" font-size="14.00">dimensions={0}</text>
+<text text-anchor="start" x="1367.5" y="-374.49" font-family="Times,serif" font-size="14.00">s32[2]</text>
+<text text-anchor="start" x="1302" y="-360.49" font-family="Times,serif" font-weight="bold" font-size="14.00">operand 0</text>
+<text text-anchor="start" x="1381" y="-360.49" font-family="Times,serif" font-size="14.00"> = s32[1] {0}</text>
+</a>
+</g>
+</g>
+<!-- 1160909216&#45;&gt;1136190928 -->
+<g id="edge11" class="edge">
+<title>1160909216&#45;&gt;1136190928</title>
+<g id="a_edge11"><a xlink:title="jit__cumsum_with_promotion_.2 &#45;&gt; concatenate.2">
+<path fill="none" stroke="black" d="M1403.68,-452.31C1402.13,-444.51 1400.38,-435.65 1398.67,-427"/>
+<polygon fill="none" stroke="black" points="1402.07,-426.14 1396.69,-417.01 1395.2,-427.5 1402.07,-426.14"/>
+</a>
+</g>
+<text text-anchor="middle" x="1408.5" y="-429.45" font-family="Times,serif" font-size="14.00">1</text>
+</g>
+<!-- 1136190928&#45;&gt;1161221952 -->
+<g id="edge20" class="edge">
+<title>1136190928&#45;&gt;1161221952</title>
+<g id="a_edge20"><a xlink:title="concatenate.2 &#45;&gt; te_fused_attn_forward_ffi.5">
+<path fill="none" stroke="black" d="M1293.7,-353.46C1262.11,-343.6 1225.06,-332.03 1186.09,-319.86"/>
+<polygon fill="none" stroke="black" points="1186.73,-316.4 1176.14,-316.76 1184.65,-323.08 1186.73,-316.4"/>
+</a>
+</g>
+<text text-anchor="middle" x="1195.97" y="-310.39" font-family="Times,serif" font-size="14.00">6</text>
+</g>
+<!-- 1162396016&#45;&gt;1160108704 -->
+<g id="edge14" class="edge">
+<title>1162396016&#45;&gt;1160108704</title>
+<g id="a_edge14"><a xlink:title="jit__where_.3 &#45;&gt; jit__cumsum_with_promotion_.3">
+<path fill="none" stroke="black" d="M1183.22,-538.55C1173.85,-529 1164.15,-519.12 1155.41,-510.2"/>
+<polygon fill="none" stroke="black" points="1157.81,-507.65 1148.31,-502.96 1152.81,-512.55 1157.81,-507.65"/>
+</a>
+</g>
+</g>
+<!-- 1162417584 -->
+<g id="node19" class="node">
+<title>1162417584</title>
+<g id="a_node19"><a xlink:title="jit(attention_te)/_TEAttention/te_attention/_FusedDotProductAttention_0/concatenate&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn:1248:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn:1248:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn:1248:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_legacy_fused_attn:1124:13&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:fused_attn:1614:15&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/flax/transformer.py:_FusedDotProductAttention.__call__:426:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/flax/transformer.py:DotProductAttention.__call__:902:16&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_TEAttention.__call__:251:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:attention_fixture.&lt;locals&gt;.attention_te:292:19&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:attention_fixture:294:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="#c8e6c9" stroke="#97b498" points="1240,-416.69 1047,-416.69 1047,-352.69 1240,-352.69 1240,-416.69"/>
+<text text-anchor="start" x="1088" y="-402.49" font-family="Times,serif" font-weight="bold" font-size="14.00">concatenate.3</text>
+<text text-anchor="start" x="1083" y="-388.49" font-family="Times,serif" font-size="14.00">dimensions={0}</text>
+<text text-anchor="start" x="1120.5" y="-374.49" font-family="Times,serif" font-size="14.00">s32[2]</text>
+<text text-anchor="start" x="1055" y="-360.49" font-family="Times,serif" font-weight="bold" font-size="14.00">operand 0</text>
+<text text-anchor="start" x="1134" y="-360.49" font-family="Times,serif" font-size="14.00"> = s32[1] {0}</text>
+</a>
+</g>
+</g>
+<!-- 1160108704&#45;&gt;1162417584 -->
+<g id="edge15" class="edge">
+<title>1160108704&#45;&gt;1162417584</title>
+<g id="a_edge15"><a xlink:title="jit__cumsum_with_promotion_.3 &#45;&gt; concatenate.3">
+<path fill="none" stroke="black" d="M1129.59,-452.31C1131.22,-444.51 1133.07,-435.65 1134.88,-427"/>
+<polygon fill="none" stroke="black" points="1138.34,-427.52 1136.96,-417.01 1131.49,-426.09 1138.34,-427.52"/>
+</a>
+</g>
+<text text-anchor="middle" x="1141.53" y="-432.78" font-family="Times,serif" font-size="14.00">1</text>
+</g>
+<!-- 1162417584&#45;&gt;1161221952 -->
+<g id="edge21" class="edge">
+<title>1162417584&#45;&gt;1161221952</title>
+<g id="a_edge21"><a xlink:title="concatenate.3 &#45;&gt; te_fused_attn_forward_ffi.5">
+<path fill="none" stroke="black" d="M1089.79,-352.68C1073.98,-343.56 1055.73,-333.02 1036.51,-321.93"/>
+<polygon fill="none" stroke="black" points="1038.03,-318.76 1027.62,-316.79 1034.53,-324.82 1038.03,-318.76"/>
+</a>
+</g>
+<text text-anchor="middle" x="1047.54" y="-314.84" font-family="Times,serif" font-size="14.00">7</text>
+</g>
+<!-- 1161261008 -->
+<g id="node21" class="node">
+<title>1161261008</title>
+<g id="a_node21"><a xlink:title="jit(attention_te)/_TEAttention/te_attention/_FusedDotProductAttention_0/te_fused_attn_forward_ffi&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn:1248:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn:1248:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/cpp_extensions/attention.py:fused_attn_fwd:3545:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn_fwd_rule:1293:37&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_fused_attn:1248:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:_legacy_fused_attn:1124:13&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/attention.py:fused_attn:1614:15&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/flax/transformer.py:_FusedDotProductAttention.__call__:426:16&#10;/opt/venv/lib/python3.12/site&#45;packages/transformer_engine/jax/flax/transformer.py:DotProductAttention.__call__:902:16&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_TEAttention.__call__:251:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:attention_fixture.&lt;locals&gt;.attention_te:292:19&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:_compile_and_run:27:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:attention_fixture:294:15&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:main:361:4&#10;/home/clchong/work/scale&#45;your&#45;amd/bench/hlo_feature_fixtures.py:&lt;module&gt;:369:4&#10;&lt;frozen runpy&gt;:_run_code:88:4&#10;&lt;frozen runpy&gt;:_run_module_as_main:198:11">
+<polygon fill="white" stroke="#9e9e9e" points="881,-70.35 654,-70.35 654,-6.35 881,-6.35 881,-70.35"/>
+<text text-anchor="start" x="662" y="-56.15" font-family="Times,serif" font-weight="bold" font-size="14.00">te_fused_attn_forward_ffi.6</text>
+<text text-anchor="start" x="704" y="-42.15" font-family="Times,serif" font-size="14.00">get&#45;tuple&#45;element</text>
+<text text-anchor="start" x="737" y="-28.15" font-family="Times,serif" font-size="14.00">index=0</text>
+<text text-anchor="start" x="674" y="-14.15" font-family="Times,serif" font-size="14.00">bf16[1,128,8,64]{3,2,1,0}</text>
+</a>
+</g>
+</g>
+<!-- 1161221952&#45;&gt;1161261008 -->
+<g id="edge22" class="edge">
+<title>1161221952&#45;&gt;1161261008</title>
+<g id="a_edge22"><a xlink:title="te_fused_attn_forward_ffi.5 &#45;&gt; te_fused_attn_forward_ffi.6">
+<path fill="none" stroke="black" d="M803.18,-112.53C797.57,-101.03 792.13,-89.87 787.25,-79.86"/>
+<polygon fill="black" stroke="black" points="790.29,-78.11 782.76,-70.66 784,-81.18 790.29,-78.11"/>
+</a>
+</g>
+</g>
+<!-- cluster_1162618336 -->
+<g id="node22" class="node">
+<title>cluster_1162618336</title>
+<g id="a_node22"><a xlink:title=" ">
+<ellipse fill="#bcaaa4" stroke="#8c7b75" cx="937.5" cy="-38.35" rx="38.19" ry="38.19"/>
+<text text-anchor="start" x="916" y="-34.65" font-family="Times,serif" font-size="14.00">ROOT</text>
+</a>
+</g>
+</g>
+<!-- 1161221952&#45;&gt;cluster_1162618336 -->
+<g id="edge23" class="edge">
+<title>1161221952&#45;&gt;cluster_1162618336</title>
+<g id="a_edge23"><a xlink:title=" ">
+<path fill="none" stroke="black" d="M901.82,-112.53C906.98,-101.94 912.01,-91.63 916.58,-82.25"/>
+<polygon fill="black" stroke="black" points="919.75,-83.73 920.99,-73.21 913.46,-80.66 919.75,-83.73"/>
+</a>
+</g>
+</g>
+</g>
+</svg>

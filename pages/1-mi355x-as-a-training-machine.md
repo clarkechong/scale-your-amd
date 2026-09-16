@@ -9,8 +9,8 @@ section_number: 1
 previous_section_url: "/"
 previous_section_name: "Chapter 0: Intro"
 
-next_section_url: "/pages/2-lowering-jax-jit-on-rocm"
-next_section_name: "Chapter 2: Lowering jax.jit on ROCm"
+next_section_url: "/pages/2-the-jax-software-stack-on-rocm"
+next_section_name: "Chapter 2: The JAX Software Stack on ROCm"
 
 authors:
   - name: Clarke Chong
@@ -68,7 +68,7 @@ relates that physical hierarchy to the logical device presented to JAX.
 
 ### Package organization
 
-**[cited]** The package contains two I/O dies (IODs), eight Accelerator Complex
+The package contains two I/O dies (IODs), eight Accelerator Complex
 Dies (XCDs), eight HBM3E stacks, and 256 active Compute Units (CUs). It has
 288 GB of HBM3E and a 2.4 GHz peak engine clock. These identities come from the
 [MI355X GPU product brief](https://www.amd.com/content/dam/amd/en/documents/instinct-tech-docs/product-briefs/amd-instinct-mi355x-gpu-brochure.pdf)
@@ -79,7 +79,7 @@ and the
 
 ### Compute hierarchy
 
-**[cited]** The execution hierarchy is:
+The execution hierarchy is:
 
 ```text
 MI355X OAM: one physical GPU
@@ -100,7 +100,7 @@ and four Matrix Cores per CU, giving 1,024 of each across the OAM. Note that an 
 Shader Engine are not the same unit. The XCD is a compute chiplet containing CUs,
 cache, and scheduling resources.
 
-**[cited]** A CU has 64 stream processors arranged as four SIMD16 vector
+A CU has 64 stream processors arranged as four SIMD16 vector
 pipelines. A Wave64 contains 64 logical work-items and is issued through a SIMD16
 pipeline as four 16-lane quarter-waves. MFMA is still a wave-level operation:
 all 64 logical lanes contribute register fragments to one matrix instruction.
@@ -226,7 +226,7 @@ therefore contribute to FP32 partial sums before the kernel converts its stored
 output to the requested dtype. The later precision experiments identify all
 three roles: input format, accumulator format, and output format.
 
-**[cited]** AMD's
+AMD's
 [CDNA 4 FP8 GEMM guide](https://rocm.blogs.amd.com/software-tools-optimization/cdna4-gemm-kernels/README.html)
 shows the lane mapping for a `16x16x128` FP8 instruction. Each of the 64 lanes
 holds 32 FP8 elements from $A$, 32 from $B$, and four FP32 accumulator values.
@@ -270,7 +270,7 @@ F_{\mathrm{padded}} =
  \left\lceil\frac{K}{T_K}\right\rceil T_K.
 $$
 
-**[analytical]** If only $M$ has a tail, $M=257$, and the macrotile step is
+If only $M$ has a tail, $M=257$, and the macrotile step is
 32 rows, padding to 288 rows adds
 
 $$
@@ -324,7 +324,7 @@ $$
 S_{\mathrm{step}}=\frac{1}{(1-p)+p/s}.
 $$
 
-**[analytical]** If GEMMs account for 85% of a hypothetical step and they experience a $2\times$ speedup, then the theoretical training step speedup becomes:
+If GEMMs account for 85% of a hypothetical step and they experience a $2\times$ speedup, then the theoretical training step speedup becomes:
 
 $$
 S_{\mathrm{step}}=\frac{1}{0.15+0.85/2}=1.74,
@@ -346,7 +346,7 @@ other work outside the accelerated GEMMs.
 | Infinity Cache | 256 MiB | one OAM, shared across eight XCDs | memory-side last-level cache |
 | HBM3E | 288 GB at 8 TB/s peak | one OAM | parameters, optimizer state, activations, and workspaces |
 
-**[cited]** ROCm's
+ROCm's
 [GPU specification table](https://rocm.docs.amd.com/en/latest/reference/gpu-specs.html)
 also lists the 32 KiB vector L1, 4 MiB of L2 per XCD, 256 MiB last-level cache,
 and 512 KiB total VGPR storage per CU. The table above expresses the register
@@ -372,7 +372,7 @@ tiling, prefetch, and high HBM bandwidth.
 
 ### Direct global to LDS loads
 
-**[cited]** CDNA 4 can move data from the global-memory path directly into LDS
+CDNA 4 can move data from the global-memory path directly into LDS
 without first staging the payload in VGPRs. AMD documents this through the
 `llvm.amdgcn.raw.buffer.load.lds` intrinsic and the wider CDNA 4
 `GLOBAL_LOAD_LDS` path. The destination is still LDS; waves later read the
@@ -402,7 +402,7 @@ because one resource is exhausted. The main limits are:
 - LDS bytes per workgroup;
 - workgroup and barrier slots.
 
-**[cited]** On gfx950, regular VGPRs and AccVGPRs share one
+On gfx950, regular VGPRs and AccVGPRs share one
 512-entry-per-lane budget. Each type can use at most 256 entries per wave, with a
 flexible split, but they are not two independent 512-entry pools. The register
 limit in waves per SIMD is approximately
@@ -437,7 +437,7 @@ occupancy percentage.
 
 ### Worked occupancy example
 
-**[cited]** Consider the example from AMD's occupancy guide: a 256-thread,
+Consider the example from AMD's occupancy guide: a 256-thread,
 four-wave MXFP8 workgroup uses 128 total VGPR entries per lane, 50 SGPRs per
 wave, and 32 KiB of LDS.
 
@@ -478,7 +478,7 @@ for a spill diagnosis.
 
 LDS pressure has two forms. Capacity pressure reduces resident workgroups.
 Access pressure occurs when several lanes address the same bank in one phase.
-**[cited]** CDNA 4 LDS has 64 banks and up to 256 bytes per clock of read
+CDNA 4 LDS has 64 banks and up to 256 bytes per clock of read
 bandwidth. A poor lane layout serializes bank-conflicting accesses even when
 capacity and occupancy look healthy. Padding or swizzling the LDS tile can
 change the bank mapping, but the benefit is shape- and schedule-dependent.
@@ -502,7 +502,7 @@ input format.
 
 ### OCP FP8
 
-**[cited]** gfx950 uses the OCP FP8 encodings:
+gfx950 uses the OCP FP8 encodings:
 
 - E4M3 has one sign bit, four exponent bits, and three mantissa bits.
 - E5M2 has one sign bit, five exponent bits, and two mantissa bits.
@@ -522,7 +522,7 @@ BF16 matrix rate.
 
 ### Microscaling formats
 
-**[cited]** CDNA 4 adds native MXFP8, MXFP6, and MXFP4 matrix instructions. The
+CDNA 4 adds native MXFP8, MXFP6, and MXFP4 matrix instructions. The
 [OCP Microscaling Formats specification](https://www.opencompute.org/documents/ocp-microscaling-formats-mx-v1-0-spec-final-pdf)
 groups 32 values under one E8M0 scale. E8M0 stores a power-of-two scale as an
 eight-bit biased exponent. The element encodings are:
@@ -533,7 +533,7 @@ eight-bit biased exponent. The element encodings are:
 | MXFP6 | E3M2 or E2M3 | 32 values | $6+8/32=6.25$ bits/value |
 | MXFP4 | E2M1 | 32 values | $4+8/32=4.25$ bits/value |
 
-The effective-storage column is **[analytical]** and excludes tensor padding,
+The effective-storage column excludes tensor padding,
 alignment, and auxiliary metadata. A block whose length is not a multiple of 32
 needs padding or a tail representation. The shared scale preserves more local
 range than one scale for a whole tensor, but it does not restore the precision
@@ -561,7 +561,7 @@ Ordinary dense transformer weights use the dense column.
 | MXFP6 | 16,384 | 10.0663 PFLOP/s | not listed in the product table |
 | MXFP4 | 16,384 | 10.0663 PFLOP/s | not listed in the product table |
 
-**[analytical]** The dense BF16 ceiling can be rebuilt from architectural
+The dense BF16 ceiling can be rebuilt from architectural
 factors:
 
 $$
@@ -592,7 +592,7 @@ MI355X workload table lists:
 | QPX | 4 | 2 | 72 GB | NPS2 |
 | CPX | 8 | 1 | 36 GB | NPS2 |
 
-**[cited]** The
+The
 [ROCm workload guide](https://rocm.docs.amd.com/en/docs-7.2.4/how-to/rocm-for-ai/inference-optimization/workload.html)
 provides these MI355X profiles. Exact support is firmware-dependent, so
 `amd-smi partition --accelerator` on the target host is authoritative. The
@@ -612,7 +612,7 @@ SPX while the process saw a partition.
 
 ## Capacity bandwidth and the BF16 roofline
 
-**[cited]** One MI355X has 288 GB of HBM3E and 8 TB/s peak HBM bandwidth.
+One MI355X has 288 GB of HBM3E and 8 TB/s peak HBM bandwidth.
 Capacity answers whether the local shard, activations, compiler temporaries, and
 workspaces fit. Bandwidth limits kernels that do too little arithmetic per byte
 fetched from HBM.
@@ -630,7 +630,7 @@ $$
 t\geq\max\left(\frac{F}{C},\frac{Q}{\beta_{\mathrm{HBM}}}\right).
 $$
 
-**[analytical]** The dense BF16 machine balance is
+The dense BF16 machine balance is
 
 $$
 I^*_{\mathrm{BF16}}
@@ -649,7 +649,7 @@ of that calculation.
 
 ## 8x GPU scale up domain
 
-**[cited]** The MI355X UBB 2.0 places eight OAMs in a one-hop, fully connected
+The MI355X UBB 2.0 places eight OAMs in a one-hop, fully connected
 mesh. Every GPU has one dedicated xGMI link to each of its seven peers. There is
 no scale-up switch between them. A ninth GPU would need to be reached through a scale-out network.
 
@@ -681,7 +681,7 @@ and 1,075.2 GB/s only when transmit and receive are added together. A cost model
 for bytes sent in one direction must use 76.8 GB/s per peer link or
 537.6 GB/s aggregate egress, not the doubled marketing total.
 
-**[analytical]** Sending 1 GB to one peer has an ideal serialization lower bound
+Sending 1 GB to one peer has an ideal serialization lower bound
 of
 
 $$
@@ -698,7 +698,7 @@ A two-GPU operation can use only the one physical link between those GPUs. A
 four-GPU subgroup has only three participating peer links per GPU. The unused
 links do not combine into a faster link to one destination.
 
-**[analytical]** If one GPU sends 1 GB concurrently to each of seven peers, the
+If one GPU sends 1 GB concurrently to each of seven peers, the
 ideal time is still
 
 $$
@@ -737,7 +737,7 @@ An MI355X OAM exposes PCIe Gen 5 x16, with a published 128 GB/s bidirectional
 rate, or 64 GB/s per direction before protocol overhead. A server can connect
 this I/O path to the host and to RDMA-capable NICs.
 
-**[cited]** ROCm exposes PeerDirect interfaces that let an RDMA NIC read and
+ROCm exposes PeerDirect interfaces that let an RDMA NIC read and
 write GPU memory without copying the payload through host memory. The
 [ROCm GPU-enabled MPI guide](https://rocm.docs.amd.com/en/develop/how-to/gpu-enabled-mpi.html)
 describes this mechanism. GPU-direct RDMA removes a host-memory staging copy;
@@ -800,7 +800,7 @@ rail placement can help.
 
 ## Where these constants reappear
 
-- [Chapter 2]({{ '/pages/2-lowering-jax-jit-on-rocm' | relative_url }}) follows a `jax.jit`
+- [Chapter 2]({{ '/pages/2-the-jax-software-stack-on-rocm' | relative_url }}) follows a `jax.jit`
   computation from StableHLO to `gfx950` code and identifies whether GEMMs reach
   MFMA library kernels.
 - [Chapter 3]({{ '/pages/3-profiling-and-analysis-of-one-training-step' | relative_url }}) uses 288 GB, 8 TB/s,
@@ -863,4 +863,4 @@ Primary software-facing and format sources:
 - [AMD Instinct MI3XX cluster reference design](https://instinct.docs.amd.com/projects/MI3XX-reference/latest/).
   Non-normative NIC, RoCEv2, tree, rail, and hybrid scale-out designs.
 
-<h3 markdown=1 class="next-section">Next: [how JAX reaches this hardware]({{ '/pages/2-lowering-jax-jit-on-rocm' | relative_url }}).</h3>
+<h3 markdown=1 class="next-section">Next: [how JAX reaches this hardware]({{ '/pages/2-the-jax-software-stack-on-rocm' | relative_url }}).</h3>
