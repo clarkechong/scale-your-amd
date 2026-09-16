@@ -18,14 +18,14 @@ authors:
     url: "https://github.com/clarkechong"
 
 toc:
-  - name: "What This Book Covers"
+  - name: "Motivation"
   - name: "Reader and Prerequisites"
   - name: "Part I: The JAX Stack on ROCm using MI355X"
     subsections:
       - name: "1. MI355X as a Training Machine"
         url: "/pages/1-mi355x-as-a-training-machine"
-      - name: "2. Lowering jax.jit on ROCm"
-        url: "/pages/2-lowering-jax-jit-on-rocm"
+      - name: "2. The JAX Software Stack on ROCm"
+        url: "/pages/2-the-jax-software-stack-on-rocm"
       - name: "3. Profiling and Analysis of a Training Step"
         url: "/pages/3-profiling-and-analysis-of-one-training-step"
   - name: "Part II: JAX Performance Features on ROCm"
@@ -54,7 +54,7 @@ toc:
   - name: "Attribution"
 ---
 
-## What This Book Covers
+## Motivation
 
 The famous [JAX Scaling Book](https://jax-ml.github.io/scaling-book/) teaches a comprehensive understanding on TPU architecure, rooflines, Transformer analysis, sharding behaviour, training parallelism, and much more. 
 
@@ -80,7 +80,7 @@ derivations should use the corresponding Scaling Book chapters linked throughout
 1. [**MI355X as a Training Machine**]({{ '/pages/1-mi355x-as-a-training-machine' | relative_url }})
    explains CDNA4, wave-level MFMA, the memory hierarchy, native low-precision
    formats, partition modes, and the eight-GPU Infinity Fabric topology.
-2. [**Lowering `jax.jit` on ROCm**]({{ '/pages/2-lowering-jax-jit-on-rocm' | relative_url }})
+2. [**The JAX Software Stack on ROCm**]({{ '/pages/2-the-jax-software-stack-on-rocm' | relative_url }})
    follows a training step from Python through StableHLO and XLA to ROCm libraries,
    generated kernels, FFI calls, and the HIP runtime.
 3. [**Profiling and Analysis of a Training Step**]({{ '/pages/3-profiling-and-analysis-of-one-training-step' | relative_url }})

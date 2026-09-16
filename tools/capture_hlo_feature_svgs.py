@@ -203,6 +203,163 @@ def _render_schedule_excerpt(hlo_text: str, svg: Path, title: str) -> None:
     schedule_dot.unlink()
 
 
+ATTENTION_SUBGRAPH_NODES = {
+    "xla": {
+        "reshape.2",
+        "dot_general.2",
+        "mul.3",
+        "and.5",
+        "vmap_jit__where__.1",
+        "reduce_max.7",
+        "sub.7",
+        "exp.1",
+        "reduce_sum.7",
+        "div.7",
+        "convert_element_type.1",
+        "dot_general.3",
+        "reshape.3",
+    },
+    "te": {
+        "broadcast.1",
+        "concatenate.2",
+        "concatenate.3",
+        "te_fused_attn_forward_ffi.5",
+        "te_fused_attn_forward_ffi.6",
+    },
+}
+
+
+def _dot_nodes_and_edges(dot_text: str) -> tuple[dict[str, str], list[tuple[str, str]]]:
+    """Extract node statements and numeric edges from XLA's DOT output."""
+    lines = dot_text.splitlines()
+    nodes: dict[str, str] = {}
+    edges: list[tuple[str, str]] = []
+    index = 0
+    while index < len(lines):
+        line = lines[index]
+        node_match = re.match(r"^\s*(\d+) \[label=", line)
+        if node_match:
+            statement = [line]
+            while not statement[-1].rstrip().endswith("];"):
+                index += 1
+                statement.append(lines[index])
+            nodes[node_match.group(1)] = "\n".join(statement)
+        else:
+            edge_match = re.match(r"^\s*(\d+) -> (\d+) ", line)
+            if edge_match:
+                edges.append((edge_match.group(1), edge_match.group(2)))
+        index += 1
+    return nodes, edges
+
+
+def _attention_node_name(statement: str) -> str | None:
+    match = re.search(r"<b>([^<]+)</b>", statement)
+    return match.group(1) if match else None
+
+
+def _attention_input_name(statement: str) -> str | None:
+    match = re.search(r'tooltip="([qkv])"', statement)
+    return match.group(1) if match else None
+
+
+def _clean_attention_node(statement: str, node_name: str | None, input_name: str | None) -> str:
+    """Keep XLA's visual node while removing source-stack and backend-detail noise."""
+    statement = re.sub(
+        r', tooltip=".*?", style=',
+        ', tooltip=" ", style=',
+        statement,
+        flags=re.DOTALL,
+    )
+    if input_name:
+        statement = re.sub(
+            r"<b>Parameter \d+</b>",
+            f"<b>{input_name}.1</b><br/>parameter",
+            statement,
+            count=1,
+        )
+    if node_name == "te_fused_attn_forward_ffi.5":
+        node_id = statement.split(maxsplit=1)[0]
+        return (
+            f'{node_id} [label=<<b>te_fused_attn_forward_ffi.5</b><br/>'
+            'custom-call<br/>custom_call_target=&quot;te_fused_attn_forward_ffi&quot;<br/>'
+            'API_VERSION_TYPED_FFI<br/>'
+            '(bf16[1,128,8,64], f32[1,8,128,1], u32[2,4], u8[1])>, '
+            'shape=rect, tooltip=" ", style="filled", fontcolor="black", '
+            'color="#97b498", fillcolor="#c8e6c9"];'
+        )
+    return statement
+
+
+def _contract_edges(
+    selected: set[str],
+    edges: list[tuple[str, str]],
+) -> set[tuple[str, str]]:
+    """Connect retained nodes across omitted layout and broadcast operations."""
+    adjacency: dict[str, list[str]] = {}
+    for source, target in edges:
+        adjacency.setdefault(source, []).append(target)
+
+    contracted: set[tuple[str, str]] = set()
+    for source in selected:
+        queue = list(adjacency.get(source, ()))
+        visited: set[str] = set()
+        while queue:
+            target = queue.pop(0)
+            if target in visited:
+                continue
+            visited.add(target)
+            if target in selected:
+                contracted.add((source, target))
+                continue
+            queue.extend(adjacency.get(target, ()))
+    return contracted
+
+
+def _render_attention_excerpt(dot_source: Path, svg: Path, variant: str) -> None:
+    """Render a readable semantic subgraph from a literal XLA attention DOT graph."""
+    nodes, edges = _dot_nodes_and_edges(dot_source.read_text())
+    wanted_names = ATTENTION_SUBGRAPH_NODES[variant]
+    selected: dict[str, tuple[str, str | None, str | None]] = {}
+    for node_id, statement in nodes.items():
+        node_name = _attention_node_name(statement)
+        input_name = _attention_input_name(statement)
+        if node_name in wanted_names or input_name in {"q", "k", "v"}:
+            selected[node_id] = (statement, node_name, input_name)
+
+    missing = wanted_names - {
+        node_name for _, node_name, _ in selected.values() if node_name is not None
+    }
+    if missing:
+        raise RuntimeError(
+            f"attention/{variant}: missing selected HLO nodes: {', '.join(sorted(missing))}"
+        )
+
+    title = "Standard JAX attention" if variant == "xla" else "Transformer Engine attention"
+    lines = [
+        "digraph G {",
+        "rankdir=TB;",
+        'graph [bgcolor="white", pad="0.2", nodesep="0.25", ranksep="0.35"];',
+        'node [fontname="Roboto", fontsize=11];',
+        'edge [color="#666666", penwidth=1.2, arrowsize=0.7];',
+        (
+            f'label=<{title}<br/><font point-size="10">'
+            "representative subgraph from literal before_optimizations HLO"
+            "</font>>;"
+        ),
+        "labelloc=t;",
+    ]
+    for node_id in sorted(selected, key=int):
+        statement, node_name, input_name = selected[node_id]
+        lines.append(_clean_attention_node(statement, node_name, input_name))
+    for source, target in sorted(_contract_edges(set(selected), edges)):
+        lines.append(f"{source} -> {target};")
+    lines.append("}")
+
+    excerpt_dot = dot_source.with_name("representative.dot")
+    excerpt_dot.write_text("\n".join(lines) + "\n")
+    subprocess.run(["dot", "-Tsvg", str(excerpt_dot), "-o", str(svg)], check=True)
+
+
 def capture(fixture: Fixture) -> None:
     destination = ARTIFACTS / fixture.feature / fixture.variant
     destination.mkdir(parents=True, exist_ok=True)
@@ -261,6 +418,9 @@ def capture(fixture: Fixture) -> None:
                 f"jit_{fixture.module}: LHS {fixture.variant}",
             )
             renderer = "literal scheduled-HLO entry excerpt"
+        elif fixture.feature == "attention":
+            _render_attention_excerpt(dot_source, svg, fixture.variant)
+            renderer = "representative subgraph from XLA DOT rendered by Graphviz"
         else:
             subprocess.run(
                 ["dot", "-Tsvg", str(dot_source), "-o", str(svg)],

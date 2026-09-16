@@ -1,0 +1,23 @@
+digraph G {
+rankdir=TB;
+graph [bgcolor="white", pad="0.2", nodesep="0.25", ranksep="0.35"];
+node [fontname="Roboto", fontsize=11];
+edge [color="#666666", penwidth=1.2, arrowsize=0.7];
+label=<Transformer Engine attention<br/><font point-size="10">representative subgraph from literal before_optimizations HLO</font>>;
+labelloc=t;
+1095161520 [label=<<b>q.1</b><br/>parameter<br/>bf16[1,128,8,64]{3,2,1,0}>, shape=rect, tooltip=" ", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
+1136190928 [label=<<b>concatenate.2</b><br/>dimensions={0}<br/>s32[2]<br/><b>operand 0</b> = s32[1] {0}>, shape=rect, tooltip=" ", style="filled", fontcolor="black", color="#97b498", fillcolor="#c8e6c9"];
+1138347040 [label=<<b>v.1</b><br/>parameter<br/>bf16[1,128,8,64]{3,2,1,0}>, shape=rect, tooltip=" ", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
+1160752592 [label=<<b>k.1</b><br/>parameter<br/>bf16[1,128,8,64]{3,2,1,0}>, shape=rect, tooltip=" ", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
+1161198368 [label=<<b>broadcast.1</b><br/>dimensions={}<br/>u32[2]<br/><b>operand</b> = u32[] 0>, shape=rect, tooltip=" ", style="filled", fontcolor="black", color="#cbc693", fillcolor="#fff9c4"];
+1161221952 [label=<<b>te_fused_attn_forward_ffi.5</b><br/>custom-call<br/>custom_call_target=&quot;te_fused_attn_forward_ffi&quot;<br/>API_VERSION_TYPED_FFI<br/>(bf16[1,128,8,64], f32[1,8,128,1], u32[2,4], u8[1])>, shape=rect, tooltip=" ", style="filled", fontcolor="black", color="#97b498", fillcolor="#c8e6c9"];
+1161261008 [label=<<b>te_fused_attn_forward_ffi.6</b><br/>get-tuple-element<br/>index=0<br/>bf16[1,128,8,64]{3,2,1,0}>, shape=rect, tooltip=" ", style="filled", fontcolor="black", color="#9e9e9e", fillcolor="white"];
+1162417584 [label=<<b>concatenate.3</b><br/>dimensions={0}<br/>s32[2]<br/><b>operand 0</b> = s32[1] {0}>, shape=rect, tooltip=" ", style="filled", fontcolor="black", color="#97b498", fillcolor="#c8e6c9"];
+1095161520 -> 1161221952;
+1136190928 -> 1161221952;
+1138347040 -> 1161221952;
+1160752592 -> 1161221952;
+1161198368 -> 1161221952;
+1161221952 -> 1161261008;
+1162417584 -> 1161221952;
+}

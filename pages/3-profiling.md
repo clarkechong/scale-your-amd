@@ -20,6 +20,14 @@
     - decompose into logical components of the architecture (e.g. forward[att, moe router, dispatch, expert gemm, activations] etc)
     - showing roofline analysis per logical parts
 
+Recommended workflow to demonstrate!
+
+Run MaxText with profiler=xplane.
+Add jax.named_scope only where existing Flax/HLO names are insufficient.
+Use XProf and optimized HLO for framework attribution.
+Run the same configuration separately under rocprofv3 for precise kernel, HIP, and RCCL evidence.
+Correlate the HLO/kernel names between captures.
+
 ---
 
 ## Profiler metrics
