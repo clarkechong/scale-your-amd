@@ -1,0 +1,319 @@
+digraph G {
+rankdir = TB;
+compound = true;
+label = <<b><br/>Computation main.1<br/>ENTRY computation</b>>;
+labelloc = t;
+// Disable the tooltip.  Interestingly, "" doesn't work!
+tooltip = " ";
+// DOT graphs accept a stylesheet as a URI.  So naturally, an inline
+// stylesheet is a data URI!
+stylesheet=<
+  data:text/css,
+  @import url(https://fonts.googleapis.com/css?family=Roboto:400,700);
+  svg text {
+    font-family: 'Roboto';
+    font-size: 12px;
+  }
+
+    %23node6:hover ~ %23edge19 text { fill: %231976d2; }
+  %23node6:hover ~ %23edge19 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node6:hover ~ %23edge19 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node16:hover ~ %23edge19 text { fill: %23d32f2f; }
+  %23node16:hover ~ %23edge19 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node16:hover ~ %23edge19 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node4:hover ~ %23edge17 text { fill: %231976d2; }
+  %23node4:hover ~ %23edge17 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node4:hover ~ %23edge17 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node16:hover ~ %23edge17 text { fill: %23d32f2f; }
+  %23node16:hover ~ %23edge17 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node16:hover ~ %23edge17 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node2:hover ~ %23edge15 text { fill: %231976d2; }
+  %23node2:hover ~ %23edge15 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node2:hover ~ %23edge15 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node16:hover ~ %23edge15 text { fill: %23d32f2f; }
+  %23node16:hover ~ %23edge15 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node16:hover ~ %23edge15 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node7:hover ~ %23edge1 text { fill: %231976d2; }
+  %23node7:hover ~ %23edge1 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node7:hover ~ %23edge1 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node9:hover ~ %23edge1 text { fill: %23d32f2f; }
+  %23node9:hover ~ %23edge1 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node9:hover ~ %23edge1 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node8:hover ~ %23edge2 text { fill: %231976d2; }
+  %23node8:hover ~ %23edge2 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node8:hover ~ %23edge2 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node11:hover ~ %23edge2 text { fill: %23d32f2f; }
+  %23node11:hover ~ %23edge2 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node11:hover ~ %23edge2 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node5:hover ~ %23edge18 text { fill: %231976d2; }
+  %23node5:hover ~ %23edge18 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node5:hover ~ %23edge18 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node16:hover ~ %23edge18 text { fill: %23d32f2f; }
+  %23node16:hover ~ %23edge18 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node16:hover ~ %23edge18 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node12:hover ~ %23edge7 text { fill: %231976d2; }
+  %23node12:hover ~ %23edge7 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node12:hover ~ %23edge7 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node13:hover ~ %23edge7 text { fill: %23d32f2f; }
+  %23node13:hover ~ %23edge7 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node13:hover ~ %23edge7 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node1:hover ~ %23edge14 text { fill: %231976d2; }
+  %23node1:hover ~ %23edge14 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node1:hover ~ %23edge14 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node16:hover ~ %23edge14 text { fill: %23d32f2f; }
+  %23node16:hover ~ %23edge14 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node16:hover ~ %23edge14 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node6:hover ~ %23edge3 text { fill: %231976d2; }
+  %23node6:hover ~ %23edge3 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node6:hover ~ %23edge3 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node11:hover ~ %23edge3 text { fill: %23d32f2f; }
+  %23node11:hover ~ %23edge3 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node11:hover ~ %23edge3 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node9:hover ~ %23edge5 text { fill: %231976d2; }
+  %23node9:hover ~ %23edge5 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node9:hover ~ %23edge5 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node13:hover ~ %23edge5 text { fill: %23d32f2f; }
+  %23node13:hover ~ %23edge5 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node13:hover ~ %23edge5 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node15:hover ~ %23edge13 text { fill: %231976d2; }
+  %23node15:hover ~ %23edge13 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node15:hover ~ %23edge13 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node16:hover ~ %23edge13 text { fill: %23d32f2f; }
+  %23node16:hover ~ %23edge13 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node16:hover ~ %23edge13 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node4:hover ~ %23edge6 text { fill: %231976d2; }
+  %23node4:hover ~ %23edge6 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node4:hover ~ %23edge6 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node13:hover ~ %23edge6 text { fill: %23d32f2f; }
+  %23node13:hover ~ %23edge6 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node13:hover ~ %23edge6 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node14:hover ~ %23edge11 text { fill: %231976d2; }
+  %23node14:hover ~ %23edge11 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node14:hover ~ %23edge11 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node15:hover ~ %23edge11 text { fill: %23d32f2f; }
+  %23node15:hover ~ %23edge11 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node15:hover ~ %23edge11 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node16:hover ~ %23edge20 text { fill: %231976d2; }
+  %23node16:hover ~ %23edge20 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node16:hover ~ %23edge20 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node17:hover ~ %23edge20 text { fill: %23d32f2f; }
+  %23node17:hover ~ %23edge20 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node17:hover ~ %23edge20 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node3:hover ~ %23edge16 text { fill: %231976d2; }
+  %23node3:hover ~ %23edge16 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node3:hover ~ %23edge16 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node16:hover ~ %23edge16 text { fill: %23d32f2f; }
+  %23node16:hover ~ %23edge16 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node16:hover ~ %23edge16 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node13:hover ~ %23edge12 text { fill: %231976d2; }
+  %23node13:hover ~ %23edge12 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node13:hover ~ %23edge12 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node15:hover ~ %23edge12 text { fill: %23d32f2f; }
+  %23node15:hover ~ %23edge12 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node15:hover ~ %23edge12 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node13:hover ~ %23edge8 text { fill: %231976d2; }
+  %23node13:hover ~ %23edge8 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node13:hover ~ %23edge8 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node14:hover ~ %23edge8 text { fill: %23d32f2f; }
+  %23node14:hover ~ %23edge8 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node14:hover ~ %23edge8 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node10:hover ~ %23edge4 text { fill: %231976d2; }
+  %23node10:hover ~ %23edge4 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node10:hover ~ %23edge4 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node11:hover ~ %23edge4 text { fill: %23d32f2f; }
+  %23node11:hover ~ %23edge4 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node11:hover ~ %23edge4 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node11:hover ~ %23edge10 text { fill: %231976d2; }
+  %23node11:hover ~ %23edge10 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node11:hover ~ %23edge10 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node15:hover ~ %23edge10 text { fill: %23d32f2f; }
+  %23node15:hover ~ %23edge10 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node15:hover ~ %23edge10 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+  %23node11:hover ~ %23edge9 text { fill: %231976d2; }
+  %23node11:hover ~ %23edge9 path { stroke: %231976d2; stroke-width: .2em; }
+  %23node11:hover ~ %23edge9 polygon { fill: %231976d2; stroke: %231976d2; stroke-width: .2em; }
+
+  %23node15:hover ~ %23edge9 text { fill: %23d32f2f; }
+  %23node15:hover ~ %23edge9 path { stroke: %23d32f2f; stroke-width: .2em; }
+  %23node15:hover ~ %23edge9 polygon { fill: %23d32f2f; stroke: %23d32f2f; stroke-width: .2em; }
+
+>
+
+1301030240 [label=<<b>Parameter 0</b><br/>f32[1024]>, shape=rect, tooltip="state['_overwrite_with_gradient']['TEWrapper_dot_general_0']['grad_amax_history']", style="filled", fontcolor="black", color="#cbae82", fillcolor="#ffe0b2"];
+1303942160 [label=<<b>Parameter 1</b><br/>f32[1]>, shape=rect, tooltip="state['_overwrite_with_gradient']['TEWrapper_dot_general_0']['grad_scale']", style="filled", fontcolor="black", color="#cbae82", fillcolor="#ffe0b2"];
+1305879920 [label=<<b>Parameter 2</b><br/>f32[1024]>, shape=rect, tooltip="state['_overwrite_with_gradient']['TEWrapper_dot_general_0']['kernel_amax_history']", style="filled", fontcolor="black", color="#cbae82", fillcolor="#ffe0b2"];
+1300707088 [label=<<b>Parameter 3</b><br/>f32[1]>, shape=rect, tooltip="state['_overwrite_with_gradient']['TEWrapper_dot_general_0']['kernel_scale']", style="filled", fontcolor="black", color="#cbae82", fillcolor="#ffe0b2"];
+1307156992 [label=<<b>Parameter 4</b><br/>f32[1024]>, shape=rect, tooltip="state['_overwrite_with_gradient']['TEWrapper_dot_general_0']['x_amax_history']", style="filled", fontcolor="black", color="#cbae82", fillcolor="#ffe0b2"];
+1304143264 [label=<<b>Parameter 5</b><br/>f32[1]>, shape=rect, tooltip="state['_overwrite_with_gradient']['TEWrapper_dot_general_0']['x_scale']", style="filled", fontcolor="black", color="#cbae82", fillcolor="#ffe0b2"];
+1197572416 [label=<<b>Parameter 6</b><br/>f32[256,256]{1,0}>, shape=rect, tooltip="state['params']['kernel']", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
+1305489168 [label=<<b>Parameter 7</b><br/>bf16[128,256]{1,0}>, shape=rect, tooltip="x", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
+1173441296 [label=<<b>convert_element_type.1</b><br/>bf16[256,256]{1,0}>, shape=rect, tooltip="jit(apply_layer)/Dense/convert_element_type
+/opt/venv/lib/python3.12/site-packages/flax/linen/dtypes.py:promote_dtype:79:10
+/opt/venv/lib/python3.12/site-packages/flax/linen/linear.py:Dense.__call__:275:27
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:te_lowering.<locals>.apply_layer:128:30
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:te_lowering:132:14
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:main:374:15
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:<module>:384:4", style="filled", fontcolor="black", color="#9e9e9e", fillcolor="white"];
+1325635264 [label=<<b>empty.2</b><br/>custom-call<br/>custom_call_target=&quot;AllocateBuffer&quot;<br/>bf16[1,1]{1,0}>, shape=rect, tooltip="jit(apply_layer)/Dense/TEWrapper_dot_general_0/empty
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/quantization.py:_quantize_dbias_impl:809:17
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/quantization.py:quantize:948:13
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:_dense_fwd_rule:198:15
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:_dense:152:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:dense:104:13
+/workspace/maxtext/src/maxtext/layers/quantizations.py:TransformerEngineQuantization.dot_general_cls.<locals>.te_dot_general:1154:13
+/workspace/maxtext/src/maxtext/layers/quantizations.py:TransformerEngineQuantization._wrap.<locals>.TEWrapper.__call__:1135:15
+/opt/venv/lib/python3.12/site-packages/flax/linen/linear.py:Dense.__call__:287:8
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:te_lowering.<locals>.apply_layer:128:30
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:te_lowering:132:14
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:main:374:15
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:<module>:384:4", style="filled", fontcolor="white", color="#005005", fillcolor="#2e7d32"];
+1307692992 [label=<<b>te_dbias_quantize_ffi.16</b><br/>custom-call<br/>custom_call_target=&quot;te_dbias_quantize_ffi&quot;<br/>operand_layout_constraints={bf16[128,256]{1,0}, f32[1]{0}, f32[1]{0}, u32[0]{0}, f32[1]{0}, bf16[1,1]{1,0}}<br/>output_to_operand_aliasing={{4}: (2, {})}<br/>api_version=API_VERSION_TYPED_FFI<br/>(f8e4m3fn[128,256]{1,0}, f8e4m3fn[1]{0}, f32[1]{0}, f32[1]{0}...<br/><b>operand 2</b> = f32[1] {0}<br/><b>operand 3</b> = {} (u32[0])<br/><b>operand 4</b> = f32[1] {0}>, shape=rect, tooltip="jit(apply_layer)/Dense/TEWrapper_dot_general_0/te_dbias_quantize_ffi
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/quantization.py:_quantize_dbias_impl:877:8
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/quantization.py:quantize:948:13
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:_dense_fwd_rule:198:15
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:_dense:152:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/quantization.py:_quantize_dbias_impl:877:8
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/quantization.py:quantize:948:13
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:_dense_fwd_rule:198:15
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:_dense:152:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/quantization.py:_quantize_dbias_impl:877:8
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/quantization.py:quantize:948:13
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:_dense_fwd_rule:198:15
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:_dense:152:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:dense:104:13
+/workspace/maxtext/src/maxtext/layers/quantizations.py:TransformerEngineQuantization.dot_general_cls.<locals>.te_dot_general:1154:13
+/workspace/maxtext/src/maxtext/layers/quantizations.py:TransformerEngineQuantization._wrap.<locals>.TEWrapper.__call__:1135:15
+/opt/venv/lib/python3.12/site-packages/flax/linen/linear.py:Dense.__call__:287:8
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:te_lowering.<locals>.apply_layer:128:30
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:te_lowering:132:14
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:main:374:15
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:<module>:384:4", style="filled", fontcolor="white", color="#005005", fillcolor="#2e7d32"];
+1307678016 [label=<<b>empty.3</b><br/>custom-call<br/>custom_call_target=&quot;AllocateBuffer&quot;<br/>bf16[1,1]{1,0}>, shape=rect, tooltip="jit(apply_layer)/Dense/TEWrapper_dot_general_0/empty
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/quantization.py:_quantize_dbias_impl:809:17
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/quantization.py:quantize:948:13
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:_dense_fwd_rule:207:20
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:_dense:152:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:dense:104:13
+/workspace/maxtext/src/maxtext/layers/quantizations.py:TransformerEngineQuantization.dot_general_cls.<locals>.te_dot_general:1154:13
+/workspace/maxtext/src/maxtext/layers/quantizations.py:TransformerEngineQuantization._wrap.<locals>.TEWrapper.__call__:1135:15
+/opt/venv/lib/python3.12/site-packages/flax/linen/linear.py:Dense.__call__:287:8
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:te_lowering.<locals>.apply_layer:128:30
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:te_lowering:132:14
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:main:374:15
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:<module>:384:4", style="filled", fontcolor="white", color="#005005", fillcolor="#2e7d32"];
+1307707712 [label=<<b>te_dbias_quantize_ffi.24</b><br/>custom-call<br/>custom_call_target=&quot;te_dbias_quantize_ffi&quot;<br/>operand_layout_constraints={bf16[256,256]{1,0}, f32[1]{0}, f32[1]{0}, u32[0]{0}, f32[1]{0}, bf16[1,1]{1,0}}<br/>output_to_operand_aliasing={{4}: (2, {})}<br/>api_version=API_VERSION_TYPED_FFI<br/>(f8e4m3fn[256,256]{1,0}, f8e4m3fn[1]{0}, f32[1]{0}, f32[1]{0}...<br/><b>operand 2</b> = f32[1] {0}<br/><b>operand 3</b> = {} (u32[0])<br/><b>operand 4</b> = f32[1] {0}>, shape=rect, tooltip="jit(apply_layer)/Dense/TEWrapper_dot_general_0/te_dbias_quantize_ffi
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/quantization.py:_quantize_dbias_impl:877:8
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/quantization.py:quantize:948:13
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:_dense_fwd_rule:207:20
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:_dense:152:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/quantization.py:_quantize_dbias_impl:877:8
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/quantization.py:quantize:948:13
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:_dense_fwd_rule:207:20
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:_dense:152:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/quantization.py:_quantize_dbias_impl:877:8
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/quantization.py:quantize:948:13
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:_dense_fwd_rule:207:20
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:_dense:152:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:dense:104:13
+/workspace/maxtext/src/maxtext/layers/quantizations.py:TransformerEngineQuantization.dot_general_cls.<locals>.te_dot_general:1154:13
+/workspace/maxtext/src/maxtext/layers/quantizations.py:TransformerEngineQuantization._wrap.<locals>.TEWrapper.__call__:1135:15
+/opt/venv/lib/python3.12/site-packages/flax/linen/linear.py:Dense.__call__:287:8
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:te_lowering.<locals>.apply_layer:128:30
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:te_lowering:132:14
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:main:374:15
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:<module>:384:4", style="filled", fontcolor="white", color="#005005", fillcolor="#2e7d32"];
+1306090128 [label=<<b>transpose.1</b><br/>dimensions={1,0}<br/>f8e4m3fn[256,256]{0,1}<br/><b>operand</b> = tuple-element 0 of te_dbias_quantize_ffi.24 f8e4m3fn[256,256]{1,0}>, shape=rect, tooltip="jit(apply_layer)/Dense/TEWrapper_dot_general_0/transpose
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/quantization.py:_quantize_dbias_impl:903:36
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/quantization.py:quantize:948:13
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:_dense_fwd_rule:207:20
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:_dense:152:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:dense:104:13
+/workspace/maxtext/src/maxtext/layers/quantizations.py:TransformerEngineQuantization.dot_general_cls.<locals>.te_dot_general:1154:13
+/workspace/maxtext/src/maxtext/layers/quantizations.py:TransformerEngineQuantization._wrap.<locals>.TEWrapper.__call__:1135:15
+/opt/venv/lib/python3.12/site-packages/flax/linen/linear.py:Dense.__call__:287:8
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:te_lowering.<locals>.apply_layer:128:30
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:te_lowering:132:14
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:main:374:15
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:<module>:384:4", style="filled", fontcolor="black", color="#97b498", fillcolor="#c8e6c9"];
+1305488256 [label=<<b>te_gemm_v2_ffi.3</b><br/>custom-call<br/>custom_call_target=&quot;te_gemm_v2_ffi&quot;<br/>operand_layout_constraints={f8e4m3fn[128,256]{1,0}, f32[1]{0}, f8e4m3fn[256,256]{1,0}, f32[1]{0}, bf16[0]{0}, f32[1]{0}, f32[1]{0}}<br/>api_version=API_VERSION_TYPED_FFI<br/>(bf16[128,256]{1,0}, u8[67109120]{0})<br/><b>operand 0</b> = tuple-element 0 of te_dbias_quantize_ffi.16 f8e4m3fn[128,256]{1,0}<br/><b>operand 1</b> = tuple-element 2 of te_dbias_quantize_ffi.16 f32[1]{0}<br/><b>operand 3</b> = tuple-element 2 of te_dbias_quantize_ffi.24 f32[1]{0}<br/><b>operand 4</b> = {} (bf16[0])<br/><b>operand 5</b> = f32[1] {1}<br/><b>operand 6</b> = f32[1] {0}>, shape=rect, tooltip="jit(apply_layer)/Dense/TEWrapper_dot_general_0/te_gemm_v2_ffi
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/gemm.py:_te_gemm:1397:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/gemm.py:gemm:2092:13
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:_dense_fwd_rule:216:13
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:_dense:152:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/gemm.py:_te_gemm:1397:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/gemm.py:gemm:2092:13
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:_dense_fwd_rule:216:13
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:_dense:152:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/gemm.py:_te_gemm:1397:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/cpp_extensions/gemm.py:gemm:2092:13
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:_dense_fwd_rule:216:13
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:_dense:152:16
+/opt/venv/lib/python3.12/site-packages/transformer_engine/jax/dense.py:dense:104:13
+/workspace/maxtext/src/maxtext/layers/quantizations.py:TransformerEngineQuantization.dot_general_cls.<locals>.te_dot_general:1154:13
+/workspace/maxtext/src/maxtext/layers/quantizations.py:TransformerEngineQuantization._wrap.<locals>.TEWrapper.__call__:1135:15
+/opt/venv/lib/python3.12/site-packages/flax/linen/linear.py:Dense.__call__:287:8
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:te_lowering.<locals>.apply_layer:128:30
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:te_lowering:132:14
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:main:374:15
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:<module>:384:4", style="filled", fontcolor="white", color="#005005", fillcolor="#2e7d32"];
+1307149248 [label=<<b>tuple.1</b><br/>(bf16[128,256], f32[1024], f32[1], f32[1024], f32[1], /*index...<br/><b>operand 0</b> = tuple-element 0 of te_gemm_v2_ffi.3 bf16[128,256]{1,0}>, shape=rect, tooltip="", style="filled", fontcolor="black", color="#9e9e9e", fillcolor="white"];
+cluster_1306184896 [label=<ROOT>, shape=circle, tooltip=" ", style="filled", fontcolor="black", color="#8c7b75", fillcolor="#bcaaa4"];
+1197572416 -> 1173441296 [arrowhead=normal tooltip="state__params____kernel__.1 -> convert_element_type.1" ];
+1305489168 -> 1307692992 [arrowhead=normal tooltip="x.1 -> te_dbias_quantize_ffi.16"  headlabel="0", labeldistance=2];
+1304143264 -> 1307692992 [arrowhead=empty tooltip="state___overwrite_with_gradient____TEWrapper_dot_general_0____x_scale__.1 -> te_dbias_quantize_ffi.16"  headlabel="1", labeldistance=2];
+1325635264 -> 1307692992 [arrowhead=empty tooltip="empty.2 -> te_dbias_quantize_ffi.16"  headlabel="5", labeldistance=2];
+1173441296 -> 1307707712 [arrowhead=normal tooltip="convert_element_type.1 -> te_dbias_quantize_ffi.24"  headlabel="0", labeldistance=2];
+1300707088 -> 1307707712 [arrowhead=empty tooltip="state___overwrite_with_gradient____TEWrapper_dot_general_0____kernel_scale__.1 -> te_dbias_quantize_ffi.24"  headlabel="1", labeldistance=2];
+1307678016 -> 1307707712 [arrowhead=empty tooltip="empty.3 -> te_dbias_quantize_ffi.24"  headlabel="5", labeldistance=2];
+1307707712 -> 1306090128 [arrowhead=normal tooltip="te_dbias_quantize_ffi.24 -> transpose.1" ];
+1307692992 -> 1305488256 [arrowhead=normal tooltip="te_dbias_quantize_ffi.16 -> te_gemm_v2_ffi.3"  headlabel="0", labeldistance=2];
+1307692992 -> 1305488256 [arrowhead=normal tooltip="te_dbias_quantize_ffi.16 -> te_gemm_v2_ffi.3"  headlabel="1", labeldistance=2];
+1306090128 -> 1305488256 [arrowhead=normal tooltip="transpose.1 -> te_gemm_v2_ffi.3"  headlabel="2", labeldistance=2];
+1307707712 -> 1305488256 [arrowhead=normal tooltip="te_dbias_quantize_ffi.24 -> te_gemm_v2_ffi.3"  headlabel="3", labeldistance=2];
+1305488256 -> 1307149248 [arrowhead=normal tooltip="te_gemm_v2_ffi.3 -> tuple.1"  headlabel="0", labeldistance=2];
+1301030240 -> 1307149248 [arrowhead=empty tooltip="state___overwrite_with_gradient____TEWrapper_dot_general_0____grad_amax_history__.1 -> tuple.1"  headlabel="1", labeldistance=2];
+1303942160 -> 1307149248 [arrowhead=empty tooltip="state___overwrite_with_gradient____TEWrapper_dot_general_0____grad_scale__.1 -> tuple.1"  headlabel="2", labeldistance=2];
+1305879920 -> 1307149248 [arrowhead=empty tooltip="state___overwrite_with_gradient____TEWrapper_dot_general_0____kernel_amax_history__.1 -> tuple.1"  headlabel="3", labeldistance=2];
+1300707088 -> 1307149248 [arrowhead=empty tooltip="state___overwrite_with_gradient____TEWrapper_dot_general_0____kernel_scale__.1 -> tuple.1"  headlabel="4", labeldistance=2];
+1307156992 -> 1307149248 [arrowhead=empty tooltip="state___overwrite_with_gradient____TEWrapper_dot_general_0____x_amax_history__.1 -> tuple.1"  headlabel="5", labeldistance=2];
+1304143264 -> 1307149248 [arrowhead=empty tooltip="state___overwrite_with_gradient____TEWrapper_dot_general_0____x_scale__.1 -> tuple.1"  headlabel="6", labeldistance=2];
+1307149248 -> cluster_1306184896 [tooltip=" "];
+}

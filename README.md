@@ -39,21 +39,19 @@ thing not picked up automatically; restart the server after those.
 `index.md` at the repository root is the landing page. Every chapter is one Markdown
 file in `pages/`, prefixed with its chapter number so the file tree reads in book
 order: `1-mi355x-as-a-training-machine.md` through
-`12-mixtral-8x22b-sharding-meshes-and-moe-optimizations.md`. Six lettered
-appendices follow. Each filename uses the page title after its ordering prefix.
-The filename is part of the URL, so renaming a file means updating every link to it.
-Each file needs YAML front matter with `layout: distill`; without that delimiter
-Jekyll copies the `.md` through verbatim and the page is served as raw Markdown.
+`6-mem-and-kernel-optimizations.md`. The filename is part of the URL, so renaming a
+file means updating every link to it. Each file needs YAML front matter with
+`layout: distill`; without that delimiter Jekyll copies the `.md` through verbatim
+and the page is served as raw Markdown.
 
 The previous draft lives under `pages/archive/` and is not linked from the landing page.
 
 ```bash
-rg -n 'BLOCKED' pages --glob '!archive/**'
+rg -n 'BLOCKED' pages --glob '!archive/**' --glob '!archive2/**'
 ```
 
-`docs/structure-v3.md` is the roadmap the chapters are written against. It defines
-chapter ownership, evidence requirements, artifact blockers, and the migration order.
-The older structure documents remain as planning history.
+The current chapter files contain the required beat order. Older drafts under
+`pages/archive/` and `pages/archive2/` remain as planning history and source material.
 
 ## Adding or editing a chapter
 

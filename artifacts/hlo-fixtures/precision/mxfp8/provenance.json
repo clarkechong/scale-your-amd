@@ -1,0 +1,56 @@
+{
+  "capture_script": "tools/make_ch4_precision_hlo.py",
+  "captured_at_utc": "2026-09-16T21:21:47.404801+00:00",
+  "compiler_output": "jax.jit(...).lower(...).compiler_ir(dialect='hlo')",
+  "custom_call_targets": [
+    "AllocateBuffer",
+    "te_dbias_quantize_ffi",
+    "te_gemm_v2_ffi"
+  ],
+  "description": {
+    "activation": "bf16[128,256]",
+    "config": {
+      "dtype": "bfloat16",
+      "quantization": "te_mxfp8",
+      "use_te_comm_gemm_overlap": false
+    },
+    "entry": "MaxText TransformerEngineQuantization.dot_general_cls",
+    "output": "bf16[128,256]",
+    "variables": {
+      "params": {
+        "kernel": {
+          "dtype": "float32",
+          "shape": [
+            256,
+            256
+          ]
+        }
+      }
+    }
+  },
+  "device": "rocm:0",
+  "environment": {
+    "JAX_PLATFORMS": "rocm",
+    "NVTE_ROCM_ENABLE_MXFP8": "1"
+  },
+  "executed_on_device": true,
+  "fixture": "mxfp8",
+  "jax": "0.11.0",
+  "jax_rocm7_pjrt": "0.11.0.post1",
+  "jax_rocm7_plugin": "0.11.0.post1",
+  "jaxlib": "0.11.0",
+  "maxtext_revision": "b47d74bf4ef860c6cbd0fe5e4705c362ba360dbe",
+  "platform": "gpu",
+  "raw_dot": "before_optimizations.dot",
+  "raw_hlo": "before_optimizations.txt",
+  "representative_dot": "representative.dot",
+  "representative_note": "Manually pruned view of the literal XLA DOT. Operation names, targets, dtypes, and shapes are asserted against the preserved HLO.",
+  "rocm": "7.14.0",
+  "rocm_sdk_core": "7.14.0",
+  "shape": {
+    "K": 256,
+    "M": 128,
+    "N": 256
+  },
+  "transformer_engine": "2.17.0+6aa471b18"
+}

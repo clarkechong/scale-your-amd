@@ -69,7 +69,16 @@ def front_matter(text: str) -> tuple[dict, int]:
             else:
                 m = re.match(r"\s*(?:-\s*)?name:\s*(.+?)\s*$", line)
                 if m:
-                    data["toc"].append(m.group(1).strip().strip("\"'"))
+                    data["toc"].append(
+                        {
+                            "name": m.group(1).strip().strip("\"'"),
+                            "url": "",
+                        }
+                    )
+                else:
+                    m = re.match(r"\s*url:\s*(.+?)\s*$", line)
+                    if m and data["toc"]:
+                        data["toc"][-1]["url"] = m.group(1).strip().strip("\"'")
                 continue
         m = re.match(r"(\w+):\s*(.*?)\s*$", line)
         if m:
@@ -143,7 +152,13 @@ def scan(path: Path) -> list[str]:
 
     # toc names must slugify to an id kramdown will actually emit.
     ids = {kramdown_id(h) for h in headings}
-    for name in fm.get("toc", []):
+    for entry in fm.get("toc", []):
+        if isinstance(entry, dict):
+            if entry.get("url"):
+                continue
+            name = entry["name"]
+        else:
+            name = entry
         want = liquid_slugify(name)
         if want not in ids:
             near = kramdown_id(name)

@@ -46,7 +46,7 @@ toc:
       - name: "Dense and sparse peaks"
   - name: "Partition modes"
   - name: "Capacity bandwidth and the BF16 roofline"
-  - name: "8x GPU scale up domain"
+  - name: "Eight-GPU scale-up domain"
     subsections:
       - name: "Directional bandwidth"
       - name: "Partial participation"
@@ -647,7 +647,7 @@ Chapter 3 applies this ratio to concrete training projections and derives the
 corresponding token-row threshold. This chapter only supplies the hardware side
 of that calculation.
 
-## 8x GPU scale up domain
+## Eight-GPU scale-up domain
 
 The MI355X UBB 2.0 places eight OAMs in a one-hop, fully connected
 mesh. Every GPU has one dedicated xGMI link to each of its seven peers. There is
@@ -803,18 +803,17 @@ rail placement can help.
 - [Chapter 2]({{ '/pages/2-the-jax-software-stack-on-rocm' | relative_url }}) follows a `jax.jit`
   computation from StableHLO to `gfx950` code and identifies whether GEMMs reach
   MFMA library kernels.
-- [Chapter 3]({{ '/pages/3-profiling-and-analysis-of-one-training-step' | relative_url }}) uses 288 GB, 8 TB/s,
-  2.5166 PFLOP/s, and 76.8 GB/s per direction to derive memory, compute, and
-  communication bounds for training parallelism.
-- [Chapter 3]({{ '/pages/3-profiling-and-analysis-of-one-training-step' | relative_url }}) checks those analytical
-  bounds against clocks, kernels, counters, and collective traces.
-- The [Llama 7B]({{ '/pages/10-llama-7b-exposing-the-complete-stack' | relative_url }}) case separates raw JAX
-  execution from optimized attention routes.
-- The [Llama 70B]({{ '/pages/11-llama-2-70b-mixed-precision-training' | relative_url }}) case tests BF16,
-  FP8, MXFP8, and MXFP4 while treating convergence as a guardrail.
-- The [Mixtral 8x22B]({{ '/pages/12-mixtral-8x22b-sharding-meshes-and-moe-optimizations' | relative_url }}) case places
-  expert traffic inside the eight-GPU xGMI domain and defines the measurement
-  needed to quantify AllToAll exposure.
+- [Chapter 3]({{ '/pages/3-profiling' | relative_url }}) uses 288 GB, 8 TB/s,
+  2.5166 PFLOP/s, and directional link bandwidth to interpret XProf and
+  ROCprofiler evidence.
+- [Chapter 4]({{ '/pages/4-mixed-precision' | relative_url }}) compares BF16,
+  FP16, FP8, MXFP8, MXFP6, and MXFP4 against the native matrix ceilings.
+- [Chapter 5]({{ '/pages/5-sharding' | relative_url }}) maps FSDP and expert
+  parallelism onto the eight-GPU xGMI domain and derives their collective
+  payloads.
+- [Chapter 6]({{ '/pages/6-mem-and-kernel-optimizations' | relative_url }})
+  measures Llama 7B rematerialization and attention routes, then follows
+  Mixtral expert work into dense, ragged, and grouped GEMM lowerings.
 
 ## References
 

@@ -68,6 +68,9 @@ JEKYLL_ARGS=(
   --host "$HOST"
   --port "$PORT"
   --livereload-port "$LIVERELOAD_PORT"
+  # Empty baseurl so http://HOST:PORT/ works. GitHub Pages still uses
+  # /scale-your-amd from _config.yml via the deploy workflow.
+  --baseurl ""
 )
 
 if [[ -n "${POLL:-}" ]]; then
@@ -76,10 +79,7 @@ fi
 
 cat <<EOF
 
-==> serving on http://$HOST:$PORT/scale-your-amd/
-
-    The trailing /scale-your-amd/ is required; \`/\` on its own returns 404,
-    because baseurl in _config.yml is part of every URL.
+==> serving on http://$HOST:$PORT/
 
     Over SSH, forward both ports:
       ssh -L $PORT:localhost:$PORT -L $LIVERELOAD_PORT:localhost:$LIVERELOAD_PORT <host>

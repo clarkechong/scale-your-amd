@@ -1,0 +1,41 @@
+HloModule jit_apply_layer, entry_computation_layout={(f32[1024]{0}, f32[1]{0}, f32[1024]{0}, f32[1]{0}, f32[1024]{0}, /*index=5*/f32[1]{0}, f32[256,256]{1,0}, bf16[128,256]{1,0})->(bf16[128,256]{1,0}, f32[1024]{0}, f32[1]{0}, f32[1024]{0}, f32[1]{0}, /*index=5*/f32[1024]{0}, f32[1]{0})}
+
+ENTRY main.1 {
+  x.1 = bf16[128,256]{1,0} parameter(7)
+  state___overwrite_with_gradient____TEWrapper_dot_general_0____x_scale__.1 = f32[1]{0} parameter(5)
+  constant.7 = f32[1]{0} constant({0})
+  constant.6 = u32[0]{0} constant({})
+  empty.2 = bf16[1,1]{1,0} custom-call(), custom_call_target="AllocateBuffer"
+  te_dbias_quantize_ffi.16 = (f8e4m3fn[128,256]{1,0}, f8e4m3fn[1]{0}, f32[1]{0}, f32[1]{0}, f32[1]{0}, /*index=5*/bf16[1]{0}, f32[1]{0}) custom-call(x.1, state___overwrite_with_gradient____TEWrapper_dot_general_0____x_scale__.1, constant.7, constant.6, constant.7, empty.2), custom_call_target="te_dbias_quantize_ffi", operand_layout_constraints={bf16[128,256]{1,0}, f32[1]{0}, f32[1]{0}, u32[0]{0}, f32[1]{0}, bf16[1,1]{1,0}}, output_to_operand_aliasing={{4}: (2, {})}, api_version=API_VERSION_TYPED_FFI, backend_config={flatten_axis = -1 : i64, is_dbias = false, q_layout = 0 : i64, scaling_mode = 1 : i64, stochastic_rounding = false, use_rht = false}
+  te_dbias_quantize_ffi.18 = f8e4m3fn[1]{0} get-tuple-element(te_dbias_quantize_ffi.16), index=1
+  te_dbias_quantize_ffi.20 = f32[1]{0} get-tuple-element(te_dbias_quantize_ffi.16), index=3
+  te_dbias_quantize_ffi.21 = f32[1]{0} get-tuple-element(te_dbias_quantize_ffi.16), index=4
+  te_dbias_quantize_ffi.22 = bf16[1]{0} get-tuple-element(te_dbias_quantize_ffi.16), index=5
+  te_dbias_quantize_ffi.23 = f32[1]{0} get-tuple-element(te_dbias_quantize_ffi.16), index=6
+  state__params____kernel__.1 = f32[256,256]{1,0} parameter(6)
+  convert_element_type.1 = bf16[256,256]{1,0} convert(state__params____kernel__.1)
+  state___overwrite_with_gradient____TEWrapper_dot_general_0____kernel_scale__.1 = f32[1]{0} parameter(3)
+  empty.3 = bf16[1,1]{1,0} custom-call(), custom_call_target="AllocateBuffer"
+  te_dbias_quantize_ffi.24 = (f8e4m3fn[256,256]{1,0}, f8e4m3fn[1]{0}, f32[1]{0}, f32[1]{0}, f32[1]{0}, /*index=5*/bf16[1]{0}, f32[1]{0}) custom-call(convert_element_type.1, state___overwrite_with_gradient____TEWrapper_dot_general_0____kernel_scale__.1, constant.7, constant.6, constant.7, empty.3), custom_call_target="te_dbias_quantize_ffi", operand_layout_constraints={bf16[256,256]{1,0}, f32[1]{0}, f32[1]{0}, u32[0]{0}, f32[1]{0}, bf16[1,1]{1,0}}, output_to_operand_aliasing={{4}: (2, {})}, api_version=API_VERSION_TYPED_FFI, backend_config={flatten_axis = -1 : i64, is_dbias = false, q_layout = 0 : i64, scaling_mode = 1 : i64, stochastic_rounding = false, use_rht = false}
+  te_dbias_quantize_ffi.26 = f8e4m3fn[1]{0} get-tuple-element(te_dbias_quantize_ffi.24), index=1
+  te_dbias_quantize_ffi.28 = f32[1]{0} get-tuple-element(te_dbias_quantize_ffi.24), index=3
+  te_dbias_quantize_ffi.29 = f32[1]{0} get-tuple-element(te_dbias_quantize_ffi.24), index=4
+  te_dbias_quantize_ffi.30 = bf16[1]{0} get-tuple-element(te_dbias_quantize_ffi.24), index=5
+  te_dbias_quantize_ffi.31 = f32[1]{0} get-tuple-element(te_dbias_quantize_ffi.24), index=6
+  te_dbias_quantize_ffi.17 = f8e4m3fn[128,256]{1,0} get-tuple-element(te_dbias_quantize_ffi.16), index=0
+  te_dbias_quantize_ffi.19 = f32[1]{0} get-tuple-element(te_dbias_quantize_ffi.16), index=2
+  te_dbias_quantize_ffi.25 = f8e4m3fn[256,256]{1,0} get-tuple-element(te_dbias_quantize_ffi.24), index=0
+  transpose.1 = f8e4m3fn[256,256]{0,1} transpose(te_dbias_quantize_ffi.25), dimensions={1,0}
+  te_dbias_quantize_ffi.27 = f32[1]{0} get-tuple-element(te_dbias_quantize_ffi.24), index=2
+  constant.4 = bf16[0]{0} constant({})
+  constant.5 = f32[1]{0} constant({1})
+  te_gemm_v2_ffi.3 = (bf16[128,256]{1,0}, u8[67109120]{0}) custom-call(te_dbias_quantize_ffi.17, te_dbias_quantize_ffi.19, transpose.1, te_dbias_quantize_ffi.27, constant.4, constant.5, constant.7), custom_call_target="te_gemm_v2_ffi", operand_layout_constraints={f8e4m3fn[128,256]{1,0}, f32[1]{0}, f8e4m3fn[256,256]{1,0}, f32[1]{0}, bf16[0]{0}, f32[1]{0}, f32[1]{0}}, api_version=API_VERSION_TYPED_FFI, backend_config={config = {collective_op = 0 : i64, lhs_axis_boundary = 1 : i64, lhs_transposed = false, rhs_axis_boundary = 1 : i64, rhs_transposed = true, scaling_mode = 1 : i64, use_split_accumulator = false}}
+  te_gemm_v2_ffi.5 = u8[67109120]{0} get-tuple-element(te_gemm_v2_ffi.3), index=1
+  te_gemm_v2_ffi.4 = bf16[128,256]{1,0} get-tuple-element(te_gemm_v2_ffi.3), index=0
+  state___overwrite_with_gradient____TEWrapper_dot_general_0____grad_amax_history__.1 = f32[1024]{0} parameter(0)
+  state___overwrite_with_gradient____TEWrapper_dot_general_0____grad_scale__.1 = f32[1]{0} parameter(1)
+  state___overwrite_with_gradient____TEWrapper_dot_general_0____kernel_amax_history__.1 = f32[1024]{0} parameter(2)
+  state___overwrite_with_gradient____TEWrapper_dot_general_0____x_amax_history__.1 = f32[1024]{0} parameter(4)
+  ROOT tuple.1 = (bf16[128,256]{1,0}, f32[1024]{0}, f32[1]{0}, f32[1024]{0}, f32[1]{0}, /*index=5*/f32[1024]{0}, f32[1]{0}) tuple(te_gemm_v2_ffi.4, state___overwrite_with_gradient____TEWrapper_dot_general_0____grad_amax_history__.1, state___overwrite_with_gradient____TEWrapper_dot_general_0____grad_scale__.1, state___overwrite_with_gradient____TEWrapper_dot_general_0____kernel_amax_history__.1, state___overwrite_with_gradient____TEWrapper_dot_general_0____kernel_scale__.1, state___overwrite_with_gradient____TEWrapper_dot_general_0____x_amax_history__.1, state___overwrite_with_gradient____TEWrapper_dot_general_0____x_scale__.1)
+}
+

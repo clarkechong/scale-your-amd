@@ -7,10 +7,10 @@ date: 2026-09-16
 section_number: 2
 
 previous_section_url: "/pages/1-mi355x-as-a-training-machine"
-previous_section_name: "Chapter 1: Hardware"
+previous_section_name: "Chapter 1: MI355X as a Training Machine"
 
-next_section_url: ""
-next_section_name: "Chapter 2: The JAX Software Stack on ROCm"
+next_section_url: "/pages/3-profiling"
+next_section_name: "Chapter 3: Profiling and Analysis of a Training Step"
 
 authors:
   - name: Clarke Chong
@@ -32,7 +32,6 @@ toc:
   - name: "Worked example: Following a MaxText flag though the stack"
     subsections:
       - name: "Changes at the HLO level"
-  - name: "Worked example: Lowering a jax.jit transformer block"
 ---
 ## JAX, tracing and JAXPR
 
@@ -240,7 +239,7 @@ MaxText operates one layer above JAX. Rather than directly modifying the XLA com
 
 At a high level, MaxText code follows one of two paths:
 
-![](img/maxtext-to-rocm-backends.svg)
+![]({{ '/pages/img/maxtext-to-rocm-backends.svg' | relative_url }})
 
 Standard MaxText layers lower through ordinary JAX primitives. Specialized integrations such as Transformer Engine and JAX-AITER instead lower through FFI-backed custom JAX primitives, which appear in XLA as `custom_call` operations.
 
@@ -373,5 +372,5 @@ This is the central pattern behind many MaxText configuration options. The flag
 does not modify XLA directly, rather it changes the JAX program being traced, producing
 a different JAXPR, different StableHLO, and a different XLA lowering path.
 
-## Worked example: Lowering a jax.jit transformer block
+<h3 markdown=1 class="next-section">Next: [profiling and analysis of a training step]({{ '/pages/3-profiling' | relative_url }}).</h3>
 
