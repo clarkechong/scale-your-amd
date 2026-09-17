@@ -40,10 +40,13 @@ toc:
   - name: "From precision to memory placement"
 ---
 
-Lower precision changes the matrix instruction and the number of bytes moved.
-It does not assign one dtype to an entire training step. A practical recipe
-keeps durable state and sensitive reductions in wider formats while converting
-selected matrix operands immediately before large contractions.
+Lower precision changes both the matrix instructions executed by the GPU and
+the amount of data moved through memory. It does not mean running an entire
+training step in FP8 or MXFP4.
+
+Instead, modern training recipes keep long-lived state and numerically
+sensitive operations in wider formats, while converting selected operands to
+lower precision immediately before large matrix multiplications.
 
 This chapter separates three kinds of number:
 
@@ -75,12 +78,17 @@ non-sparse peaks are:
 | OCP FP8 or MXFP8 | 5.0332 PFLOP/s | 2× |
 | MXFP6 or MXFP4 | 10.0663 PFLOP/s | 4× |
 
-These are matrix ceilings, not train-step predictions. Attention softmax,
-normalization, optimizer updates, collectives, quantization, and launch gaps do
-not become four times faster because an MLP projection uses MXFP4.
+These numbers describe peak matrix throughput, not end-to-end training speed.
+Converting an MLP projection to MXFP4 does not make softmax, normalization,
+communication, optimizer updates, or kernel-launch overhead four times faster.
+Only the portions of the training step that actually execute on
+lower-precision matrix hardware can benefit from the higher peak rate.
 
-The second benefit is fewer bytes. An unscaled tensor with $n$ elements at
-$b$ bits per element occupies
+Higher matrix throughput is only half of the story. Lower-precision formats
+also reduce the amount of data stored in memory and moved through the memory
+hierarchy.
+
+An unscaled tensor with $n$ elements at $b$ bits per element occupies
 
 $$
 M_{\mathrm{tensor}}(n,b)=\frac{nb}{8}\ \mathrm{bytes}.
@@ -111,7 +119,11 @@ the roles that need them.
 
 ## What mixed precision means
 
-A matrix operation has at least four dtype decisions:
+When people refer to an "FP8 model", they are usually collapsing several
+separate datatype decisions into a single label.
+
+In practice, a matrix multiplication involves at least four distinct
+precisions:
 
 $$
 C_{\mathrm{stored}}
@@ -141,15 +153,17 @@ AMD's
 [CDNA 4 FP8 GEMM guide](https://rocm.blogs.amd.com/software-tools-optimization/cdna4-gemm-kernels/README.html)
 shows how those instruction-scale fragments fit into a complete GEMM kernel.
 
-This also separates *storage dtype* from *compute operand dtype*. A
-weight may live as an FP32 optimizer parameter, be gathered by FSDP, cast to
-BF16, quantized to FP8 or MXFP4 for one GEMM, and then discarded. Calling that
-an “FP8 model” would hide the part of the system that controls both memory and
-numerics.
+This distinction also separates storage format from compute format.
+
+A weight might be stored as an FP32 optimizer parameter, gathered by FSDP,
+cast to BF16, quantized to FP8 or MXFP4 for a single GEMM, and then discarded.
+Calling such a system an "FP8 model" hides most of the machinery that actually
+determines memory usage and numerical behavior.
 
 ## DeepSeek-V3 FP8 recipe
 
-DeepSeek-V3 provides a concrete assignment of these roles. Its
+DeepSeek-V3 provides a useful example of how these choices come together in a
+production training recipe. Its
 [Section 3.3.1](https://arxiv.org/html/2412.19437#S3.SS3.SSS1) defines the
 mixed-precision framework and Figure 6 shows one linear layer across forward
 and backward propagation.
@@ -166,9 +180,9 @@ For the illustrated linear operator:
 
 The report keeps embeddings, the output head, MoE gates, normalization, and
 attention in BF16 or FP32. Master weights and gradients remain FP32; its AdamW
-moments are BF16. This is the intended reading of “mixed”: the high-FLOP
-linear contractions use FP8 inputs, while model state and the rest of the
-graph retain wider formats.
+moments are BF16. This is what "mixed precision" means in practice. The
+highest-FLOP matrix multiplications use FP8 operands, while model state and
+numerically sensitive parts of the training loop remain in BF16 or FP32.
 
 DeepSeek adds two controls around those GEMMs:
 
@@ -218,10 +232,10 @@ bits. FP16 devotes ten bits to the fraction but only five to the exponent.
 BF16 therefore has FP32-like range with coarser spacing; FP16 has finer
 spacing near one and a much smaller range.
 
-Both formats normally multiply into FP32 accumulators on MI355X, and both have
-the same matrix peak. The practical difference is numerical range and the
-kernels selected for a particular shape. FP16 training commonly combines an
-FP32 master weight with loss scaling:
+On MI355X, both formats typically accumulate into FP32 and share the same
+theoretical matrix peak. The practical differences are numerical range,
+representable values, and the specific kernels selected for a given workload.
+FP16 training commonly combines an FP32 master weight with loss scaling:
 
 $$
 g_{16}=\operatorname{cast}_{16}(L g),\qquad
@@ -248,7 +262,10 @@ E5M2 for backward gradients. The
 introduced this division and evaluated it through 175-billion-parameter
 language models.
 
-Scaling aligns each source tensor with the finite range of its FP8 encoding.
+FP8's reduced numerical range makes scaling a necessary part of the
+representation. Before conversion, tensors are scaled so that their values
+make effective use of the available FP8 range.
+
 For a simple absmax per-tensor scale,
 
 $$
@@ -266,8 +283,9 @@ on the critical path. Transformer Engine's delayed recipe stores a scale and
 amax history for each quantized tensor. Its current recipe computes the scale
 as the tensor flows through the operation.
 
-The scale is part of a scaled tensor's representation. Its FP8 payload alone
-cannot recover the intended magnitude.
+The scale is therefore part of the tensor's representation. An FP8 payload
+without its corresponding scale is incomplete because the original magnitude
+information has been lost.
 
 ### MXFP8, MXFP6, and MXFP4
 
@@ -293,11 +311,14 @@ The element formats are:
 - MXFP6: E3M2 or E2M3 elements;
 - MXFP4: E2M1 elements.
 
-Block scaling spends one exponent across a local group instead of forcing one
-scale to cover a whole tensor. Rowwise and columnwise quantization are distinct
-because changing the block direction changes group membership. Training
-libraries often produce both representations from the wider source so Fprop,
-Dgrad, and Wgrad can consume the orientation they need.
+Block scaling assigns a scale to a small group of values rather than an entire
+tensor. This makes it easier to accommodate local outliers and typically
+produces better numerical behavior than a single tensor-wide scale.
+
+Rowwise and columnwise quantization are distinct because changing the block
+direction changes group membership. Training libraries often produce both
+representations from the wider source so Fprop, Dgrad, and Wgrad can consume
+the orientation they need.
 
 {% include figure.liquid path="pages/img/mx-scaling-quantization.png" class="img-fluid" alt="MX training dataflow showing BF16 tensors quantized before forward, activation-gradient, and weight-gradient matrix multiplications" caption="Figure 2 from <a href='https://arxiv.org/abs/2310.10537'>Microscaling Data Formats for Deep Learning</a>. BF16 activations, weights, and error gradients are quantized at the matrix boundary; matrix outputs return to BF16, while the optimizer updates FP32 master weights." %}
 
@@ -333,8 +354,9 @@ optimizer still need their own quality gate.
 
 ## Implementing in JAX
 
-The configuration must eventually change the traced JAX program. A YAML value
-cannot select a CDNA 4 instruction by itself.
+Eventually, a configuration choice must become a different JAX program. A
+YAML flag by itself cannot select a CDNA 4 matrix instruction; it must change
+the operations that JAX traces and lowers through XLA.
 
 {% include figure.liquid path="pages/img/ch4-precision-implementation-paths.png" class="img-fluid" alt="MaxText BF16, Transformer Engine FP8 and MXFP8, and JAX-AITER MXFP4 configuration paths through JAX and HLO to ROCm implementations" caption="Where the program changes. MaxText replaces the callable used by DenseGeneral before tracing. Ordinary JAX emits an HLO dot; Transformer Engine and JAX-AITER paths emit typed custom calls with explicit operand and scale buffers." %}
 
@@ -427,10 +449,12 @@ if quant:
 return dot_general(inputs, kernel, dims, precision=matmul_precision)
 ```
 
-The quantization object is passed into Llama's attention projections and MLP
-projections. Normalization, rotary embeddings, attention softmax, residual
-adds, and optimizer code remain separate JAX operations. Head coverage is
-branch- and recipe-specific.
+The selected quantization recipe is injected into the model's projection
+layers. As a result, changing a MaxText quantization setting changes the JAX
+operations emitted by those layers before compilation ever reaches XLA.
+Normalization, rotary embeddings, attention softmax, residual adds, and
+optimizer code remain separate JAX operations. Head coverage is branch- and
+recipe-specific.
 
 The relevant recipe names in this environment are:
 
@@ -452,9 +476,11 @@ installs a JAX-AITER-backed `dot_general`.
 
 ### Transformer Engine and JAX-AITER
 
-Transformer Engine receives high-precision arrays from MaxText, creates the
-operand representations required by Fprop and backward, and calls a GEMM
-backend. In the measured environment, the installed patched source is
+Transformer Engine sits between the model and the underlying GEMM
+implementation. It receives high-precision tensors from MaxText, constructs
+the low-precision operand representations required by the selected recipe,
+and dispatches the corresponding GEMM implementation. In the measured
+environment, the installed patched source is
 [`6aa471b1`](https://github.com/clarkechong/TransformerEngine/tree/6aa471b1845e7a3410d86bf3308faeb4d1181b1f).
 
 For delayed FP8,
@@ -516,9 +542,10 @@ operands:
 
 [![Literal XLA HLO graph for Transformer Engine MXFP8 block scaling]({{ '/pages/img/hlo-precision-mxfp8.svg' | relative_url }})]({{ '/pages/img/hlo-precision-mxfp8.svg' | relative_url }})
 
-The graphs show the compiler-visible boundary. Kernel selection inside the
-registered handler belongs to Transformer Engine, hipBLASLt, or AITER and is
-verified with a runtime profile when exact kernel attribution is required.
+These graphs show the boundary visible to the compiler. Beyond the
+`custom_call`, execution belongs to Transformer Engine, hipBLASLt, AITER, or
+another backend implementation. Determining the exact kernel path requires a
+runtime trace rather than HLO alone.
 
 ## Case study: Llama 2 70B
 
@@ -598,10 +625,13 @@ every $f$. Any FP16/BF16 timing difference comes from realized kernels,
 layouts, or surrounding work rather than a higher advertised matrix ceiling.
 The Amdahl table is optimistic about conversion and scale overhead.
 
-Memory needs a separate model. Let $P$ be the parameter count, $N_F$ the FSDP
-degree, $A_h$ the number of saved elements that stay BF16, and $A_e$ the
-number eligible for a lower-precision saved representation. With FP32 master
-weights, gradients, and two Adam moments:
+Throughput is only one reason to use lower precision. The second question is
+whether these formats meaningfully reduce memory usage.
+
+Let $P$ be the parameter count, $N_F$ the FSDP degree, $A_h$ the number of
+saved elements that stay BF16, and $A_e$ the number eligible for a
+lower-precision saved representation. With FP32 master weights, gradients,
+and two Adam moments:
 
 $$
 \begin{aligned}
@@ -666,12 +696,18 @@ using the unrounded step samples in the result bundle. MaxText reports
 TFLOP/s/device from its model-operation estimate divided by step time; it is
 not a count of issued MFMA instructions.
 
-The measured FP8 speedup, 1.80×, is near the top of the 1.54–1.82× prediction
-range for the stated assumptions. MXFP8 reaches 1.52×; its block casts, scale
-movement, workspace, and realized GEMM rate consume time omitted from the
-ideal $r=2$ model. MXFP4 reaches 2.31×, inside the 2.11–3.08× range for
-$r=4$. FP16's 1.08× improvement is an implementation result because FP16 and
-BF16 have the same published matrix peak.
+The measured results broadly follow the expected trend. FP8 delivers a 1.80×
+speedup, near the upper end of the range predicted by the simple Amdahl model.
+MXFP8 improves throughput by 1.52×, suggesting that scale handling, conversion
+overhead, and realized kernel performance consume part of the theoretical
+gain. MXFP4 achieves a 2.31× speedup, substantially faster than FP8 while
+remaining within the range predicted by the model.
+
+The broader lesson is that lower-precision formats can substantially
+accelerate training, but realized speedups are bounded by the fraction of
+execution time spent inside the accelerated GEMMs. The matrix peak provides
+the opportunity; the rest of the training step determines how much of that
+opportunity can be realized.
 
 The artifact does not contain an MFU field. A single peak denominator would
 mislabel these mixed-operation recipes, so the table keeps the captured

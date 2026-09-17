@@ -48,18 +48,23 @@ toc:
   - name: "References"
 ---
 
-A JAX program operates on global arrays. The compiler turns that program into
-one executable per device, with device-local array shapes and communication
-between those executables. A sharding decision therefore fixes three things:
+A JAX program is written as if every tensor exists as a single global array.
+During compilation, that global program is transformed into one executable per
+device, each operating on local tensor shards and communicating with its peers
+when necessary.
+
+Sharding therefore determines three key properties of the resulting system:
 
 1. which tensor dimensions are split;
 2. which named mesh axes perform each split; and
 3. which physical devices occupy the mesh coordinates.
 
-FSDP, ZeRO, tensor parallelism, and expert parallelism are recurring choices for
-those mappings. They are not separate communication systems. They reach the
-same compiler and, on ROCm, the same
-[RCCL collective runtime](https://rocm.docs.amd.com/projects/rccl/en/docs-7.14.0/api-reference/api-library.html).
+FSDP, ZeRO, tensor parallelism, and expert parallelism are all recurring ways
+of choosing those mappings. They are often described as distinct training
+strategies, but from the compiler's perspective they are all expressed through
+the same mechanism: array sharding and collective communication. On ROCm,
+those collectives use the
+[RCCL runtime](https://rocm.docs.amd.com/projects/rccl/en/docs-7.14.0/api-reference/api-library.html).
 
 ## Sharding as a compiler transformation
 
@@ -97,28 +102,32 @@ M_{\mathrm{local}}
 =s\prod_i\frac{d_i}{q_i}.
 $$
 
-Every sharded dimension must be divisible by its axis product unless the
-compiler pads or changes the sharding. A mesh axis also cannot partition two
-different dimensions of the same array at once.
+In the ideal case, every sharded dimension divides evenly across the
+participating mesh axes. When that is not possible, the compiler may need to
+introduce padding or choose a different partitioning strategy. A mesh axis
+also cannot partition two different dimensions of the same array at once.
 
-JAX keeps the global shape in the `jax.Array` type. The local buffers are visible
-through `addressable_shards`. This is why an array can report shape
-`(1024, 512)` while each of eight devices stores `(128, 512)`. The
+One useful consequence of JAX's global-array model is that the logical shape
+never changes from the user's perspective. The local buffers are visible
+through `addressable_shards`. An array can report shape `(1024, 512)` even
+though each of eight devices stores only `(128, 512)`. The
 [JAX distributed-array guide](https://docs.jax.dev/en/latest/parallel.html)
 defines this global view and the relationship among `Mesh`,
 `PartitionSpec`, and `NamedSharding`.
 
 {% include figure.liquid path="pages/img/ch5-global-to-local-arrays.png" class="img-fluid" alt="A global activation and weight matrix split into eight row shards, followed by a device-local FSDP matmul that all-gathers the weight shard" caption="Global and local views of the real FSDP fixture used below. JAX sees x[1024,512] and w[512,512]. One rank receives x[128,512] and w[64,512]; the partitioned program all-gathers w before its local dot." %}
 
-The figure also corrects a common memory mistake. Eight MI355X OAMs provide
-eight separate 288 GB HBM allocations. A sharded array places a slice in each
-allocation; a replicated array places a full copy in each. The 2.304 TB
-physical total is not one allocator.
+The figure also highlights a common misconception about accelerator memory.
+Eight MI355X OAMs provide eight separate 288 GB HBM allocations. A sharded
+array places a slice in each allocation; a replicated array places a full copy
+in each. The 2.304 TB physical total is not one allocator.
 
 ### Shardy propagation, resharding, and partitioning
 
-[Shardy](https://openxla.org/shardy) carries named meshes and tensor shardings
-through the OpenXLA pipeline. Its
+[Shardy](https://openxla.org/shardy) is the mechanism OpenXLA uses to reason
+about shardings throughout the compilation process. It carries mesh and layout
+information through the compiler and determines how global operations become
+local computations and collectives. Its
 [propagation pass](https://openxla.org/shardy/propagation) follows operation
 sharding rules in both directions until it reaches a fixed point. For a matmul
 written as
@@ -130,9 +139,11 @@ $$
 the rule relates matching batch, contracting, and non-contracting factors
 across the two operands and result.
 
-Propagation does not make every pair of shardings compatible. The current
-[Shardy export pipeline](https://openxla.org/shardy/sdy_export_passes) makes the
-remaining work explicit:
+Propagation alone is not enough. Two operations may still require
+incompatible layouts, forcing the compiler to change how data is distributed.
+The current
+[Shardy export pipeline](https://openxla.org/shardy/sdy_export_passes) makes
+the remaining work explicit:
 
 1. `sdy-insert-explicit-reshards` inserts a reshard where an operation cannot
    consume the propagated operand layouts directly.
@@ -144,9 +155,10 @@ remaining work explicit:
    wrap their local code in `sdy.manual_computation`; downstream XLA SPMD
    partitioning handles the remaining global instructions.
 
-The exact pass boundary can move as Shardy replaces older GSPMD paths. The
-observable contract is stable: sharding annotations enter the compiler, and
-local shapes plus collectives leave the partitioning pipeline.
+The implementation details continue to evolve as Shardy replaces older
+partitioning paths, but the observable behavior remains the same: sharding
+annotations enter the compiler, while local tensor shapes and communication
+operations emerge from the partitioned program.
 
 An FSDP policy asks for parameter, gradient, and optimizer-state layouts along
 an FSDP axis. An expert-parallel policy maps the expert dimension and routed
@@ -154,6 +166,14 @@ activations to an expert axis. Shardy implements the consequences of those
 array layouts; it does not decide that a model should use FSDP or EP.
 
 ### The cost of the inserted collectives
+
+The most important consequence of sharding is that communication becomes part
+of the training step.
+
+Whenever the partitioned program requires data that is distributed across
+devices, the compiler inserts collectives such as AllGather, ReduceScatter,
+AllReduce, and AllToAll. Their costs often determine whether a particular
+sharding strategy scales efficiently.
 
 Let $X$ be the number of participating devices, $B$ the size in bytes of the
 completed AllGather buffer, and $W$ the achieved one-direction bandwidth of the
@@ -207,11 +227,11 @@ T_{\mathrm{A2A}}
 \frac{L}{X(76.8\ \mathrm{GB/s})}.
 $$
 
-That last expression is a physical serialization lower bound, not an RCCL
-timing prediction. RCCL selects ring, tree, or other algorithms and pays
-protocol, launch, and synchronization costs. The relevant $W$ is achieved
-directional bandwidth for the message size, never AMD's doubled
-bidirectional figure. The
+This should be interpreted as a best-case lower bound rather than a runtime
+prediction. Real implementations must also pay launch overheads,
+synchronization costs, protocol overheads, and algorithm-specific
+inefficiencies. The relevant $W$ is achieved directional bandwidth for the
+message size, never AMD's doubled bidirectional figure. The
 [Scaling Book sharding chapter](https://jax-ml.github.io/scaling-book/sharding/)
 derives the same collectives from matrix layouts, while its
 [GPU chapter](https://jax-ml.github.io/scaling-book/gpus/#how-do-collectives-work-on-gpus)
@@ -219,9 +239,11 @@ develops the ring cost model.
 
 ### Real HLO before and after partitioning
 
-The following graphs come from the repository's explanatory fixtures. They
-were compiled on eight GPUs with JAX 0.11.0 in the MaxText v26.6 ROCm
-environment using:
+The easiest way to understand partitioning is to inspect the HLO before and
+after Shardy has transformed the program.
+
+The explanatory fixtures below were compiled on eight GPUs with JAX 0.11.0 in
+the MaxText v26.6 ROCm environment using:
 
 ```bash
 XLA_FLAGS="--xla_dump_hlo_as_text --xla_dump_hlo_as_dot ..." \
@@ -235,8 +257,8 @@ Redundant attribute wrappers and source tooltips are pruned, and dependency
 arrows may contract omitted tuple or copy nodes. These fixtures explain
 compilation and are not performance measurements.
 
-Before optimization, the FSDP-style fixture is still a global program.
-`x` and `w` both have global shapes, and their
+Before partitioning, the compiler still sees a global computation. In the
+FSDP-style fixture, `x` and `w` both have global shapes, and their
 `xla.sdy.sharding` attributes split dimension 0 over the eight-device mesh.
 `xla.sdy.FuncResultSharding` records the requested result layout. It is a
 compiler marker, not an external runtime kernel.
@@ -246,10 +268,10 @@ compiler marker, not an external runtime kernel.
 *Representative subgraph from the literal pre-optimization graph; open the
 SVG to read the full annotations.*
 
-After the SPMD partitioner, the entry parameters have local shapes.
-`x` is `f16[128,512]`, `w` is `f16[64,512]`, and the generated
-`all-gather` reconstructs `w` as `f16[512,512]` before the dot. The local output
-remains `f16[128,512]`.
+After partitioning, the same computation has become a device-local program.
+The entry parameters now have local shapes: `x` is `f16[128,512]`, `w` is
+`f16[64,512]`, and the generated `all-gather` reconstructs `w` as
+`f16[512,512]` before the dot. The local output remains `f16[128,512]`.
 
 [![FSDP-style device-local HLO after partitioning]({{ '/pages/img/ch5-hlo-fsdp-after.svg' | relative_url }})]({{ '/pages/img/ch5-hlo-fsdp-after.svg' | relative_url }})
 
@@ -286,10 +308,10 @@ against that step's own post-partitioner HLO.
 
 ## Parallelism strategies
 
-The
-[Scaling Book training chapter](https://jax-ml.github.io/scaling-book/training/)
-develops the generic parallelism theory. The summary below identifies the
-objects that each strategy places on a mesh.
+The [Scaling Book](https://jax-ml.github.io/scaling-book/training/) develops
+the underlying theory. For this chapter, the important question is simpler:
+
+What object is being split, and what communication does that split introduce?
 
 | Strategy | What is split | Typical communication | Main constraint |
 |---|---|---|---|
@@ -324,10 +346,11 @@ $$
 
 The peak is higher because the current layer's parameter buffer can be
 AllGathered, activations remain live, and the compiler and libraries allocate
-temporaries. FSDP therefore provides capacity by exchanging persistent
-replication for transient buffers and communication.
+temporaries. FSDP therefore trades memory capacity for communication.
+Persistent replicated state becomes smaller, but transient gather buffers and
+collective operations become part of every training step.
 
-The throughput tradeoff follows directly. For
+The throughput tradeoff follows from the same decision. For
 
 $$
 X_{\mathrm{local}}[B/X,D]\,
@@ -347,7 +370,8 @@ batch size, memory, topology, and exposed collective time.
 
 ### Expert parallelism
 
-An MoE layer has an architectural expert dimension. For expert weights
+Unlike dense models, MoE architectures already contain a natural dimension
+that can be distributed: the experts themselves. For expert weights
 
 $$
 W_{\mathrm{expert}}[E,D,H],
@@ -361,8 +385,10 @@ $$
 
 The router selects $k$ experts for each token. If the selected experts live on
 other ranks, dispatch moves token rows to their owners and combine returns the
-expert outputs. These are usually AllToAll-shaped exchanges. EP reduces expert
-weight storage and divides expert GEMMs while adding token communication.
+expert outputs. These are usually AllToAll-shaped exchanges. Expert
+parallelism reduces local expert storage and divides expert computation across
+devices, but it introduces a new requirement: tokens must be moved to the
+devices that own their selected experts.
 
 A dense model has $E=1$, so an EP axis cannot split its MLP weights. An MoE
 still needs other axes for attention, embeddings, optimizer state, or further
@@ -383,10 +409,9 @@ case study.
 
 ### DeepSeek-V3 high-EP mesh
 
-The
-[DeepSeek-V3 technical report](https://arxiv.org/abs/2412.19437)
-is a useful large-scale example. Its 671B-parameter MoE has 256 routed experts
-and selects 8 per token. Training used:
+[DeepSeek-V3](https://arxiv.org/abs/2412.19437) provides a useful example of
+these ideas applied at frontier scale. Its 671B-parameter MoE has 256 routed
+experts and selects 8 per token. Training used:
 
 - 2,048 H800 GPUs;
 - 16-way pipeline parallelism;
@@ -400,13 +425,15 @@ is two. The report also describes custom cross-node AllToAll kernels and the
 DualPipe schedule used to overlap communication with forward and backward
 compute.
 
-This is evidence for one model on one H800 cluster, not a default MI355X mesh.
-It shows why fine-grained experts can justify a large independent EP axis and
-why the communication schedule becomes part of the model's systems design.
+DeepSeek-V3 should not be treated as a universal mesh template. Instead, it
+demonstrates that sufficiently large MoE models can justify dedicating a
+substantial fraction of the system to an expert-parallel axis.
 
 ## Implementing sharding in JAX
 
 ### Mesh, NamedSharding, and PartitionSpec
+
+JAX exposes sharding through three closely related concepts.
 
 A `Mesh` assigns names to dimensions of an array of devices. A
 `PartitionSpec` maps tensor dimensions to those names. A `NamedSharding` pairs
@@ -446,9 +473,11 @@ print(x.shape, x.addressable_shards[0].data.shape)
 # (1024, 512), (128, 512) on this one-process eight-device mesh
 ```
 
-Each rank stores `x[128,512]`. It stores `w[256,512]`, with each FSDP shard
-replicated at the four EP coordinates. The dot needs the full contracting
-dimension, so the automatic partitioning path can insert an FSDP AllGather.
+Although the program operates on global shapes, each device only stores the
+shard implied by its coordinates in the mesh. In this example, each device
+stores `x[128,512]` and `w[256,512]`, with each FSDP weight shard replicated at
+the four EP coordinates. The dot needs the full contracting dimension, so the
+automatic partitioning path can insert an FSDP AllGather.
 
 `P(None, None)` is replicated with respect to every mesh axis. A tuple such as
 `P(("fsdp", "ep"), None)` applies the product of both named axes to one tensor
@@ -465,9 +494,10 @@ documents those boundary checks.
 
 `jax.lax.with_sharding_constraint` constrains an intermediate. Under automatic
 mesh axes it gives Shardy another layout decision from which to propagate.
-Too few constraints can leave an important layout ambiguous; too many can
-force reshards between adjacent operations. Inspect post-partitioner HLO after
-changing one.
+Sharding constraints are useful because they remove ambiguity, but they can
+also be overused. Too few constraints may leave an important layout decision
+unspecified, while too many can force unnecessary resharding between adjacent
+operations. Inspect post-partitioner HLO after changing one.
 
 JAX 0.11 also supports explicit mesh-axis types. In explicit mode, sharding is
 part of the trace-time array type and operation rules propagate it in JAX.
@@ -484,7 +514,8 @@ automatic global program does not express the required algorithm clearly.
 
 ### Orthogonal axes and physical placement
 
-Mesh dimensions multiply. A mesh with
+Mesh axes are independent dimensions of the logical device grid. Their sizes
+multiply together to determine the number of required devices. A mesh with
 
 ```yaml
 fsdp: 8
@@ -513,13 +544,16 @@ mapping.
 
 ### The pinned MaxText source path
 
-This section follows the local MaxText `release/v26.6` tree at commit
-[`b47d74bf`](https://github.com/ROCm/maxtext/tree/b47d74bf4ef860c6cbd0fe5e4705c362ba360dbe).
-The path from configuration to HLO is:
+Conceptually, MaxText performs the following transformation:
+
+`YAML` → `Mesh` → logical axes → `NamedSharding` → `jax.jit` → Shardy →
+local HLO.
 
 {% include figure.liquid path="pages/img/ch5-maxtext-sharding-flow.png" class="img-fluid" alt="Flow diagram from MaxText YAML parallelism fields through device mesh construction and logical axis rules to JAX NamedSharding, jax.jit, Shardy, local HLO, and RCCL" caption="MaxText v26.6 turns axis sizes and logical tensor names into concrete JAX shardings. The mesh path and array-layout path meet at the train-step jax.jit boundary, after which Shardy and XLA produce local code and collectives." %}
 
-The source performs the following concrete steps:
+The source references below trace that transformation through the MaxText
+`release/v26.6` tree at commit
+[`b47d74bf`](https://github.com/ROCm/maxtext/tree/b47d74bf4ef860c6cbd0fe5e4705c362ba360dbe):
 
 1. [`base.yml`](https://github.com/ROCm/maxtext/blob/b47d74bf4ef860c6cbd0fe5e4705c362ba360dbe/src/maxtext/configs/base.yml#L507-L654)
    defines `mesh_axes`, logical-axis rules, and ICI/DCN axis sizes.
@@ -776,10 +810,9 @@ the fixed-capacity configuration. Its recorded run name ends in
 |---|---|---:|---:|---:|---:|
 | Mixtral 8x22B | FSDP=4, EP=2 | 1 | 20.599 s | 385.3 | 1,590.7 |
 
-One measured step confirms that this configuration executed, but it does not
-compare the four mesh choices or estimate timing variance. The summary does
-not retain an immutable container digest or the full effective configuration,
-so this row is an end-to-end anchor rather than a baseline.
+This measurement demonstrates that the configuration successfully executed,
+but it is insufficient for comparing mesh choices or estimating run-to-run
+variability.
 
 A separate controlled sweep provides supporting systems evidence. It uses
 `deepseek2-16b`, not Mixtral, on one eight-MI355X node. Every row used the same
@@ -802,7 +835,10 @@ together.
 
 ### A repeatable selection procedure
 
-Use the analytical estimates to reject impossible meshes, then measure:
+The workflow used throughout this chapter can be summarized as a simple rule:
+
+Use analysis to narrow the search space, then use profiling to choose among
+the remaining candidates.
 
 1. Build the `Mesh` from an explicit device order and print its coordinates.
 2. Print MaxText's resolved parameter and input `NamedSharding` trees. Confirm
@@ -905,9 +941,12 @@ unspecified deployment, so this chapter does not assign one.
 - [ROCm MaxText v26.6 at `b47d74bf`](https://github.com/ROCm/maxtext/tree/b47d74bf4ef860c6cbd0fe5e4705c362ba360dbe):
   the configuration, mesh, logical-axis, and JIT source traced above.
 
-The mesh now determines the local activation and matrix shapes that each
-MI355X must execute. Chapter 6 uses those shapes to choose rematerialization,
-attention implementations, and MoE kernels without losing the memory saved by
-sharding.
+At this point the global training problem has been transformed into a
+collection of device-local computations. The chosen mesh determines the
+activation shapes, matrix sizes, and communication patterns seen by each
+MI355X.
+
+The next chapter focuses on optimizing those local computations through
+rematerialization, attention kernels, and MoE execution strategies.
 
 <h3 markdown=1 class="next-section">Next: [memory and kernel optimizations]({{ '/pages/6-mem-and-kernel-optimizations' | relative_url }}).</h3>

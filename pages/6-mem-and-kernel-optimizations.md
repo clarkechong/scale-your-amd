@@ -46,11 +46,15 @@ toc:
   - name: "Applying the configuration sequence"
 ---
 
-Precision and sharding determine the local matrix shapes presented to one MI355X.
-This chapter changes the work performed at those shapes. Rematerialization trades
-long-lived activations for replay. Fused attention avoids a quadratic HBM
-intermediate. Sparse MoE execution replaces padded expert matrices with
-data-dependent groups when the compiler and library path support them.
+After precision and sharding have been chosen, each GPU sees a specific set of
+local tensor shapes and matrix multiplications. The remaining question is how
+those local computations are executed.
+
+This chapter examines three optimizations that change that execution path.
+Rematerialization trades memory for additional computation. Fused attention
+avoids materializing large intermediate tensors in HBM. Sparse MoE kernels
+replace padded expert computation with data-dependent grouped execution when
+the software stack supports it.
 
 The HLO figures are pruned from literal outputs and rendered with Graphviz.
 Those fixtures were compiled on `gfx950` with JAX and `jaxlib` 0.11.0,
@@ -63,10 +67,11 @@ Case-study tables state their own, sometimes older, provenance.
 
 ### Activations in training memory
 
-A training step keeps parameters and optimizer state across updates. Activations have
-a shorter lifetime, but many forward values must survive until their reverse-mode
-users run. With \(L\) layers and rematerialization policy \(p\), a useful local
-activation ledger is
+A training step keeps parameters and optimizer state across updates.
+Activations are temporary, but they are often the largest temporary objects in
+a training step. Many forward-pass values must remain available until the
+backward pass reaches the operation that produced them. With \(L\) layers and
+rematerialization policy \(p\), a useful local activation ledger is
 
 $$
 M_{\mathrm{saved,local}}(p)
@@ -79,7 +84,8 @@ $$
 
 where \(\mathcal R_\ell(p)\) is the set of residuals saved for layer \(\ell\),
 \(w_r\) is bytes per element, and \(s_r\) is the product of mesh axes that shard
-that value. This is a byte ledger, not a peak. XLA can alias buffers and schedule
+that value. This expression accounts for bytes that must be preserved, but it
+does not directly predict peak memory usage. XLA can alias buffers and schedule
 temporaries with disjoint lifetimes, while a fused library call can allocate a
 workspace outside the visible JAX expression.
 
@@ -94,32 +100,38 @@ M_{\mathrm{named}}
 $$
 
 At \(L=32\), \(B_\ell=4\), \(S=4096\), \(D=4096\), and \(F=11008\), this is
-45.5 GiB per GPU. It predicts only those eight named tensors. Layer inputs,
-normalization state, attention residuals, logits, and compiler temporaries are
-separate terms.
+45.5 GiB per GPU. This estimate captures only the explicitly listed residuals.
+Other values, such as layer inputs, normalization statistics, logits, compiler
+temporaries, and backend workspaces, contribute additional memory.
 
 ### What reverse-mode AD stores
 
-Reverse-mode automatic differentiation first runs the primal program, then applies a
-vector-Jacobian product in reverse order. Each primitive's transpose rule determines
-which primal values it needs. A matrix product needs the opposite operand to form each
-gradient. The derivative of `tanh` can use its output. Softmax backward uses its
-probabilities, or enough state to reconstruct them. JAX calls these saved values
-*residuals* in its
+Understanding rematerialization requires understanding what reverse-mode AD
+actually saves.
+
+The forward pass is executed first. During that pass, JAX preserves only the
+values required by the backward rules of later operations. Each primitive's
+transpose rule determines which primal values it needs. A matrix product needs
+the opposite operand to form each gradient. The derivative of `tanh` can use
+its output. Softmax backward uses its probabilities, or enough state to
+reconstruct them. JAX calls these saved values *residuals* in its
 [`jax.checkpoint` documentation](https://docs.jax.dev/en/latest/gradient-checkpointing.html).
 
-The residual set is smaller than "every forward output." Constants and values
-available as function arguments need not be copied. Dead values are removed. Fusion
-can keep a short-lived value in registers or LDS. A custom VJP also defines its own
-contract: fused attention commonly returns row log-sum-exp and RNG state for backward
-instead of the complete probability matrix.
+Importantly, this saved state is usually much smaller than the complete forward
+computation. Constants and values available as function arguments need not be
+copied. Dead values are removed. Fusion can keep a short-lived value in
+registers or LDS. A custom VJP also defines its own contract: fused attention
+commonly returns row log-sum-exp and RNG state for backward instead of the
+complete probability matrix.
 
 ### What is rematerialization
 
-Rematerialization, also called activation checkpointing, changes that residual
-contract. It keeps a checkpoint at a chosen boundary and reconstructs omitted values
-when the backward pass reaches the boundary. The method was developed for deep
-networks by [Chen et al.](https://arxiv.org/abs/1604.06174); the
+Rematerialization changes the storage-versus-recomputation tradeoff.
+
+Instead of retaining every residual required by the backward pass, the system
+chooses selected checkpoint boundaries and reconstructs missing values when
+they are needed later. The method was developed for deep networks by
+[Chen et al.](https://arxiv.org/abs/1604.06174); the
 [JAX Scaling Book derivation](https://jax-ml.github.io/scaling-book/transformers/#gradient-checkpointing)
 relates the same trade to Transformer layers.
 
@@ -132,18 +144,25 @@ F_{\mathrm{executed}}(p)
 +\sum_{i\in\mathcal C(p)}m_iF_i.
 $$
 
-The sum must be taken from the rematerialized region. A policy that saves dot outputs
-may replay only normalization and pointwise work. Full layer remat can replay the
-projections and attention forward path. If a collective is outside that region, it is
-not duplicated by rematerialization.
+Only operations inside the rematerialized region contribute replayed work. A
+policy that saves dot outputs may replay only normalization and pointwise work.
+Full layer remat can replay the projections and attention forward path.
+
+The same rule applies to communication. A collective outside the checkpointed
+region executes once. A collective inside the region may be replayed during
+reconstruction.
 
 {% include figure.liquid path="pages/img/ch6-remat-saved-vs-recomputed.png" class="img-fluid" alt="Three forward and backward dataflows showing all residuals saved, named residuals saved, and only a layer input saved with the omitted forward work replayed" caption="The policy controls what crosses the autodiff boundary. Sharding changes the bytes represented by each checkpoint; the operations inside the rematerialized region determine replayed FLOPs and communication." %}
 
 ### Implementing in JAX
 
 [`jax.checkpoint`](https://docs.jax.dev/en/latest/_autosummary/jax.checkpoint.html)
-and `jax.remat` are aliases. A policy receives a type-level primitive description and
-returns whether its output is allowed to be saved. Named policies use
+and `jax.remat` are aliases. At a high level, a checkpoint policy answers a
+simple question for each operation:
+
+> May this value be saved, or must it be recomputed later?
+
+Policies receive type-level primitive descriptions. Named policies use
 [`checkpoint_name`](https://docs.jax.dev/en/latest/_autosummary/jax.ad_checkpoint.checkpoint_name.html),
 which is an identity at execution time and a label in the trace:
 
@@ -172,10 +191,11 @@ The main policy constructors are:
 | `save_only_these_names(...)` | Values carrying one of the listed names |
 | `save_and_offload_only_these_names(...)` | Listed values kept on device or moved to another memory space |
 
-`policy=None` does not mean "disable remat" once a checkpoint wrapper exists. To
-disable explicit remat, call the original function. This distinction matters in
-framework dispatch code, where a config value first decides whether to wrap a layer
-and then selects the policy passed to that wrapper.
+A common source of confusion is that `policy=None` does not disable
+rematerialization once a function has already been wrapped in `jax.checkpoint`.
+To disable explicit remat, call the original function. This distinction matters
+in framework dispatch code, where a config value first decides whether to wrap
+a layer and then selects the policy passed to that wrapper.
 
 Use
 [`jax.ad_checkpoint.print_saved_residuals`](https://docs.jax.dev/en/latest/gradient-checkpointing.html#examining-which-activations-are-stored)
@@ -203,8 +223,8 @@ The NNX decoder explicitly calls the pure layer when
 | `full` | No internal values allowed by the default checkpoint policy |
 | `custom` | Per-name `device`, `remat`, or `offload` assignments |
 
-The policy name is only effective when it matches names emitted by the selected
-model and backend. MaxText's
+The policy names are only meaningful if they match the names actually produced
+by the model implementation. MaxText's
 [`minimal_with_context` list](https://github.com/AI-Hypercomputer/maxtext/blob/b47d74bf4ef860c6cbd0fe5e4705c362ba360dbe/src/maxtext/layers/decoders.py#L325-L343)
 contains names for separate Q/K/V, fused QKV, and gated MLP variants for this reason.
 A low-precision backend can add packed weights, scales, or quantization history that
@@ -220,17 +240,18 @@ reconstructs the missing value with `%dot_general.9` and `%tanh.6`; both carry
 
 {% include figure.liquid path="pages/img/ch6-hlo-remat-none-full.svg" class="img-fluid" zoomable=true alt="Pruned literal HLO comparison in which no remat reuses tanh.3 and full remat reconstructs it with dot_general.9 and tanh.6" caption="Real JAX 0.11 `before_optimizations` HLO rendered with Graphviz. Exact operation names and shapes are retained; layout-only and unrelated gradient nodes are pruned." %}
 
-An HLO operation count is not a memory result. The useful checks are a smaller
-forward-to-backward residual tuple, reconstructed work in the backward body, and a
-shorter peak live range in the buffer assignment. XLA's own compiler
-rematerialization may also replay operations for scheduling reasons; that is separate
-from the explicit JAX policy.
+The appearance of additional HLO operations does not, by itself, prove that
+memory has been reduced. The useful checks are a smaller forward-to-backward
+residual tuple, reconstructed work in the backward body, and a shorter peak
+live range in the buffer assignment. XLA's own compiler rematerialization may
+also replay operations for scheduling reasons; that is separate from the
+explicit JAX policy.
 
 ### Sharding and collectives
 
-Sharding changes a checkpoint only when it partitions one of that checkpoint's
-dimensions. If a global activation is \([B,S,D]\) and its batch and hidden axes are
-sharded by \(p_B\) and \(p_D\), its local storage is
+Sharding affects checkpoint size only when it reduces the local shape of a
+saved tensor. If a global activation is \([B,S,D]\) and its batch and hidden
+axes are sharded by \(p_B\) and \(p_D\), its local storage is
 
 $$
 M_{\mathrm{local}}=\frac{BSDw}{p_Bp_D}.
@@ -250,10 +271,10 @@ checkpointed layer can execute again when that layer is reconstructed.
 The retained FSDP-8 scheduled HLO makes that distinction visible. All three policies
 contain eight static collective-start instructions and 1.076 GiB of summed result
 shapes. `minimal_with_context` and `full` each place one AllGather under
-`checkpoint/rematted_computation`; `none` places none there. The equal static totals
-do not establish an extra runtime call. They show that the remat boundary contains a
-collective in this implementation, so dynamic execution must be counted from the
-loop structure or a device trace.
+`checkpoint/rematted_computation`; `none` places none there. The identical
+static counts do not prove that additional communication occurred at runtime.
+They show that the remat boundary contains a collective in this implementation,
+so dynamic execution must be counted from the loop structure or a device trace.
 
 ### Case study: Llama 7B
 
@@ -279,11 +300,13 @@ the same raw-JAX model and an eight-device `fsdp` mesh.
 | FSDP-8 | `minimal_with_context` | 0.740 s | 0.0020 s | 22,141 | 66.9 GiB | 66.86 GiB |
 | FSDP-8 | `full` | 0.864 s | 0.0037 s | 18,963 | 21.1 GiB | 21.14 GiB |
 
-`minimal_with_context` is the measured Pareto point in both scopes: it is faster than
-`none` while using much less memory. On one GPU it removes 94.7 GiB from the compiled
-plan and improves median step time by 9.3%. Under FSDP-8 it removes 83.6 GiB and
-improves time by 3.0%. Saving more residuals can increase HBM traffic and constrain
-the schedule, so less replay did not make `none` faster here.
+Among the evaluated policies, `minimal_with_context` provides the best tradeoff
+between memory consumption and throughput. It is faster than `none` while using
+much less memory. On one GPU it removes 94.7 GiB from the compiled plan and
+improves median step time by 9.3%. Under FSDP-8 it removes 83.6 GiB and
+improves time by 3.0%. The results illustrate that retaining more activations
+is not automatically faster. Additional saved state increases memory traffic
+and can restrict scheduling flexibility.
 
 The predicted 45.5 GiB named-residual term can be checked directly. Moving from
 `minimal_with_context` to `full` removes 46.3 GiB on one GPU and 45.8 GiB under
@@ -316,7 +339,9 @@ raise the cost of the full policy.
 
 ### Components of attention
 
-For one head, scaled dot-product attention is
+Attention combines three tensors: queries, keys, and values. The forward pass
+computes attention scores, normalizes them with softmax, and uses the resulting
+probabilities to mix the value vectors.
 
 $$
 S=\frac{QK^\mathsf T}{\sqrt d}+M,\qquad
@@ -343,8 +368,12 @@ softmax information even when the forward API returns only O.
 
 ### Forward and backward working sets
 
-Standard attention exposes a score-shaped tensor to HLO. If \(c\) score or
-probability arrays are live, its HBM term is approximately
+The key systems difference between standard attention and FlashAttention is
+memory.
+
+A conventional implementation materializes score-like tensors whose size
+scales with both query length and key length. If \(c\) score or probability
+arrays are live, its HBM term is approximately
 
 $$
 M_{\mathrm{standard}}
@@ -370,15 +399,17 @@ also changes work partitioning to improve occupancy and parallelism.
 
 {% include figure.liquid path="pages/img/flashattention-figure1.svg" class="img-fluid" alt="FlashAttention Figure 1 showing tiled movement between GPU HBM and on-chip SRAM together with the paper's GPT-2 attention speedup" caption="Figure 1 from <a href='https://arxiv.org/abs/2205.14135'>FlashAttention</a>. The left panel shows the relevant mechanism: Q, K, and V tiles move through on-chip SRAM without materializing the full attention matrix in HBM. The right panel is the paper's A100 result and is not an MI355X measurement." %}
 
-Backward is a separate kernel-selection problem. It may reconstruct scores from Q, K,
-the output, and row log-sum-exp; calculate \(dQ\) separately from \(dK,dV\); use
-atomics; and launch conversion or reduction helpers. Forward timing or a forward-only
-HLO fixture cannot predict those costs.
+Backward attention should be considered a separate implementation problem
+rather than a consequence of forward performance. It may reconstruct scores
+from Q, K, the output, and row log-sum-exp; calculate \(dQ\) separately from
+\(dK,dV\); use atomics; and launch conversion or reduction helpers. Forward
+timing or a forward-only HLO fixture cannot predict those costs.
 
 ### ROCm attention backends
 
-The current Llama source exposes four explicit routes. MaxText's corresponding
-standard, TE, and Pallas selection is in
+From the user's perspective, MaxText exposes several attention implementations
+that produce the same mathematical result through different execution paths.
+The corresponding standard, TE, and Pallas selection is in
 [`AttentionOp.apply_attention`](https://github.com/AI-Hypercomputer/maxtext/blob/b47d74bf4ef860c6cbd0fe5e4705c362ba360dbe/src/maxtext/layers/attention_op.py#L1030-L1175).
 
 | Route | Forward implementation | Backward ownership | What HLO reveals |
@@ -396,8 +427,9 @@ dimensions, then selects an enabled backend. The
 documents CK and AOTriton, with CK taking priority when both match. The experiment
 sets `NVTE_FUSED_ATTN_CK=1` and `NVTE_FUSED_ATTN_AOTRITON=0`.
 
-Direct [JAX-AITER](https://github.com/ROCm/jax-aiter) removes that dispatch layer.
-The pinned source at
+Direct [JAX-AITER](https://github.com/ROCm/jax-aiter) bypasses Transformer
+Engine's backend selection layer and invokes the JAX-AITER implementation
+directly. The pinned source at
 [`35b7175c`](https://github.com/ROCm/jax-aiter/tree/35b7175c763153ddb5da50c47d33dec436d5f191)
 registers one FFI target per direction and supplies custom partitioning plus a custom
 VJP. AITER still chooses CK or ASM internally from the concrete problem.
@@ -411,8 +443,11 @@ configuration.
 
 ### Changes at the HLO level
 
+In standard attention, the compiler can see the score computation, masking
+operations, softmax reductions, and value-mixing output explicitly.
+
 The matched forward fixtures use BF16 Q, K, and V shaped `[1,128,8,64]`.
-Standard JAX attention exposes `%dot_general.2`, the causal selection, FP32
+Their HLO contains `%dot_general.2`, the causal selection, FP32
 `%reduce_max.7`, `%exp.1`, `%reduce_sum.7`, `%div.7`, and the final
 `%dot_general.3`.
 
@@ -425,7 +460,8 @@ extracts the output.
 
 {% include figure.liquid path="pages/img/ch6-hlo-attention-te.svg" class="img-fluid" zoomable=true alt="Literal pruned HLO graph for Transformer Engine attention with Q K V and metadata entering te_fused_attn_forward_ffi" caption="Real JAX 0.11 `before_optimizations` HLO. The graph shows the TE typed-FFI boundary and its result contract; kernel internals remain outside HLO." %}
 
-These graphs are forward-only. The TE source defines the separate
+These graphs describe only the forward computation visible to HLO. The TE
+source defines the separate
 [`te_fused_attn_backward_ffi`](https://github.com/ROCm/TransformerEngine/blob/dev/transformer_engine/jax/cpp_extensions/attention.py);
 the full training trace below establishes the kernels selected behind both
 directions. This is the
@@ -443,10 +479,12 @@ tile, so the figure preserves those fields rather than inferring \(B_q\) and \(B
 
 Both TE and direct JAX-AITER launch
 `aiter::fmha_fwd_hd128_bf16_causal` with grid `4096×32×4`, a 512-thread
-workgroup, 160 KiB LDS, 32 VGPRs, and 224 accumulator VGPRs. There is no
-forward-kernel distinction to explain at this shape.
+workgroup, 160 KiB LDS, 32 VGPRs, and 224 accumulator VGPRs. At this shape, the
+observed forward kernel is identical across the Transformer Engine and direct
+JAX-AITER paths.
 
-Backward separates the routes. TE launches the named AITER O-gradient helper,
+The forward kernels converge, but the backward implementations diverge. TE
+launches the named AITER O-gradient helper,
 `...bf16_causal_a32_psskddv`, and dQ conversion kernels. Direct JAX-AITER launches
 CK Tile classes including `FmhaBwdOGradDotOKernel`,
 `FmhaBwdDQDKDVKernel`, and `FmhaBwdConvertQGradKernel`. Pallas launches
@@ -468,10 +506,13 @@ steps 10–29.
 | Standard XLA | 1.498 s | 10,934 | 167.1 GiB | 167.07 GiB |
 | Transformer Engine CK/AITER | 0.662 s | 24,758 | 152.1 GiB | 152.09 GiB |
 
-TE is 2.26 times faster for this complete step and lowers peak memory by 15.0 GiB.
-The result is larger than attention's 7.52% share of the analytical model FLOPs
-because that FLOP share is not a time share: it omits score traffic, softmax work,
-launches, and backend efficiency.
+For this complete training step, Transformer Engine delivers both higher
+throughput and lower peak memory usage. Median step time falls from 1.498 s to
+0.662 s, a 2.26× speedup, while peak memory falls by 15.0 GiB.
+
+The magnitude of the speedup exceeds attention's share of model FLOPs because
+FLOP counts alone do not describe execution time. They omit score traffic,
+softmax work, launches, and backend efficiency.
 
 The 10 September JAX 0.11 PMC campaign ran one production-shaped layer and selected
 one warmed training step. Each counter group ran in a fresh process. The totals below
@@ -510,8 +551,11 @@ one-layer step. They do not supply a clean four-way runtime ranking.
 
 ### Why MoE requires grouped GEMM
 
-For \(T\) input tokens, top-\(k\) routing creates \(Tk\) expert assignments. If
-expert \(e\) receives \(n_e\) rows,
+Mixture-of-Experts introduces a challenge that does not exist in dense models:
+each expert receives a different number of tokens.
+
+Let \(T\) be the number of input tokens and \(k\) the number of experts selected
+per token. If expert \(e\) receives \(n_e\) rows,
 
 $$
 \sum_{e=1}^{E}n_e=Tk,
@@ -519,8 +563,9 @@ $$
 \bar n=\frac{Tk}{E}.
 $$
 
-The \(n_e\) values depend on data and router parameters. One batched GEMM shape cannot
-represent them without padding or masking. Four implementation choices are useful:
+The \(n_e\) values depend on data and router parameters. Because the expert
+workloads are uneven, a single dense batch shape cannot represent the routed
+computation efficiently. Four implementation choices are useful:
 
 1. Dense masked evaluates all \(E\) experts for every token and later selects the
    routed outputs. It performs \(E/k\) times the ideal routed expert arithmetic.
@@ -557,7 +602,11 @@ tails or create enough rows for an underloaded expert.
 
 ### Router to expert and back
 
-MaxText's sparse path follows this sequence:
+Conceptually, sparse MoE execution consists of four stages:
+
+`route` → move tokens → run expert GEMMs → combine outputs.
+
+MaxText expands these stages into five steps:
 
 1. The router produces top-k expert indices and weights.
 2. MaxText repeats each token k times, sorts by destination expert, and
@@ -594,8 +643,9 @@ products. A grouped GEMM microbenchmark excludes most of the layer cost.
 
 ### MaxText controls
 
-The current user-facing MaxText field is `sparse_matmul`. There is no
-`use_ragged_dot` YAML field in this v26.6 source.
+The current user-facing MaxText field is `sparse_matmul`. A noteworthy
+implementation detail is that current MaxText does not expose a user-facing
+`use_ragged_dot` option.
 
 | MaxText fields | JAX-level expert path |
 |---|---|
@@ -629,9 +679,16 @@ instead of relying on a generic gather gradient.
 
 ### Grouped GEMM lowering paths
 
+A common misconception is that
 [`jax.lax.ragged_dot`](https://docs.jax.dev/en/latest/_autosummary/jax.lax.ragged_dot.html)
-defines the operation and its integer `group_sizes`; it does not promise grouped
-execution. On this ROCm XLA build, the experiment separates two lowerings:
+automatically implies grouped GEMM execution.
+
+It does not.
+
+`ragged_dot` specifies the operation semantics. The backend remains free to
+lower those semantics either to dense padded computation or to a true grouped
+GEMM implementation. On this ROCm XLA build, the experiment separates two
+lowerings:
 
 ```bash
 # Dense-padded lowering
@@ -692,7 +749,8 @@ accumulation microsteps produce 262,144 input tokens per eight-GPU update. The c
 recipe uses Transformer Engine attention, scanned layers, and
 `remat_policy=save_dot_with_context_except_mlp`.
 
-The retained successful points are integration smokes, not an expert-kernel ranking:
+These measurements should be interpreted as integration checkpoints rather
+than controlled kernel comparisons:
 
 | Cohort | Mesh and expert path | Measured step | Tokens/s/GPU | Compiled memory | Measurement window |
 |---|---|---:|---:|---:|---|
@@ -714,7 +772,10 @@ exposed collective time remain the current integration work.
 
 ## Applying the configuration sequence
 
-The preceding chapters establish the order of decisions:
+The central lesson of the book is that optimization decisions are
+hierarchical.
+
+`precision` → sharding → memory policy → kernel selection.
 
 1. Choose the numeric recipe and optimizer-state dtypes.
 2. Choose a mesh that makes persistent state fit and record each GPU's local
