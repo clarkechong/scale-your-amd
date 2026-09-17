@@ -141,9 +141,7 @@ AMD's
 [CDNA 4 FP8 GEMM guide](https://rocm.blogs.amd.com/software-tools-optimization/cdna4-gemm-kernels/README.html)
 shows how those instruction-scale fragments fit into a complete GEMM kernel.
 
-{% include figure.liquid path="pages/img/mixed-precision-llama-attribution.png" class="img-fluid" alt="A Llama block with BF16 surrounding operations, low-precision projection operands, FP32 accumulation and optimizer state, and a separate loss boundary" caption="An illustrative mixed-precision assignment. Eligible projection operands are quantized locally; surrounding activations return to BF16, while selected reductions and training state stay FP32. Exact projection coverage is a recipe decision." %}
-
-The diagram also separates *storage dtype* from *compute operand dtype*. A
+This also separates *storage dtype* from *compute operand dtype*. A
 weight may live as an FP32 optimizer parameter, be gathered by FSDP, cast to
 BF16, quantized to FP8 or MXFP4 for one GEMM, and then discarded. Calling that
 an “FP8 model” would hide the part of the system that controls both memory and
@@ -197,8 +195,6 @@ state.
 The format selects a set of representable values. The recipe selects where the
 format is used, how tensors are scaled, what accumulates the dot product, and
 which representation is saved for backward.
-
-{% include figure.liquid path="pages/img/ch4-precision-format-layouts.png" class="img-fluid" alt="Bit layouts for BF16, FP16, FP8 E4M3 and E5M2, plus an OCP MX block of 32 values sharing one E8M0 scale" caption="Scalar formats allocate exponent and fraction bits per value. An OCP MX block stores one E8M0 power-of-two scale for 32 element codes. The matrix instruction still has independent operand, accumulator, and output types." %}
 
 | Format | Element encoding | Maximum finite magnitude | Scaling unit | Effective storage | MI355X dense peak |
 |---|---|---:|---|---:|---:|
@@ -280,6 +276,8 @@ defines blocks of $k=32$ elements sharing one E8M0 scale. E8M0 is an
 eight-bit exponent-only value, so each scale is a power of two. If each
 element uses $b$ bits and the shared scale uses $s$ bits, a full block costs
 
+{% include figure.liquid path="pages/img/mx-scaling-diagram.png" class="img-fluid" alt="One shared scale X associated with k scalar elements P1 through Pk" caption="Figure 1 from <a href='https://arxiv.org/abs/2310.10537'>Microscaling Data Formats for Deep Learning</a>. An MX block pairs one scale X with k independently encoded elements. The OCP MXFP formats used here set k=32." %}
+
 $$
 B_{\mathrm{block}}=kb+s,\qquad
 b_{\mathrm{effective}}=b+\frac{s}{k}.
@@ -300,6 +298,8 @@ scale to cover a whole tensor. Rowwise and columnwise quantization are distinct
 because changing the block direction changes group membership. Training
 libraries often produce both representations from the wider source so Fprop,
 Dgrad, and Wgrad can consume the orientation they need.
+
+{% include figure.liquid path="pages/img/mx-scaling-quantization.png" class="img-fluid" alt="MX training dataflow showing BF16 tensors quantized before forward, activation-gradient, and weight-gradient matrix multiplications" caption="Figure 2 from <a href='https://arxiv.org/abs/2310.10537'>Microscaling Data Formats for Deep Learning</a>. BF16 activations, weights, and error gradients are quantized at the matrix boundary; matrix outputs return to BF16, while the optimizer updates FP32 master weights." %}
 
 The OCP paper
 [Microscaling Data Formats for Deep Learning](https://arxiv.org/abs/2310.10537)
@@ -493,28 +493,28 @@ The following fixtures were captured on `rocm:0` from JAX/JAXLIB 0.11.0,
 MaxText `b47d74bf`, and Transformer Engine
 `2.17.0+6aa471b18`. Each fixture uses a BF16 activation
 `[128,256]`, an FP32 master weight `[256,256]`, and a BF16 output. The
-compiled fixture was executed on MI355X. Literal XLA HLO text and DOT, the
-pruned DOT, and provenance are preserved under
-`artifacts/hlo-fixtures/precision/`.
+compiled fixture was executed on MI355X. XLA emitted each DOT graph and
+Graphviz rendered it after source-path tooltips were removed. Nodes, edges,
+and visible labels are unchanged.
 
 With no quantization object, MaxText's branch casts the FP32 weight to BF16 and
 emits an ordinary HLO `dot`:
 
-[![Pruned XLA HLO graph for a BF16 MaxText-style linear operation]({{ '/pages/img/hlo-precision-bf16.svg' | relative_url }})]({{ '/pages/img/hlo-precision-bf16.svg' | relative_url }})
+[![Literal XLA HLO graph for a BF16 MaxText-style linear operation]({{ '/pages/img/hlo-precision-bf16.svg' | relative_url }})]({{ '/pages/img/hlo-precision-bf16.svg' | relative_url }})
 
 With `quantization=te_fp8_delayedscaling`, the recipe carries FP32 scale and
 amax-history state. Each `te_dbias_quantize_ffi` receives the delayed scale;
 its E4M3 arrays and per-tensor scales then enter `te_gemm_v2_ffi`, which
 returns BF16:
 
-[![Pruned XLA HLO graph for Transformer Engine delayed-scaling FP8]({{ '/pages/img/hlo-precision-fp8.svg' | relative_url }})]({{ '/pages/img/hlo-precision-fp8.svg' | relative_url }})
+[![Literal XLA HLO graph for Transformer Engine delayed-scaling FP8]({{ '/pages/img/hlo-precision-fp8.svg' | relative_url }})]({{ '/pages/img/hlo-precision-fp8.svg' | relative_url }})
 
 With `quantization=te_mxfp8`, the quantization calls return E4M3 arrays and
 E8M0 scale arrays. The preserved HLO records
 `scaling_mode=MXFP8_1D_SCALING`; the GEMM receives both data and scale
 operands:
 
-[![Pruned XLA HLO graph for Transformer Engine MXFP8 block scaling]({{ '/pages/img/hlo-precision-mxfp8.svg' | relative_url }})]({{ '/pages/img/hlo-precision-mxfp8.svg' | relative_url }})
+[![Literal XLA HLO graph for Transformer Engine MXFP8 block scaling]({{ '/pages/img/hlo-precision-mxfp8.svg' | relative_url }})]({{ '/pages/img/hlo-precision-mxfp8.svg' | relative_url }})
 
 The graphs show the compiler-visible boundary. Kernel selection inside the
 registered handler belongs to Transformer Engine, hipBLASLt, or AITER and is
@@ -554,14 +554,13 @@ dtypes in FP32. The surrounding computation is BF16 except in the FP16 arm.
 
 The MXFP4 distinction is explicit in its launcher:
 
-```text
-quantization=aiter_fp4
-use_jax_aiter=true
-aiter_attention=false
-AITER_FP4_MLP=1
-AITER_FP4_ATTN=1
+```yaml
+quantization: aiter_fp4
+use_jax_aiter: true
+aiter_attention: false
 ```
 
+The launcher also sets `AITER_FP4_MLP=1` and `AITER_FP4_ATTN=1`.
 `AITER_FP4_ATTN=1` covers the Q/K/V/O linear projections.
 `aiter_attention=false` leaves the fused attention core on the Transformer
 Engine BF16 path.
@@ -569,8 +568,7 @@ Engine BF16 path.
 The BF16, FP16, FP8, and MXFP8 arms use stock ROCm/MaxText v26.6 at
 `b47d74bf`. MXFP8 uses the patched Transformer Engine revision cited above.
 The MXFP4 arm uses the pinned ROCm/MaxText feature revision and JAX-AITER
-alpha2 source. The complete launcher settings are in the sibling
-`llama70b/scripts/train_step/` experiment directory.
+alpha2 source.
 
 ### Expectations before results
 
@@ -646,15 +644,16 @@ activation checkpoints.
 ### Train-step results
 
 Job 124490 measured post-warmup steps 10–29. The values below are copied from
-the captured result bundle:
+the captured result bundle. The expected column uses the Amdahl model above
+with an 80% eligible-GEMM time share.
 
-| Precision | Mean step | Std dev | TFLOP/s/device | Tokens/s/device | Speedup vs BF16 |
-|---|---:|---:|---:|---:|---:|
-| BF16 | 27.028 s | 0.107 s | 973.8 | 2,273.2 | 1.00× |
-| FP16 | 25.110 s | 0.082 s | 1,048.2 | 2,446.9 | 1.08× |
-| FP8 | 15.006 s | 0.044 s | 1,754.0 | 4,094.4 | 1.80× |
-| MXFP8 | 17.838 s | 0.180 s | 1,475.7 | 3,444.8 | 1.52× |
-| MXFP4 | 11.704 s | 0.038 s | 2,248.8 | 5,249.5 | 2.31× |
+| Precision | Mean step | Std dev | TFLOP/s/device | Tokens/s/device | Expected speedup | Measured speedup |
+|---|---:|---:|---:|---:|---:|---:|
+| BF16 | 27.028 s | 0.107 s | 973.8 | 2,273.2 | 1.00× | 1.00× |
+| FP16 | 25.110 s | 0.082 s | 1,048.2 | 2,446.9 | 1.00× | 1.08× |
+| FP8 | 15.006 s | 0.044 s | 1,754.0 | 4,094.4 | 1.67× | 1.80× |
+| MXFP8 | 17.838 s | 0.180 s | 1,475.7 | 3,444.8 | 1.67× | 1.52× |
+| MXFP4 | 11.704 s | 0.038 s | 2,248.8 | 5,249.5 | 2.50× | 2.31× |
 
 Tokens/s/device follows
 

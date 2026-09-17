@@ -21,10 +21,6 @@ toc:
     subsections:
       - name: "End-to-end metrics"
       - name: "Roofline analysis"
-  - name: "A two-capture workflow"
-    subsections:
-      - name: "Warmup and asynchronous execution"
-      - name: "Names that survive compilation"
   - name: "The JAX profiler"
     subsections:
       - name: "XLA profiler backend"
@@ -50,7 +46,6 @@ toc:
       - name: "Time attribution in MaxText"
       - name: "Captured end-to-end result"
       - name: "Component roofline worksheet"
-  - name: "From profile to precision"
 ---
 
 A useful training profile connects four levels of evidence:
@@ -76,26 +71,14 @@ separately unless the experiment is explicitly measuring end-to-end job time.
 
 ### End-to-end metrics
 
-Let $t_{\mathrm{step}}$ be synchronized wall time for one update,
-$N_{\mathrm{tok}}$ the global input tokens consumed by that update, $G$ the
-number of accelerators participating in it, $F_{\mathrm{model}}$ the declared
-useful model FLOPs per update, and $C_{\mathrm{peak}}$ the matching per-device
-compute peak. Then
-
-$$
-R_{\mathrm{node}}=\frac{N_{\mathrm{tok}}}{t_{\mathrm{step}}},
-\qquad
-R_{\mathrm{device}}=\frac{N_{\mathrm{tok}}}{G\,t_{\mathrm{step}}},
-$$
-
-and
+Global tokens/s is the input token count divided by synchronized step time;
+per-device tokens/s divides that value by the number of accelerators. MFU uses
+the declared useful model FLOPs and the matching per-device compute peak:
 
 $$
 \mathrm{MFU}
 =\frac{F_{\mathrm{model}}}
-       {G\,t_{\mathrm{step}}\,C_{\mathrm{peak}}}
-=\frac{R_{\mathrm{node}}\,(F_{\mathrm{model}}/N_{\mathrm{tok}})}
-       {G\,C_{\mathrm{peak}}}.
+       {G\,t_{\mathrm{step}}\,C_{\mathrm{peak}}}.
 $$
 
 [MaxText defines MFU](https://maxtext.readthedocs.io/en/latest/reference/performance_metrics.html)
@@ -125,6 +108,11 @@ The denominators prevent several common errors:
 - Do not call one observed duration a median. A stable timing result needs
   several post-warmup updates and a dispersion statistic.
 
+JAX dispatch is asynchronous. Compile and autotune before the retained timing
+window, then call `jax.block_until_ready()` at its boundaries. Profiler runs
+are diagnostic; headline timing comes from an otherwise matched unprofiled
+process.
+
 Memory also has two useful views. XProf's
 [Memory Viewer](https://openxla.org/xprof/memory_viewer) uses compiler data to
 show the static buffer assignment and its peak in program order. The dynamic
@@ -135,157 +123,26 @@ than collapsing unlike values into one unexplained number.
 ### Roofline analysis
 
 The [JAX Scaling Book roofline chapter](https://jax-ml.github.io/scaling-book/roofline/)
-derives the general model. For a boundary with $F$ floating-point operations,
-$Q$ bytes transferred at the selected memory level, peak compute $C$, and
-bandwidth $\beta$,
+introduces the plot below. Arithmetic intensity is the work performed per byte
+moved, $I=F/Q$. For peak compute $C$ and bandwidth $\beta$, the roofline is
 
 $$
-I=\frac{F}{Q},
-\qquad
-P=\frac{F}{t},
-\qquad
 P_{\mathrm{roof}}=\min(C,I\beta).
 $$
 
-The roofline efficiency is
+{% include figure.liquid path="pages/img/scaling-book-roofline.png" class="img-fluid" alt="Generic roofline plot with two bandwidth ceilings, two algorithms, and bandwidth-bound and compute-bound regions" caption="The generic roofline from the MIT-licensed <a href='https://jax-ml.github.io/scaling-book/roofline/'>JAX Scaling Book</a>. Its BW1 and BW2 lines illustrate two memory systems or two achieved bandwidths. The MI355X values are substituted in the text rather than drawn into the source figure." %}
 
-$$
-\eta_{\mathrm{roof}}=\frac{P}{\min(C,I\beta)}.
-$$
+The source chapter applies this diagram to TPU v5e. For one full MI355X in
+SPX mode, the dense BF16 matrix ceiling is 2.5166 PFLOP/s and HBM bandwidth is
+8 TB/s, so the BF16/HBM ridge is about 315 FLOP/byte. An operation to the left
+of that point is HBM-bound even with an ideal kernel. An operation to the right
+can be compute-bound.
 
-Every term must describe the same work. An HBM roofline uses HBM bytes; an
-L1/shared-memory roofline uses traffic at that level. A network roofline uses
-collective payload bytes and link bandwidth, not HBM bandwidth.
-
-For $A[M,K]B[K,N]$, a useful first prediction is
-
-$$
-F_{\mathrm{GEMM}}=2MKN,
-$$
-
-$$
-Q_{\mathrm{algorithmic}}
-=s_A MK+s_B KN+s_C MN,
-\qquad
-I_{\mathrm{algorithmic}}
-=\frac{2MKN}{Q_{\mathrm{algorithmic}}},
-$$
-
-where $s_A,s_B,s_C$ are element sizes. This byte expression assumes one read
-of each input and one output write. It excludes cache misses, workspace,
-padding, split-$K$ reductions, and rereads, so it is a prediction. Counter-
-derived $Q_{\mathrm{HBM}}$ is the measurement used for a kernel's empirical
-HBM roofline.
-
-For a component containing kernels $k$,
-
-$$
-I_c=\frac{\sum_k F_k}{\sum_k Q_k},
-\qquad
-P_c=\frac{\sum_k F_k}{t_{\mathrm{union},c}}.
-$$
-
-$t_{\mathrm{union},c}$ is the union of that component's intervals on one
-selected GPU, not a sum that double-counts overlapping streams. Keep useful
-and executed FLOPs in separate columns. A rematerialized projection has one
-useful contribution to the model ledger but can execute more than once.
-
-{% include figure.liquid path="pages/img/ch3-roofline-mi355x.png" class="img-fluid" alt="The theoretical MI355X BF16 roofline with an 8 TB per second HBM slope, a 2.5166 PFLOP per second compute ceiling, and a ridge near 315 FLOP per byte" caption="The theoretical dense-BF16/HBM roofline for one full MI355X in SPX mode. The line uses published peaks, not measured kernel points. Empirical points must use measured traffic and a matching dtype-specific compute ceiling." %}
-
-## A two-capture workflow
-
-The workflow has two profiler evidence families, plus an unprofiled timing run:
-
-| Execution | Purpose | Keep |
-|---|---|---|
-| Unprofiled | headline step time, tokens/s, MFU | resolved config, all step records, environment |
-| XPlane | JAX/MaxText and HLO attribution | `.xplane.pb`, HLO protos, optimized HLO, memory analysis |
-| `rocprofv3` trace | HIP, kernel, memory-copy, and RCCL timing | rocpd database and converted Perfetto trace |
-| Filtered PMC | per-dispatch hardware evidence | exact kernel/dispatch selector, counters, launch dimensions |
-
-The PMC execution belongs to the ROCm evidence family but remains a separate
-process from the timing trace. Counter collection serializes dispatches, so its
-durations cannot replace the unprofiled or trace timings.
-
-{% include figure.liquid path="pages/img/ch3-two-capture-workflow.png" class="img-fluid" alt="A workflow that runs the same resolved MaxText configuration under XPlane and rocprofv3, then joins JAX scopes, HLO operations, kernels, and counters" caption="Use one resolved configuration and independent processes. XPlane plus optimized HLO identifies the model component; rocprofv3 identifies the runtime operation and hardware behavior. The correlation ledger is the shared output." %}
-
-For MaxText v26.6, a compact XPlane capture can be requested with:
-
-```bash
-python -m maxtext.trainers.pre_train.train "$CONFIG" \
-  run_name=profile-xplane steps=14 \
-  profiler=xplane \
-  skip_first_n_steps_for_profiler=10 \
-  profiler_steps=3 \
-  profile_cleanly=true \
-  dump_hlo=true dump_step=10 \
-  dump_hlo_delete_local_after=false
-```
-
-The exact output directory comes from the resolved MaxText configuration.
-Retain that configuration beside the trace. MaxText's
-[`Profiler`](https://github.com/ROCm/maxtext/blob/b47d74bf4ef860c6cbd0fe5e4705c362ba360dbe/src/maxtext/common/profiler.py)
-calls `jax.profiler.start_trace()` and `stop_trace()` at the requested steps;
-[`profile_cleanly`](https://github.com/ROCm/maxtext/blob/b47d74bf4ef860c6cbd0fe5e4705c362ba360dbe/src/maxtext/configs/base.yml)
-adds synchronization at the capture boundaries.
-
-### Warmup and asynchronous execution
-
-JAX dispatch is asynchronous. Measuring only the Python call usually measures
-enqueue latency:
-
-```python
-import time
-
-compiled = jax.jit(train_step)
-
-# Compile, autotune, allocate, and populate caches outside the timing window.
-state, metrics = compiled(state, batch)
-jax.block_until_ready((state, metrics))
-
-start = time.perf_counter()
-state, metrics = compiled(state, batch)
-jax.block_until_ready((state, metrics))
-elapsed = time.perf_counter() - start
-```
-
-One warmup call is a minimum, not a universal rule. Continue until compilation
-and autotuning have finished and step times have reached a stable regime. Then
-declare the retained window before comparing configurations. Capture complete
-steps only; partial first or last steps distort XProf aggregates.
-
-Profiled runs are diagnostic. Trace buffers, callbacks, file output, and
-dispatch-level counters add overhead. Headline timing comes from the matched
-unprofiled process.
-
-### Names that survive compilation
-
-Use [`jax.profiler.StepTraceAnnotation`](https://docs.jax.dev/en/latest/profiling.html)
-for a host-visible step boundary. Use
-[`jax.named_scope`](https://docs.jax.dev/en/latest/_autosummary/jax.named_scope.html)
-when a model component is ambiguous:
-
-```python
-with jax.named_scope("moe/router"):
-    gate_logits = router(hidden_states)
-```
-
-`named_scope` extends JAX's name stack, so the name reaches JAXPR and HLO
-metadata. A host trace annotation creates a timeline event but does not rename
-HLO operations. Add scopes sparingly: Flax module paths and MaxText's existing
-MoE scopes already identify many operations, and per-layer or per-token names
-can make the trace and HLO harder to group.
-
-Compiler optimization can fuse, clone, or remove named operations. Preserve
-the optimized HLO and read the relationship as many-to-many:
-
-```text
-JAX/Flax scope → HLO operation(s) → thunk/custom call → kernel dispatch(es)
-```
-
-Do not split one `jax.jit` into several compiled calls merely to obtain ranges.
-That changes fusion and scheduling boundaries and therefore changes the
-program being profiled.
+The byte boundary must match the line being used. An HBM roofline counts HBM
+traffic; an L1/LDS roofline counts traffic at that level; a network roofline
+uses collective payload and link bandwidth. For a component, sum the executed
+FLOPs and measured bytes of its kernels, then divide by the union of its device
+intervals so overlapping streams are not counted twice.
 
 ## The JAX profiler
 
@@ -296,63 +153,33 @@ data. XProf then derives higher-level views from those sources.
 
 ### XLA profiler backend
 
-The control path is:
+Calling `start_trace()` opens an OpenXLA
+[`ProfilerSession`](https://github.com/openxla/xla/blob/main/third_party/tsl/tsl/profiler/lib/profiler_session.cc).
+The ROCm path then has two important objects:
 
-1. `start_trace()` constructs a
-   [`ProfilerSession`](https://github.com/openxla/xla/blob/main/third_party/tsl/tsl/profiler/lib/profiler_session.cc).
-   The session creates registered `ProfilerInterface` implementations and
-   starts them. Only one session profiles a process at a time.
-2. The host tracer collects TraceMe events, including JAX profiler
-   annotations.
-3. The ROCm
-   [`GpuTracer`](https://github.com/openxla/xla/blob/main/xla/backends/profiler/gpu/device_tracer_rocm.cc)
-   enables XLA's annotation stack, starts `RocmTracer`, and owns a
-   `RocmTraceCollector`.
-4. [`RocmTracer`](https://github.com/openxla/xla/blob/main/xla/backends/profiler/gpu/rocm_tracer.cc)
-   configures ROCprofiler-SDK services for HIP runtime APIs, kernel dispatches,
-   and memory copies. HIP correlation IDs associate API callbacks with
-   asynchronous activity records. The active JAX/XLA annotation stack and
-   direct application ROCTx range, when present, are recorded at the API
-   boundary. Each accepted SDK record is normalized into a `RocmTracerEvent`.
-5. [`RocmTraceCollector`](https://github.com/openxla/xla/blob/main/xla/backends/profiler/gpu/rocm_collector.cc)
-   turns those tracer events into host and per-GPU XPlanes, attaches correlation,
-   kernel, stream, annotation, and memory-copy fields, and normalizes device
-   timestamps to the session's wall-clock origin.
-6. `ProfilerSession::CollectData(XSpace*)` stops all profilers, merges their
-   planes, post-processes the single-host space, and exports the TensorBoard
-   profile directory.
+- [`RocmTracer`](https://github.com/openxla/xla/blob/main/xla/backends/profiler/gpu/rocm_tracer.cc)
+  configures ROCprofiler-SDK and receives HIP API, kernel-dispatch, and
+  memory-copy records. Correlation IDs and the active JAX/XLA name stack travel
+  with those records.
+- [`RocmTraceCollector`](https://github.com/openxla/xla/blob/main/xla/backends/profiler/gpu/rocm_collector.cc)
+  normalizes timestamps and writes the events and metadata into host and GPU
+  XPlanes.
 
-XLA supplies more than a label. It owns the profiler session and factories,
-emits runtime annotations, and exports HLO proto, cost, source, and buffer
-metadata used by XProf. ROCprofiler-SDK supplies the ROCm runtime event
-records. Attribution is their join through correlation IDs, name-stack
-metadata, and HLO sidecars; it is not a device-side HLO timer.
+The profiler session merges those planes with host annotations and compiler
+metadata into one XSpace. XProf reads that XSpace.
 
-{% include figure.liquid path="pages/img/ch3-jax-profiler-pipeline.png" class="img-fluid" alt="OpenXLA profiler pipeline from JAX host annotations and ROCprofiler-SDK records through host and ROCm tracers into XSpace and XProf" caption="How a JAX ROCm capture is assembled. ROCprofiler-SDK records timed HIP, dispatch, and copy activity. OpenXLA coordinates the session, carries annotation and compiler metadata, builds XPlanes, and exports XSpace for XProf." %}
+{% include figure.liquid path="pages/img/ch3-jax-profiler-pipeline.png" class="img-fluid" alt="Minimal ROCm profiler pipeline from RocmTracer through RocmTraceCollector to XSpace and XProf" caption="The ROCm profiler path reduced to its core objects. The tracer receives runtime records; the collector organizes them into XPlanes; the profiler session stores those planes in XSpace for XProf." %}
 
 ### XSpace
 
 The authoritative
 [`xplane.proto`](https://github.com/openxla/xla/blob/main/third_party/tsl/tsl/profiler/protobuf/xplane.proto)
-defines a small hierarchy:
+defines the hierarchy. An XSpace contains XPlanes for hosts, devices, and
+sideband data. Each plane contains parallel XLines, each timed interval is an
+XEvent, and XStats hold fields such as correlation ID, HLO name, kernel
+geometry, and source metadata.
 
-- `XSpace` contains repeated `XPlane` objects plus hostnames, warnings, and
-  errors.
-- `XPlane` contains parallel `XLine` timelines, plane-level stats, and maps
-  that deduplicate event and stat metadata.
-- `XLine` has an ID, name, start timestamp in nanoseconds, duration in
-  picoseconds, and repeated events.
-- `XEvent` refers to event metadata by ID and stores an offset, duration, and
-  repeated `XStat` values.
-- `XStat` stores a typed value whose name and description are in the plane's
-  stat-metadata map.
-
-An `.xplane.pb` file is a serialized XSpace. A GPU plane normally contains
-lines for streams or queues; the host plane contains thread timelines.
-Additional planes carry task environment and scope-range relationships. HLO
-protos are retained alongside the XSpace in the profile directory.
-
-{% include figure.liquid path="pages/img/ch3-xspace-structure.png" class="img-fluid" alt="The XSpace protobuf hierarchy from XSpace through XPlane and XLine to XEvent and XStat, with one GPU kernel event expanded" caption="XSpace separates parallel timelines from shared metadata. A kernel interval is an XEvent on a stream line; correlation IDs, framework/HLO names, resource details, and ROCTx labels are XStats or derived sideband information." %}
+{% include figure.liquid path="pages/img/what-is-an-xspace.png" class="img-fluid" alt="Annotated XProf Trace Viewer identifying an XPlane, a timeline lane, XEvents, and the XStats details pane" caption="An XSpace as displayed by XProf. The screenshot labels a displayed timeline as an XLane; the protobuf message is named `XLine`. XEvents occupy intervals on a line, and the selected event's XStats appear in the details pane." %}
 
 XProf's GPU lines must be read with this distinction in mind. The
 [Trace Viewer documentation](https://openxla.org/xprof/trace_viewer) states
@@ -403,7 +230,7 @@ several kernels, and the same library kernel can serve several HLO operations.
 
 {% comment %}
 AUTHOR SCREENSHOT PLACEHOLDER — DO NOT PUBLISH AS A FIGURE.
-Proposed asset: pages/img/ch3-xprof-kernel-stats-mixtral.png
+Proposed filename: ch3-xprof-kernel-stats-mixtral.png
 Tool/page: XProf 2.23.x, GPU Kernel Stats.
 Capture configuration: MaxText v26.6; 8× MI355X in SPX/NPS1; Mixtral 8x22B;
 BF16; FSDP=4, EP=2; sequence length 4096; per-device batch 4; gradient
@@ -444,7 +271,7 @@ kernels.
 
 {% comment %}
 AUTHOR SCREENSHOT PLACEHOLDER — DO NOT PUBLISH AS A FIGURE.
-Proposed asset: pages/img/ch3-xprof-roofline-mixtral-wi0.png
+Proposed filename: ch3-xprof-roofline-mixtral-wi0.png
 Tool/page: XProf 2.23.x, Roofline Model, Operation-Level Analysis.
 Capture configuration: exactly the Mixtral XPlane capture specified in the
 GPU Kernel Stats placeholder above.
@@ -524,7 +351,7 @@ spread.
 
 {% comment %}
 AUTHOR SCREENSHOT PLACEHOLDER — DO NOT PUBLISH AS A FIGURE.
-Proposed asset: pages/img/ch3-perfetto-mixtral-step.png
+Proposed filename: ch3-perfetto-mixtral-step.png
 Tool/page: Perfetto UI loaded with a PFTrace converted from rocprofv3 rocpd.
 Capture configuration: same MaxText v26.6 Mixtral configuration as the XProf
 placeholders, but profiler=""; rocprofv3 runtime and RCCL tracing; host ROCTx
@@ -615,7 +442,7 @@ provides:
 
 ```bash
 TraceLens_generate_perf_report_jax \
-  --profile_path path/to/host.xplane.pb
+  --profile_path "$XPLANE"
 ```
 
 For this book, TraceLens is an optional analysis layer. The current
@@ -623,8 +450,8 @@ For this book, TraceLens is an optional analysis layer. The current
 pins `xprof==2.20.1` and `protobuf>=6.31.1,<7`, while the inspected JAX 0.11
 MaxText environment contains XProf 2.23.1. Run TraceLens in a separate
 environment, retain the generated tables, and validate its categories against
-XProf, HLO, and raw runtime records. It does not replace the two-capture
-evidence chain.
+XProf, HLO, and raw runtime records. It does not replace those primary
+sources.
 
 ## rocprof-compute
 
@@ -635,13 +462,13 @@ prefer a deterministic single-kernel reproducer:
 
 ```bash
 rocprof-compute profile \
-  --output-directory ./profiles/mixtral-expert-wi \
+  --output-directory "$PROFILE_OUTPUT" \
   --kernel 'stable_kernel_name_substring' \
   --dispatch 1 -- \
   python expert_replay.py
 
 rocprof-compute analyze \
-  --path ./profiles/mixtral-expert-wi \
+  --path "$PROFILE_OUTPUT" \
   --experimental --gui
 ```
 
@@ -659,7 +486,7 @@ not the train-step timing used for throughput.
 
 {% comment %}
 AUTHOR SCREENSHOT PLACEHOLDER — DO NOT PUBLISH AS A FIGURE.
-Proposed asset: pages/img/ch3-rocprof-compute-expert-wi.png
+Proposed filename: ch3-rocprof-compute-expert-wi.png
 Tool/page: ROCm Compute Profiler standalone GUI, analyze mode.
 Capture configuration: single-GPU deterministic replay extracted from the
 MaxText v26.6 Mixtral FSDP=4/EP=2 expert wi_0 operation; preserve local M/N/K,
@@ -676,9 +503,8 @@ limits; they do not reproduce train-step overlap or provide an end-to-end MFU.
 
 ## Worked example: profiling a Mixtral 8x22B training step
 
-The worked configuration comes from the local
-`mixtral8-22b/configs/mixtral8-22b.yml` experiment at source commit
-`a32b51d6` and MaxText's
+The worked configuration uses case-study source commit `a32b51d6` and
+MaxText's
 [`mixtral-8x22b.yml`](https://github.com/ROCm/maxtext/blob/b47d74bf4ef860c6cbd0fe5e4705c362ba360dbe/src/maxtext/configs/models/mixtral-8x22b.yml)
 at the inspected ROCm MaxText v26.6 commit `b47d74bf`.
 It matches the main architecture facts published by
@@ -708,24 +534,14 @@ batch and performs two forward/backward microsteps before each AdamW update.
 
 ### Decomposing a train step
 
-Use components that remain meaningful across compiler versions:
+One optimizer update contains two accumulation microsteps. Each microstep has
+a forward pass through the embedding, 56 decoder layers, final norm, language
+model head, and loss, followed by the corresponding reverse-mode work. The
+optimizer runs once after gradients from both microsteps have accumulated.
 
-```text
-optimizer update
-└── accumulation microstep × 2
-    ├── forward
-    │   ├── embedding and 56 decoder layers
-    │   └── final norm, LM head, loss
-    └── backward
-        ├── loss/LM-head gradients
-        ├── decoder-layer VJPs in reverse order
-        └── gradient collectives and accumulation
-```
-
-Within each decoder layer, separate attention, routing, token movement, expert
-compute, normalization/residual work, and their backward counterparts. This
-gives each component a FLOP rule, byte boundary, HLO anchor, and runtime
-kernel set.
+Within a decoder layer, attribute attention, routing, token movement, expert
+compute, normalization, and residual work separately. The next two diagrams
+give those forward and backward boundaries.
 
 ### Forward pass
 
@@ -740,7 +556,7 @@ input projections (`wi_0`, `wi_1`), combine through SiLU gating, pass through
 names come from the same release's
 [`RoutedMoE`](https://github.com/ROCm/maxtext/blob/b47d74bf4ef860c6cbd0fe5e4705c362ba360dbe/src/maxtext/layers/moe.py).
 
-{% include figure.liquid path="pages/img/ch3-mixtral-forward.png" class="img-fluid" alt="Mixtral 8x22B forward pass with attention, router, dispatch, top-two expert projections, combine, residuals, final norm, LM head, and loss" caption="Forward attribution map for one Mixtral decoder layer. The labels on the right are present in the current MaxText source and should be reused before adding new scopes." %}
+{% include figure.liquid path="pages/img/ch3-mixtral-forward.png" class="img-fluid" alt="Vertical Mixtral 8x22B forward flow through attention, routing, dispatch, expert MLP, combine, and residual operations" caption="One decoder layer expanded into a single top-to-bottom flow. The highlighted blocks include the MaxText scope names used to correlate model regions with HLO and XProf." %}
 
 ### Backward pass
 
@@ -754,7 +570,7 @@ Rematerialized forward work executes inside the backward interval. Attribute
 that device time to backward/rematerialization while keeping the useful model
 FLOP ledger unchanged.
 
-{% include figure.liquid path="pages/img/ch3-mixtral-backward.png" class="img-fluid" alt="Mixtral 8x22B backward pass with expert and attention VJPs, router and reverse-dispatch gradients, gradient collectives, and AdamW" caption="Backward attribution map. Parameter-gradient leaves feed sharding-dependent collectives before AdamW. Dashed arrows group those leaves; they do not assert a device schedule." %}
+{% include figure.liquid path="pages/img/ch3-mixtral-backward.png" class="img-fluid" alt="Mixtral 8x22B backward flow with a main activation-gradient path and a separate parameter-gradient rail" caption="Activation gradients follow the vertical decoder-layer VJP. Parameter gradients from the MoE and attention branches feed the side rail for collectives, microstep accumulation, and the optimizer update." %}
 
 ### Time attribution in JAX
 
@@ -793,15 +609,14 @@ not 56 independently named Python calls. With accumulation two, most
 forward/backward operations occur for both microsteps while the optimizer runs
 once. These counts are useful checks on attribution.
 
-The following is a real optimized-HLO fixture retained under
-`artifacts/hlo-fixtures/moe/ragged-grouped/`. The fixture is small
-(`tokens[64,128]`, four expert matrices) so the graph stays readable. It is not
+The following real optimized-HLO fixture uses `tokens[64,128]` and four expert
+matrices, which keeps the graph readable. It is not
 a Mixtral timing result or the fixed-capacity path measured below. It shows the
 correlation signature to use if a sparse ragged expert path is selected:
 `ragged_dot_general` lowers to the compatibility target
 `__cublas$lt$groupedMatmul`, which reaches the BLASLt implementation on ROCm.
 
-{% include figure.liquid path="pages/img/ch3-hlo-ragged-grouped.svg" class="img-fluid" zoomable=true alt="Graphviz rendering of a real optimized gfx950 HLO fixture in which tokens, expert matrices, and group sizes enter a grouped matrix multiplication custom call" caption="Literal gfx950 optimized HLO rendered with Graphviz from the retained JAX/ROCm fixture. The custom-call target is the bridge between the JAX ragged-dot name and the grouped GEMM kernel sought in rocprofv3. This is compiler evidence, not a performance measurement." %}
+{% include figure.liquid path="pages/img/ch3-hlo-ragged-grouped.svg" class="img-fluid" zoomable=true alt="Graphviz rendering of a real optimized gfx950 HLO fixture in which tokens, expert matrices, and group sizes enter a grouped matrix multiplication custom call" caption="Literal gfx950 optimized HLO rendered with Graphviz. The custom-call target is the bridge between the JAX ragged-dot name and the grouped GEMM kernel sought in rocprofv3. This is compiler evidence, not a performance measurement." %}
 
 The attention path has the same pattern. In the retained Transformer Engine
 fixture, Q, K, V, and metadata enter
@@ -813,8 +628,8 @@ that implemented it.
 
 ### Captured end-to-end result
 
-The local source `/home/clchong/work/crusoe-cluster-results.md` contains one
-successful v26.6 run for the FSDP=4/EP=2 fixed-capacity one-hot configuration:
+The retained cluster summary contains one successful v26.6 run for the
+FSDP=4/EP=2 fixed-capacity one-hot configuration:
 
 | Field | Captured or derived value |
 |---|---:|
@@ -833,33 +648,15 @@ $$
 \mathrm{MFU}=\frac{385.3}{2516.6}=0.1531.
 $$
 
-The run completed, but one recorded step provides no variance estimate. The
-summary does not retain the immutable container digest or full effective
-configuration, and the local result bundle does not contain a matching
-XPlane, optimized full-model HLO, `rocprofv3` trace, router ledger, or PMC set.
-Therefore the table is an end-to-end anchor only. No component time
-percentages are claimed.
+One recorded step provides no variance or component attribution, so the table
+is an end-to-end anchor only.
 
 ### Component roofline worksheet
 
 MaxText's useful training-FLOP convention counts forward matrix work and twice
-that work for backward. For this exact configuration, the analytical ledger
-uses
-
-$$
-\begin{aligned}
-F_{\mathrm{proj}}&=3(2NLD[(H_q+2H_{kv})d_h+D]),\\
-F_{\mathrm{attn}}&=3(2BLS^2H_qd_h),\\
-F_{\mathrm{router}}&=3(2NLDE),\\
-F_{\mathrm{experts}}&=3(2NLk(3DF)),\\
-F_{\mathrm{head}}&=3(2NDV).
-\end{aligned}
-$$
-
-Here $B=64$ sequences, $S=4096$, $N=BS$, $L=56$, $E=8$, $k=2$,
-and $V=32{,}768$. The factor three is one forward plus two backward
-matrix-multiplication equivalents; it does not count the optimizer. Substitution
-gives:
+that work for backward. The table applies that factor of three to the Q/K/V/O
+projections, causal attention, router, selected expert matrices, and language
+model head. It does not count the optimizer.
 
 | Component | Formula basis | Useful PFLOPs/update [analytical] | Share |
 |---|---|---:|---:|
@@ -889,41 +686,12 @@ Fill one row per component from matched captures:
 | Arithmetic intensity | executed FLOPs / measured HBM bytes | derived from retained counters |
 | Roofline efficiency | matching dtype peak and memory level | recomputed point and counter provenance |
 
-The missing Mixtral capture should use the exact screenshot configurations
-specified above and retain machine-readable exports. The minimum completion
-bundle is:
-
-```text
-manifest.yaml
-config/effective.yaml
-timing/steps.jsonl
-hlo/gfx950_gpu_after_optimizations.txt
-hlo/memory-analysis.txt
-profiles/xprof/<host>.xplane.pb
-profiles/rocprof/<rank>_results.db
-ledgers/component-kernels.csv
-ledgers/router-loads.csv
-ledgers/component-roofline.csv
-```
-
-`component-kernels.csv` should contain step, rank, device, component, scope,
-HLO ID, custom-call target, full kernel name, dispatch ID, occurrence, shape,
-dtype, start, duration, useful FLOPs, executed FLOPs, HBM bytes, and counter
-pass. This is enough to reproduce both the time attribution and the component
-roofline without reading values from screenshots.
-
-## From profile to precision
-
-The output of this chapter is a denominator-checked baseline: synchronized
-step time, useful FLOP ledger, per-device memory peak, component-to-kernel map,
-and counter-backed roofline points for the components worth changing.
-
-[Chapter 4]({{ '/pages/4-mixed-precision' | relative_url }}) changes the
-numeric recipe. Keep token count, shapes, mesh, routing, and capture windows
-fixed; update the dtype-specific compute ceiling; then repeat the same
-attribution. That comparison shows whether lower precision accelerated the
-intended GEMMs, reduced HBM traffic, introduced conversion work, or moved the
-bottleneck elsewhere.
+The missing Mixtral capture should retain the resolved configuration, step
+records, optimized HLO, memory analysis, XSpace, ROCprof database, router
+loads, and a machine-readable component ledger. Each component row needs its
+scope and HLO ID, kernel name, dispatch occurrence, shape, dtype, interval,
+useful and executed FLOPs, HBM bytes, and counter pass. That is sufficient to
+reproduce the attribution and roofline without reading values from screenshots.
 
 <h3 markdown=1 class="next-section">Next: [training in mixed precision]({{ '/pages/4-mixed-precision' | relative_url }}).</h3>
 

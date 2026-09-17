@@ -1,6 +1,6 @@
 {
   "capture_script": "tools/make_ch4_precision_hlo.py",
-  "captured_at_utc": "2026-09-16T21:21:47.387181+00:00",
+  "captured_at_utc": "2026-09-17T08:25:00.130361+00:00",
   "compiler_output": "jax.jit(...).lower(...).compiler_ir(dialect='hlo')",
   "custom_call_targets": [
     "AllocateBuffer",
@@ -83,8 +83,7 @@
   "platform": "gpu",
   "raw_dot": "before_optimizations.dot",
   "raw_hlo": "before_optimizations.txt",
-  "representative_dot": "representative.dot",
-  "representative_note": "Manually pruned view of the literal XLA DOT. Operation names, targets, dtypes, and shapes are asserted against the preserved HLO.",
+  "rendering": "Literal XLA DOT rendered with Graphviz after removing source-path tooltips; nodes, edges, and visible labels are unchanged.",
   "rocm": "7.14.0",
   "rocm_sdk_core": "7.14.0",
   "shape": {

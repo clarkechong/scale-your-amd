@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate Chapter 4's precision-format and implementation-path figures.
+"""Generate the custom implementation-path figure retained by Chapter 4.
 
 Run from the repository root:
 
@@ -15,7 +15,7 @@ import matplotlib
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt  # noqa: E402
-from matplotlib.patches import FancyArrowPatch, FancyBboxPatch, Rectangle  # noqa: E402
+from matplotlib.patches import FancyArrowPatch, FancyBboxPatch  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "pages" / "img"
@@ -23,11 +23,11 @@ OUT = ROOT / "pages" / "img"
 INK = "#27313b"
 MUTED = "#65717d"
 LINE = "#8a959e"
-BLUE = ("#dce9f5", "#3f76ab")
-GOLD = ("#f7e6c8", "#b0842f")
-PURPLE = ("#e9e3f2", "#6d5b9e")
-GREEN = ("#dff0e4", "#4e8a5c")
-RED = ("#f9d8d6", "#bf5b57")
+BLUE = ("#e8eff5", "#496a82")
+GOLD = BLUE
+PURPLE = BLUE
+GREEN = BLUE
+RED = BLUE
 NEUTRAL = ("#f5f7f8", "#8a959e")
 
 
@@ -125,148 +125,6 @@ def panel(ax, x: float, y: float, width: float, height: float, title: str) -> No
     )
 
 
-def bit_field(
-    ax,
-    x: float,
-    y: float,
-    total_width: float,
-    height: float,
-    fields: list[tuple[str, int, tuple[str, str]]],
-) -> None:
-    total_bits = sum(bits for _, bits, _ in fields)
-    cursor = x
-    for label, bits, palette in fields:
-        width = total_width * bits / total_bits
-        face, edge = palette
-        ax.add_patch(
-            Rectangle(
-                (cursor, y),
-                width,
-                height,
-                facecolor=face,
-                edgecolor=edge,
-                linewidth=1.0,
-            )
-        )
-        ax.text(
-            cursor + width / 2,
-            y + height / 2,
-            f"{label}\n{bits} bit{'s' if bits != 1 else ''}",
-            ha="center",
-            va="center",
-            fontsize=7.9,
-            color=INK,
-        )
-        cursor += width
-
-
-def precision_formats() -> Path:
-    fig, ax = plt.subplots(figsize=(14.5, 8.0))
-    ax.set_xlim(0, 14)
-    ax.set_ylim(0, 8)
-    ax.axis("off")
-
-    ax.text(
-        0.25,
-        7.73,
-        "Scalar formats spend bits locally; MX formats share range across 32 values",
-        fontsize=14.5,
-        weight="bold",
-        color=INK,
-        ha="left",
-    )
-
-    panel(ax, 0.25, 3.72, 6.45, 3.65, "Scalar floating-point layouts")
-    rows = [
-        ("BF16", [("S", 1, RED), ("exponent", 8, BLUE), ("fraction", 7, GREEN)], "max 3.39e38 · ε=2⁻⁷"),
-        ("FP16", [("S", 1, RED), ("exponent", 5, BLUE), ("fraction", 10, GREEN)], "max 65,504 · ε=2⁻¹⁰"),
-        ("FP8 E4M3", [("S", 1, RED), ("exponent", 4, BLUE), ("fraction", 3, GREEN)], "max 448 · ε=2⁻³"),
-        ("FP8 E5M2", [("S", 1, RED), ("exponent", 5, BLUE), ("fraction", 2, GREEN)], "max 57,344 · ε=2⁻²"),
-    ]
-    y_positions = [6.47, 5.70, 4.93, 4.16]
-    for (name, fields, note), y in zip(rows, y_positions):
-        ax.text(0.52, y + 0.23, name, ha="left", va="center", fontsize=9.2, weight="bold", color=INK)
-        bit_field(ax, 1.65, y, 3.65, 0.47, fields)
-        ax.text(5.42, y + 0.23, note, ha="left", va="center", fontsize=7.1, color=MUTED)
-
-    panel(ax, 6.95, 3.72, 6.80, 3.65, "One OCP MX block")
-    box(ax, 7.24, 6.28, 1.20, 0.56, "BF16 / FP32\nsource", BLUE, fontsize=8.0)
-    box(ax, 8.80, 6.28, 1.38, 0.56, "block amax\n+ power-of-2 scale", PURPLE, fontsize=7.7)
-    box(ax, 10.56, 6.28, 1.20, 0.56, "E8M0\n8-bit scale", GOLD, fontsize=8.0)
-    arrow(ax, 8.45, 6.56, 8.79, 6.56)
-    arrow(ax, 10.19, 6.56, 10.55, 6.56)
-    arrow(ax, 11.77, 6.56, 12.62, 5.88, connectionstyle="arc3,rad=-0.10")
-
-    start_x, cell_w, cell_y = 7.30, 0.185, 5.30
-    for i in range(32):
-        ax.add_patch(
-            Rectangle(
-                (start_x + i * cell_w, cell_y),
-                cell_w,
-                0.48,
-                facecolor=GOLD[0] if i % 2 == 0 else "#f3d9ad",
-                edgecolor=GOLD[1],
-                linewidth=0.48,
-            )
-        )
-        if i in (0, 1, 30, 31):
-            ax.text(
-                start_x + (i + 0.5) * cell_w,
-                cell_y + 0.24,
-                str(i),
-                ha="center",
-                va="center",
-                fontsize=6.0,
-                color=INK,
-            )
-    ax.text(
-        10.26,
-        5.00,
-        "One E8M0 scale multiplies the 32 decoded element values.",
-        ha="center",
-        va="center",
-        fontsize=8.0,
-        color=MUTED,
-    )
-
-    storage_rows = [
-        ("MXFP8", "32 × 8-bit elements + 8-bit scale", "264 bits = 33 bytes", BLUE),
-        ("MXFP6", "32 × 6-bit elements + 8-bit scale", "200 bits = 25 bytes", PURPLE),
-        ("MXFP4", "32 × 4-bit elements + 8-bit scale", "136 bits = 17 bytes", GREEN),
-    ]
-    for i, (name, expression, total, palette) in enumerate(storage_rows):
-        y = 4.58 - i * 0.30
-        ax.text(7.30, y, name, ha="left", va="center", fontsize=7.8, weight="bold", color=palette[1])
-        ax.text(8.27, y, expression, ha="left", va="center", fontsize=7.4, color=INK)
-        ax.text(13.48, y, total, ha="right", va="center", fontsize=7.4, color=MUTED)
-
-    panel(ax, 0.25, 0.35, 13.50, 3.08, "The operation still has three precision decisions")
-    box(ax, 0.63, 2.14, 2.08, 0.64, "operand A\nFP8 or MX block", GOLD, fontsize=8.4)
-    box(ax, 0.63, 1.25, 2.08, 0.64, "operand B\nFP8 or MX block", GOLD, fontsize=8.4)
-    box(ax, 3.53, 1.43, 2.42, 1.12, "CDNA 4 matrix instruction\nscaled low × low\nFP32 partial sums", PURPLE, fontsize=8.7)
-    box(ax, 7.05, 1.62, 1.74, 0.74, "stored output\nusually BF16", BLUE, fontsize=8.4)
-    box(ax, 10.10, 1.62, 1.72, 0.74, "master state\nusually FP32", GREEN, fontsize=8.4)
-    arrow(ax, 2.72, 2.46, 3.52, 2.24)
-    arrow(ax, 2.72, 1.57, 3.52, 1.75)
-    arrow(ax, 5.96, 1.99, 7.04, 1.99)
-    arrow(ax, 8.80, 1.99, 10.09, 1.99, dashed=True)
-    ax.text(
-        6.75,
-        0.93,
-        "Element format, scale granularity, accumulator type, and stored output are separate recipe choices.",
-        ha="center",
-        va="center",
-        fontsize=8.7,
-        color=MUTED,
-    )
-
-    OUT.mkdir(parents=True, exist_ok=True)
-    path = OUT / "ch4-precision-format-layouts.png"
-    fig.savefig(path, dpi=200, bbox_inches="tight", pad_inches=0.08)
-    plt.close(fig)
-    return path
-
-
 def implementation_paths() -> Path:
     fig, ax = plt.subplots(figsize=(14.5, 7.2))
     ax.set_xlim(0, 14)
@@ -355,5 +213,5 @@ def implementation_paths() -> Path:
 
 
 if __name__ == "__main__":
-    for output in (precision_formats(), implementation_paths()):
+    for output in (implementation_paths(),):
         print(f"  wrote {output.relative_to(ROOT)}")

@@ -81,19 +81,13 @@ and the
 
 The execution hierarchy is:
 
-```text
-MI355X OAM: one physical GPU
-├── 2 IODs: HBM controllers, Infinity Cache, PCIe, and external Infinity Fabric
-├── 8 XCDs: 36 physical CUs each, 32 active
-│   ├── 4 MB L2 shared by the active CUs on that XCD
-│   └── 32 active CUs
-│       ├── 4 SIMD vector units
-│       ├── 4 Matrix Cores
-│       ├── scalar and memory pipelines
-│       ├── 32 KiB L1 vector cache
-│       └── 160 KiB LDS
-└── 8 HBM3E stacks: 288 GB total
-```
+| Scope | Contents |
+|---|---|
+| MI355X OAM | two IODs, eight XCDs, and eight HBM3E stacks |
+| IOD | HBM controllers, Infinity Cache, PCIe, and external Infinity Fabric |
+| XCD | 36 physical CUs, 32 active, sharing 4 MB of L2 |
+| Active CU | four SIMD vector units, four Matrix Cores, scalar and memory pipelines, 32 KiB L1 vector cache, and 160 KiB LDS |
+| Full OAM memory | 288 GB HBM3E |
 
 Across the package, `8 XCDs × 32 active CUs/XCD = 256 CUs`. There are four SIMDs
 and four Matrix Cores per CU, giving 1,024 of each across the OAM. Note that an XCD and a
@@ -242,12 +236,9 @@ assigns eight waves to a $256\times256\times128$ workgroup tile. Each wave
 issues many MFMA updates as the workgroup advances through its output and $K$
 tiles.
 
-The important data path is:
-
-```text
-HBM or cache → LDS staging tile → VGPR operand fragments
-             → MFMA → FP32 accumulator registers → output
-```
+Operands move from HBM or cache into an LDS staging tile, then into VGPR
+fragments consumed by MFMA. Partial sums remain in FP32 accumulator registers
+until the kernel writes the output.
 
 For a compute-bound GEMM, the innermost throughput question is whether useful
 MFMA instructions can issue continuously:

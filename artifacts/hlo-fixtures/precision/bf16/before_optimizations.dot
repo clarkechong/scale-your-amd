@@ -49,22 +49,22 @@ stylesheet=<
 
 >
 
-1306141824 [label=<<b>Parameter 0</b><br/>f32[256,256]{1,0}>, shape=rect, tooltip="weight", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
-1303942160 [label=<<b>Parameter 1</b><br/>bf16[128,256]{1,0}>, shape=rect, tooltip="x", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
-1307069072 [label=<<b>convert_element_type.1</b><br/>bf16[256,256]{1,0}>, shape=rect, tooltip="jit(maxtext_bf16_dot)/convert_element_type
-/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:bf16_lowering.<locals>.maxtext_bf16_dot:82:25
-/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:bf16_lowering:93:14
-/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:main:373:16
-/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:<module>:384:4", style="filled", fontcolor="black", color="#9e9e9e", fillcolor="white"];
-1325672928 [label=<<b>dot_general.1</b><br/>lhs_contracting_dims={1}, rhs_contracting_dims={0}<br/>bf16[128,256]{1,0}>, shape=rect, tooltip="jit(maxtext_bf16_dot)/dot_general
+1259871632 [label=<<b>Parameter 0</b><br/>f32[256,256]{1,0}>, shape=rect, tooltip="weight", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
+1262358000 [label=<<b>Parameter 1</b><br/>bf16[128,256]{1,0}>, shape=rect, tooltip="x", style="filled", fontcolor="black", color="#c88719", fillcolor="#ffb74d"];
+1265025872 [label=<<b>convert_element_type.1</b><br/>bf16[256,256]{1,0}>, shape=rect, tooltip="jit(maxtext_bf16_dot)/convert_element_type
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:bf16_lowering.<locals>.maxtext_bf16_dot:75:25
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:bf16_lowering:86:14
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:main:230:16
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:<module>:241:4", style="filled", fontcolor="black", color="#9e9e9e", fillcolor="white"];
+1282695760 [label=<<b>dot_general.1</b><br/>lhs_contracting_dims={1}, rhs_contracting_dims={0}<br/>bf16[128,256]{1,0}>, shape=rect, tooltip="jit(maxtext_bf16_dot)/dot_general
 /workspace/maxtext/src/maxtext/layers/linears.py:_compute_dot_general:84:9
-/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:bf16_lowering.<locals>.maxtext_bf16_dot:83:15
-/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:bf16_lowering:93:14
-/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:main:373:16
-/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:<module>:384:4", style="filled", fontcolor="white", color="#003c8f", fillcolor="#1565c0"];
-cluster_1306184896 [label=<ROOT>, shape=circle, tooltip=" ", style="filled", fontcolor="black", color="#8c7b75", fillcolor="#bcaaa4"];
-1306141824 -> 1307069072 [arrowhead=normal tooltip="weight.1 -> convert_element_type.1" ];
-1303942160 -> 1325672928 [arrowhead=normal tooltip="x.1 -> dot_general.1"  headlabel="0", labeldistance=2];
-1307069072 -> 1325672928 [arrowhead=normal tooltip="convert_element_type.1 -> dot_general.1"  headlabel="1", labeldistance=2];
-1325672928 -> cluster_1306184896 [tooltip=" "];
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:bf16_lowering.<locals>.maxtext_bf16_dot:76:15
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:bf16_lowering:86:14
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:main:230:16
+/home/clchong/work/scale-your-amd/tools/make_ch4_precision_hlo.py:<module>:241:4", style="filled", fontcolor="white", color="#003c8f", fillcolor="#1565c0"];
+cluster_1283629856 [label=<ROOT>, shape=circle, tooltip=" ", style="filled", fontcolor="black", color="#8c7b75", fillcolor="#bcaaa4"];
+1259871632 -> 1265025872 [arrowhead=normal tooltip="weight.1 -> convert_element_type.1" ];
+1262358000 -> 1282695760 [arrowhead=normal tooltip="x.1 -> dot_general.1"  headlabel="0", labeldistance=2];
+1265025872 -> 1282695760 [arrowhead=normal tooltip="convert_element_type.1 -> dot_general.1"  headlabel="1", labeldistance=2];
+1282695760 -> cluster_1283629856 [tooltip=" "];
 }

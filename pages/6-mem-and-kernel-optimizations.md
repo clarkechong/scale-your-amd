@@ -52,9 +52,8 @@ long-lived activations for replay. Fused attention avoids a quadratic HBM
 intermediate. Sparse MoE execution replaces padded expert matrices with
 data-dependent groups when the compiler and library path support them.
 
-The mechanism figures are original Python drawings. The HLO figures are pruned from
-literal outputs in `artifacts/hlo-fixtures/` and rendered with Graphviz. Those
-fixtures were compiled on `gfx950` with the installed JAX and `jaxlib` 0.11.0,
+The HLO figures are pruned from literal outputs and rendered with Graphviz.
+Those fixtures were compiled on `gfx950` with JAX and `jaxlib` 0.11.0,
 ROCm plugin and PJRT 0.11.0.post1, and Transformer Engine
 2.17.0+6aa471b18. The cited MaxText model files match commit
 [`b47d74bf`](https://github.com/AI-Hypercomputer/maxtext/tree/b47d74bf4ef860c6cbd0fe5e4705c362ba360dbe).
@@ -213,13 +212,13 @@ a BF16 policy never considered.
 
 ### Changes at the HLO level
 
-The following figure uses the real two-layer BF16 fixture from
-`artifacts/hlo-fixtures/remat/`. Without explicit remat, `%tanh.3` feeds the backward
-`%sub.3` directly. Full remat carries `%remat2.10` through `%remat2.11`, then
+The following figure uses a real two-layer BF16 fixture. Without explicit remat,
+`%tanh.3` feeds the backward `%sub.3` directly. Full remat carries
+`%remat2.10` through `%remat2.11`, then
 reconstructs the missing value with `%dot_general.9` and `%tanh.6`; both carry
 `checkpoint/rematted_computation` in their literal metadata.
 
-{% include figure.liquid path="pages/img/ch6-hlo-remat-none-full.svg" class="img-fluid" zoomable=true alt="Pruned literal HLO comparison in which no remat reuses tanh.3 and full remat reconstructs it with dot_general.9 and tanh.6" caption="Real JAX 0.11 `before_optimizations` HLO rendered with Graphviz. Exact operation names and shapes are retained; layout-only and unrelated gradient nodes are pruned. Raw text and DOT are under `artifacts/hlo-fixtures/remat/`." %}
+{% include figure.liquid path="pages/img/ch6-hlo-remat-none-full.svg" class="img-fluid" zoomable=true alt="Pruned literal HLO comparison in which no remat reuses tanh.3 and full remat reconstructs it with dot_general.9 and tanh.6" caption="Real JAX 0.11 `before_optimizations` HLO rendered with Graphviz. Exact operation names and shapes are retained; layout-only and unrelated gradient nodes are pruned." %}
 
 An HLO operation count is not a memory result. The useful checks are a smaller
 forward-to-backward residual tuple, reconstructed work in the backward body, and a
@@ -339,8 +338,8 @@ $$
 
 A backend must implement the requested mask, layout, dtype, dropout, and sharding in
 both directions. A fast forward kernel with no correct VJP is an inference path.
-
-{% include figure.liquid path="pages/img/ch6-attention-forward-backward.png" class="img-fluid" alt="Attention forward graph from QK transpose through masking softmax and PV, followed by backward dependencies for dV dP dS dQ and dK" caption="Forward produces the output and residuals needed by backward. Standard attention can save the score or probability matrix. Flash-style implementations retain compact row statistics and reconstruct score tiles." %}
+The backward equations also show why a training backend needs Q, K, V, and
+softmax information even when the forward API returns only O.
 
 ### Forward and backward working sets
 
@@ -368,6 +367,8 @@ $$
 plus \(O(BHS)\) row statistics in HBM. The exact tile, staging depth, and accumulator
 layout are backend decisions. [FlashAttention-2](https://arxiv.org/abs/2307.08691)
 also changes work partitioning to improve occupancy and parallelism.
+
+{% include figure.liquid path="pages/img/flashattention-figure1.svg" class="img-fluid" alt="FlashAttention Figure 1 showing tiled movement between GPU HBM and on-chip SRAM together with the paper's GPT-2 attention speedup" caption="Figure 1 from <a href='https://arxiv.org/abs/2205.14135'>FlashAttention</a>. The left panel shows the relevant mechanism: Q, K, and V tiles move through on-chip SRAM without materializing the full attention matrix in HBM. The right panel is the paper's A100 result and is not an MI355X measurement." %}
 
 Backward is a separate kernel-selection problem. It may reconstruct scores from Q, K,
 the output, and row log-sum-exp; calculate \(dQ\) separately from \(dK,dV\); use
@@ -415,14 +416,14 @@ Standard JAX attention exposes `%dot_general.2`, the causal selection, FP32
 `%reduce_max.7`, `%exp.1`, `%reduce_sum.7`, `%div.7`, and the final
 `%dot_general.3`.
 
-{% include figure.liquid path="pages/img/ch6-hlo-attention-xla.svg" class="img-fluid" zoomable=true alt="Literal pruned XLA HLO graph for standard JAX attention showing QK dot mask softmax reductions and PV dot" caption="Real JAX 0.11 `before_optimizations` HLO. The score path is visible as ordinary HLO and uses FP32 for the softmax-shaped tensors. Raw fixture: `artifacts/hlo-fixtures/attention/xla/`." %}
+{% include figure.liquid path="pages/img/ch6-hlo-attention-xla.svg" class="img-fluid" zoomable=true alt="Literal pruned XLA HLO graph for standard JAX attention showing QK dot mask softmax reductions and PV dot" caption="Real JAX 0.11 `before_optimizations` HLO. The score path is visible as ordinary HLO and uses FP32 for the softmax-shaped tensors." %}
 
 Transformer Engine instead produces
 `custom_call_target="te_fused_attn_forward_ffi"`. Its tuple contains the BF16 output,
 FP32 row state, RNG state, and a byte result before `%te_fused_attn_forward_ffi.6`
 extracts the output.
 
-{% include figure.liquid path="pages/img/ch6-hlo-attention-te.svg" class="img-fluid" zoomable=true alt="Literal pruned HLO graph for Transformer Engine attention with Q K V and metadata entering te_fused_attn_forward_ffi" caption="Real JAX 0.11 `before_optimizations` HLO. The graph shows the TE typed-FFI boundary and its result contract; kernel internals remain outside HLO. Raw fixture: `artifacts/hlo-fixtures/attention/te/`." %}
+{% include figure.liquid path="pages/img/ch6-hlo-attention-te.svg" class="img-fluid" zoomable=true alt="Literal pruned HLO graph for Transformer Engine attention with Q K V and metadata entering te_fused_attn_forward_ffi" caption="Real JAX 0.11 `before_optimizations` HLO. The graph shows the TE typed-FFI boundary and its result contract; kernel internals remain outside HLO." %}
 
 These graphs are forward-only. The TE source defines the separate
 [`te_fused_attn_backward_ffi`](https://github.com/ROCm/TransformerEngine/blob/dev/transformer_engine/jax/cpp_extensions/attention.py);
@@ -558,14 +559,14 @@ tails or create enough rows for an underloaded expert.
 
 MaxText's sparse path follows this sequence:
 
-```text
-router logits → top-k indices and weights
-  → repeat each token k times → sort by destination expert
-  → group_sizes → ragged AllToAll → local expert sort
-  → grouped up/gate GEMMs → activation → grouped down GEMM
-  → undo local sort → reverse ragged AllToAll
-  → undo original permutation → weighted sum of k outputs
-```
+1. The router produces top-k expert indices and weights.
+2. MaxText repeats each token k times, sorts by destination expert, and
+   calculates `group_sizes`.
+3. A ragged AllToAll sends rows to the expert owners, which sort them by local
+   expert.
+4. Grouped up, gate, and down GEMMs process the routed rows.
+5. MaxText reverses the local sort and AllToAll, restores token order, and
+   combines each token's k outputs with the router weights.
 
 The current
 [`RoutedMoE.sparse_matmul`](https://github.com/AI-Hypercomputer/maxtext/blob/b47d74bf4ef860c6cbd0fe5e4705c362ba360dbe/src/maxtext/layers/moe.py#L1389-L1571)
@@ -632,10 +633,14 @@ instead of relying on a generic gather gradient.
 defines the operation and its integer `group_sizes`; it does not promise grouped
 execution. On this ROCm XLA build, the experiment separates two lowerings:
 
-```text
---xla_gpu_enable_cublaslt=true
---xla_gpu_experimental_use_ragged_dot_grouped_gemm=false  # dense-padded
---xla_gpu_experimental_use_ragged_dot_grouped_gemm=true   # GroupedGEMM
+```bash
+# Dense-padded lowering
+XLA_FLAGS="--xla_gpu_enable_cublaslt=true \
+  --xla_gpu_experimental_use_ragged_dot_grouped_gemm=false"
+
+# hipBLASLt GroupedGEMM lowering
+XLA_FLAGS="--xla_gpu_enable_cublaslt=true \
+  --xla_gpu_experimental_use_ragged_dot_grouped_gemm=true"
 ```
 
 The `cublaslt` spelling is shared GPU-backend compatibility vocabulary. OpenXLA's
@@ -660,7 +665,7 @@ capacity 16. Dense masked HLO forms `%dot_general.2` with output
 dispatches to `bf16[4,16,128]`, applies the expert `%dot_general.4`, then combines
 with `%dot_general.5`.
 
-{% include figure.liquid path="pages/img/ch6-hlo-moe-dense-fixed.svg" class="img-fluid" zoomable=true alt="Pruned literal HLO for dense-masked and fixed-capacity expert execution with exact dot names and shapes" caption="Real JAX 0.11 `before_optimizations` HLO. Dense masked carries an expert dimension for every token. Fixed capacity carries an expert and capacity dimension through dispatch, expert GEMM, and combine. Raw fixtures: `artifacts/hlo-fixtures/moe/dense-masked/` and `fixed-capacity/`." %}
+{% include figure.liquid path="pages/img/ch6-hlo-moe-dense-fixed.svg" class="img-fluid" zoomable=true alt="Pruned literal HLO for dense-masked and fixed-capacity expert execution with exact dot names and shapes" caption="Real JAX 0.11 `before_optimizations` HLO. Dense masked carries an expert dimension for every token. Fixed capacity carries an expert and capacity dimension through dispatch, expert GEMM, and combine." %}
 
 The ragged pair begins with the same FP16 `jax.lax.ragged_dot` over 64 rows and four
 groups. With grouped lowering disabled, optimized HLO expands and masks rows in
@@ -672,7 +677,7 @@ With grouped lowering enabled, the graph becomes one
 and `s32[4]` group sizes. The result tuple contains `f16[64,128]` plus a 784-byte
 workspace.
 
-{% include figure.liquid path="pages/img/ch6-hlo-moe-ragged-lowerings.svg" class="img-fluid" zoomable=true alt="Pruned literal optimized HLO comparing ragged dot lowered to dense-padded Triton fusions and to a groupedMatmul custom call" caption="Real JAX 0.11 gfx950 optimized HLO. The frontend operation is the same; the XLA flag changes its backend lowering. Exact operation names and shapes are retained. Raw fixtures: `artifacts/hlo-fixtures/moe/ragged-padded/` and `ragged-grouped/`." %}
+{% include figure.liquid path="pages/img/ch6-hlo-moe-ragged-lowerings.svg" class="img-fluid" zoomable=true alt="Pruned literal optimized HLO comparing ragged dot lowered to dense-padded Triton fusions and to a groupedMatmul custom call" caption="Real JAX 0.11 gfx950 optimized HLO. The frontend operation is the same; the XLA flag changes its backend lowering. Exact operation names and shapes are retained." %}
 
 These fixtures isolate expert execution. They do not include the full Mixtral router,
 ragged AllToAll, three expert projections, rematerialization, or backward. For a model
@@ -694,11 +699,10 @@ The retained successful points are integration smokes, not an expert-kernel rank
 | 26 Aug., `maxtext-v26.5`, JAX 0.10 | FSDP-1 / EP-8, BF16 fixed capacity | 8.354 s | 3,922.4 | 220.0 GiB/GPU | one post-warmup step |
 | 7 Sep. retained cluster summary | FSDP-4 / EP-2, BF16 fixed capacity | 20.599 s | 1,590.7 | not recorded | one measured step |
 
-The first row comes from
-`/tmp/archive/mixtral8-22b/runs/20260826T100803Z-.../`; its metadata records the
-container, command, effective flags, JAX version, and successful completion. The
-second comes from `/home/clchong/work/crusoe-cluster-results.md`; its adjacent software
-manifest was not retained, so it remains a separate historical point.
+The first row's metadata records the container, command, effective flags, JAX
+version, and successful completion. The second comes from the retained cluster
+summary; its adjacent software manifest was not retained, so it remains a
+separate historical point.
 
 Both rows show that the 140.63-billion-parameter model and fixed-capacity mesh can
 complete an update on eight MI355X GPUs. They do not compare ragged dense-padded with

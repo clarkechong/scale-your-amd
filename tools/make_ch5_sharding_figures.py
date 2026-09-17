@@ -27,10 +27,10 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "pages" / "img"
 HLO = ROOT / "artifacts" / "hlo-fixtures" / "sharding"
 
-FRAMEWORK = ("#dce9f5", "#3f76ab")
-COMPILER = ("#dff0e4", "#4e8a5c")
-COMM = ("#f7e6c8", "#b0842f")
-DEVICE = ("#f9d8d6", "#bf5b57")
+FRAMEWORK = ("#e8eff5", "#496a82")
+COMPILER = FRAMEWORK
+COMM = FRAMEWORK
+DEVICE = ("#f1f3f4", "#7a858e")
 NEUTRAL = ("#f3f3f3", "#777777")
 INK = "#3f3f3f"
 
@@ -102,16 +102,7 @@ def _striped_matrix(
     rows: int,
     label: str,
 ) -> None:
-    colors = [
-        "#dce9f5",
-        "#e7eef6",
-        "#f7e6c8",
-        "#f9eeda",
-        "#dff0e4",
-        "#e9f4ec",
-        "#e9e3f2",
-        "#f1edf6",
-    ]
+    colors = ["#e8eff5", "#f1f3f4"]
     row_h = height / rows
     for row in range(rows):
         ax.add_patch(
@@ -172,7 +163,7 @@ def global_to_local_arrays() -> Path:
     ax.text(
         2.50,
         0.86,
-        "JAX reports the global shapes.\nEach color is one device's row shard.",
+        "JAX reports the global shapes.\nEach numbered row is one device shard.",
         ha="center",
         va="center",
         fontsize=8.5,
@@ -226,16 +217,7 @@ def fsdp_ep_meshes() -> Path:
     """Draw the four logical FSDP/EP meshes that use one eight-GPU node."""
     meshes = ((1, 8), (2, 4), (4, 2), (8, 1))
     fig, axes = plt.subplots(1, 4, figsize=(12.4, 4.8))
-    ep_colors = [
-        "#dce9f5",
-        "#f7e6c8",
-        "#dff0e4",
-        "#e9e3f2",
-        "#f9d8d6",
-        "#e5edf0",
-        "#f4e2c1",
-        "#e6eed9",
-    ]
+    ep_colors = ["#e8eff5", "#f1f3f4"]
 
     for ax, (fsdp, ep) in zip(axes, meshes):
         cell = min(0.82 / max(ep, 1), 0.82 / max(fsdp, 1))
@@ -252,7 +234,7 @@ def fsdp_ep_meshes() -> Path:
                         cell * 0.90,
                         cell * 0.90,
                         boxstyle="round,pad=0,rounding_size=0.02",
-                        facecolor=ep_colors[e],
+                        facecolor=ep_colors[e % len(ep_colors)],
                         edgecolor=FRAMEWORK[1],
                         linewidth=0.8,
                     )
@@ -369,7 +351,7 @@ def maxtext_sharding_flow() -> Path:
         5.55,
         2.55,
         0.82,
-        "base.yml + model YAML\nici_fsdp_parallelism\nici_expert_parallelism",
+        "base + model configuration\nici_fsdp_parallelism\nici_expert_parallelism",
         FRAMEWORK,
         fontsize=8,
     )
@@ -379,7 +361,7 @@ def maxtext_sharding_flow() -> Path:
         4.15,
         2.55,
         0.82,
-        "configs/types.py\nparse, validate,\nresolve -1 axes",
+        "typed configuration\nparse, validate,\nresolve -1 axes",
         FRAMEWORK,
         fontsize=8,
     )

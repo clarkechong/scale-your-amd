@@ -32,11 +32,11 @@ PMC = Path("/tmp/archive/llama7b/rocprof-pmc-20260910-1layer")
 INK = "#27313b"
 MUTED = "#65717d"
 LINE = "#8a959e"
-BLUE = ("#dce9f5", "#3f76ab")
-GREEN = ("#dff0e4", "#4e8a5c")
-GOLD = ("#f7e6c8", "#b0842f")
-PURPLE = ("#e9e3f2", "#6d5b9e")
-RED = ("#f9d8d6", "#bf5b57")
+BLUE = ("#e8eff5", "#496a82")
+GREEN = BLUE
+GOLD = BLUE
+PURPLE = BLUE
+RED = BLUE
 GRAY = ("#f5f7f8", "#8a959e")
 
 
@@ -156,63 +156,6 @@ def remat_mechanism():
         color=MUTED,
     )
     save(fig, "ch6-remat-saved-vs-recomputed.png")
-
-
-def attention_mechanism():
-    fig, ax = plt.subplots(figsize=(14, 7))
-    ax.set_xlim(0, 14)
-    ax.set_ylim(0, 7)
-    ax.axis("off")
-    ax.text(0.2, 6.68, "Attention forward and backward dependencies", fontsize=14, weight="bold", color=INK)
-
-    panel(ax, 0.2, 3.72, 13.6, 2.5, "Forward")
-    boxes = [
-        (1.15, "Q, K", BLUE),
-        (3.15, r"$S=QK^T/\sqrt{d}$", PURPLE),
-        (5.35, "causal mask", GRAY),
-        (7.35, r"$P=\mathrm{softmax}(S)$", GOLD),
-        (9.65, r"$O=PV$", PURPLE),
-        (12.25, "O + row LSE", GREEN),
-    ]
-    for x, text, palette in boxes:
-        box(ax, x, 4.77, 1.72 if x not in (7.35, 12.25) else 1.95, 0.68, text, palette)
-    for a, b in zip(boxes, boxes[1:]):
-        arrow(ax, a[0] + 0.9, 4.77, b[0] - 0.9, 4.77)
-    box(ax, 9.65, 5.65, 1.2, 0.48, "V", BLUE)
-    arrow(ax, 9.65, 5.39, 9.65, 5.13)
-
-    panel(ax, 0.2, 0.55, 13.6, 2.8, "Backward")
-    box(ax, 1.0, 1.82, 1.25, 0.62, "dO", BLUE)
-    box(ax, 3.55, 2.65, 1.85, 0.62, r"$dV=P^T dO$", PURPLE)
-    box(ax, 3.55, 1.82, 1.85, 0.72, r"$dP=dO\,V^T$", PURPLE)
-    box(ax, 6.15, 1.82, 2.35, 0.82, r"$dS=P\odot(dP-\Sigma(dP\odot P))$", GOLD, fontsize=7.7)
-    box(ax, 9.15, 2.35, 1.7, 0.64, r"$dQ=dS\,K$", PURPLE)
-    box(ax, 9.15, 1.28, 1.7, 0.64, r"$dK=dS^TQ$", PURPLE)
-    box(ax, 13.05, 1.82, 1.25, 0.62, "dQ,dK,dV", GREEN)
-    arrow(ax, 1.64, 1.98, 2.62, 2.55)
-    arrow(ax, 1.64, 1.82, 2.61, 1.82)
-    arrow(ax, 4.48, 1.82, 4.96, 1.82)
-    arrow(ax, 7.34, 1.96, 8.29, 2.24)
-    arrow(ax, 7.34, 1.68, 8.29, 1.37)
-    arrow(ax, 10.02, 2.35, 12.41, 1.99)
-    arrow(ax, 10.02, 1.28, 12.41, 1.64)
-    arrow(
-        ax,
-        4.48,
-        2.68,
-        12.41,
-        2.06,
-        connectionstyle="arc3,rad=-0.16",
-    )
-    ax.text(
-        7.0,
-        0.83,
-        "Standard attention can save P or S. Flash-style kernels save compact row statistics and reconstruct tiles during backward.",
-        ha="center",
-        fontsize=8.5,
-        color=MUTED,
-    )
-    save(fig, "ch6-attention-forward-backward.png")
 
 
 def _trace_rows(backend):
@@ -585,7 +528,6 @@ def attention_hlo():
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     remat_mechanism()
-    attention_mechanism()
     observed_attention_kernels()
     moe_routing()
     remat_hlo()

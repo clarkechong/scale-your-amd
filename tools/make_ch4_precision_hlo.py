@@ -4,8 +4,8 @@
 The script runs a MaxText-style BF16 dot and two
 ``TransformerEngineQuantization`` recipes in the installed JAX/ROCm
 environment. It preserves XLA HLO text and literal DOT output under
-``artifacts/hlo-fixtures/precision``. The chapter SVGs are small, manually
-pruned views rendered from those captures.
+``artifacts/hlo-fixtures/precision``. Graphviz renders the literal XLA DOT
+without a hand-authored intermediate graph.
 
 Run from the repository root:
 
@@ -39,13 +39,6 @@ IMAGE_ROOT = ROOT / "pages" / "img"
 M = 128
 K = 256
 N = 256
-
-INK = "#27313b"
-BLUE = ("#dce9f5", "#3f76ab")
-GOLD = ("#f7e6c8", "#b0842f")
-PURPLE = ("#e9e3f2", "#6d5b9e")
-GREEN = ("#dff0e4", "#4e8a5c")
-NEUTRAL = ("#f5f7f8", "#8a959e")
 
 
 def git_revision(path: Path) -> str:
@@ -147,141 +140,6 @@ def te_lowering(recipe_name: str):
     }
 
 
-def extract_op_name(hlo_text: str, target: str, occurrence: int = 0) -> str:
-    matches = re.findall(
-        rf"^\s*([A-Za-z0-9_.-]+)\s*=.*custom-call\(.*custom_call_target=\"{re.escape(target)}\"",
-        hlo_text,
-        flags=re.MULTILINE,
-    )
-    if len(matches) <= occurrence:
-        raise RuntimeError(f"Could not find occurrence {occurrence} of {target!r} in HLO")
-    return matches[occurrence]
-
-
-def extract_dot_name(hlo_text: str) -> str:
-    matches = re.findall(
-        r"^\s*(?:ROOT\s+)?([A-Za-z0-9_.-]+)\s*=\s*bf16\[[^\]]+\].*\sdot\(",
-        hlo_text,
-        flags=re.MULTILINE,
-    )
-    if not matches:
-        raise RuntimeError("Could not find BF16 dot in HLO")
-    return matches[0]
-
-
-def q(value: str) -> str:
-    return '"' + value.replace('"', '\\"').replace("\n", "\\n") + '"'
-
-
-def node(
-    node_id: str,
-    label: str,
-    palette: tuple[str, str],
-    *,
-    shape: str = "box",
-) -> str:
-    face, edge = palette
-    return (
-        f"  {node_id} [label={q(label)}, shape={shape}, style=\"rounded,filled\", "
-        f"fillcolor={q(face)}, color={q(edge)}, fontcolor={q(INK)}, "
-        'fontname="Helvetica", fontsize=10, margin="0.12,0.08"];\n'
-    )
-
-
-def graph_header(title: str) -> str:
-    return (
-        "digraph G {\n"
-        '  graph [rankdir=LR, bgcolor="transparent", pad=0.10, nodesep=0.35, '
-        f'ranksep=0.52, label={q(title)}, labelloc="t", fontsize=14, '
-        f'fontname="Helvetica", fontcolor={q(INK)}];\n'
-        '  edge [color="#8a959e", penwidth=1.1, arrowsize=0.7, fontname="Helvetica", '
-        'fontsize=8, fontcolor="#65717d"];\n'
-    )
-
-
-def bf16_representative(hlo_text: str) -> str:
-    dot_name = extract_dot_name(hlo_text)
-    graph = graph_header("BF16 MaxText linear: ordinary HLO dot")
-    graph += node("master", f"master weight\\nf32[{K},{N}]", GREEN)
-    graph += node("cast", f"convert_element_type.1\\nbf16[{K},{N}]", NEUTRAL)
-    graph += node("activation", f"activation\\nbf16[{M},{K}]", BLUE)
-    graph += node("dot", f"{dot_name}\\ndot, contract K={K}\\nbf16[{M},{N}]", BLUE)
-    graph += "  master -> cast;\n  cast -> dot [label=\"rhs\"];\n  activation -> dot [label=\"lhs\"];\n}\n"
-    return graph
-
-
-def fp8_representative(hlo_text: str) -> str:
-    quant_x = extract_op_name(hlo_text, "te_dbias_quantize_ffi", 0)
-    quant_w = extract_op_name(hlo_text, "te_dbias_quantize_ffi", 1)
-    gemm = extract_op_name(hlo_text, "te_gemm_v2_ffi")
-    graph = graph_header("FP8 delayed scaling: typed FFI quantize and GEMM calls")
-    graph += node("activation", f"activation\\nbf16[{M},{K}]", BLUE)
-    graph += node("xstate", "delayed x scale\\nf32\\nhistory updated separately", PURPLE)
-    graph += node(
-        "quantx",
-        f"{quant_x}\\nte_dbias_quantize_ffi\\nf8e4m3fn[{M},{K}] + f32 scale",
-        GOLD,
-    )
-    graph += node("master", f"master weight\\nf32[{K},{N}]", GREEN)
-    graph += node("cast", f"compute weight\\nbf16[{K},{N}]", NEUTRAL)
-    graph += node("wstate", "delayed weight scale\\nf32\\nhistory updated separately", PURPLE)
-    graph += node(
-        "quantw",
-        f"{quant_w}\\nte_dbias_quantize_ffi\\nf8e4m3fn[{K},{N}] + f32 scale",
-        GOLD,
-    )
-    graph += node(
-        "gemm",
-        f"{gemm}\\nte_gemm_v2_ffi\\nper-tensor scaled FP8\\n→ bf16[{M},{N}]",
-        PURPLE,
-    )
-    graph += (
-        "  activation -> quantx;\n"
-        "  xstate -> quantx [style=dashed];\n"
-        "  master -> cast;\n"
-        "  cast -> quantw;\n"
-        "  wstate -> quantw [style=dashed];\n"
-        "  quantx -> gemm [label=\"FP8 + scale\"];\n"
-        "  quantw -> gemm [label=\"FP8 + scale\"];\n"
-        "}\n"
-    )
-    return graph
-
-
-def mxfp8_representative(hlo_text: str) -> str:
-    quant_x = extract_op_name(hlo_text, "te_dbias_quantize_ffi", 0)
-    quant_w = extract_op_name(hlo_text, "te_dbias_quantize_ffi", 1)
-    gemm = extract_op_name(hlo_text, "te_gemm_v2_ffi")
-    graph = graph_header("MXFP8 block scaling: element arrays and E8M0 scales enter GEMM")
-    graph += node("activation", f"activation\\nbf16[{M},{K}]", BLUE)
-    graph += node(
-        "quantx",
-        f"{quant_x}\\nte_dbias_quantize_ffi\\nrow f8e4m3fn[{M},{K}]\\nE8M0 scale [{M},{K // 32}]",
-        GOLD,
-    )
-    graph += node("master", f"master weight\\nf32[{K},{N}]", GREEN)
-    graph += node("cast", f"compute weight\\nbf16[{K},{N}]", NEUTRAL)
-    graph += node(
-        "quantw",
-        f"{quant_w}\\nte_dbias_quantize_ffi\\ncolumn f8e4m3fn[{K},{N}]\\nE8M0 scale [{K // 32},{N}]",
-        GOLD,
-    )
-    graph += node(
-        "gemm",
-        f"{gemm}\\nte_gemm_v2_ffi\\nMXFP8_1D_SCALING\\n→ bf16[{M},{N}]",
-        PURPLE,
-    )
-    graph += (
-        "  activation -> quantx;\n"
-        "  master -> cast;\n"
-        "  cast -> quantw;\n"
-        "  quantx -> gemm [label=\"E4M3 + E8M0\"];\n"
-        "  quantw -> gemm [label=\"E4M3 + E8M0\"];\n"
-        "}\n"
-    )
-    return graph
-
-
 def validate_capture(kind: str, hlo_text: str) -> None:
     required = {
         "bf16": ["dot(", f"bf16[{M},{N}]"],
@@ -309,19 +167,17 @@ def capture(kind: str, lowered, details: dict) -> Path:
     hlo_text = computation.as_hlo_text()
     xla_dot = computation.as_hlo_dot_graph()
     validate_capture(kind, hlo_text)
-
-    representative_builders = {
-        "bf16": bf16_representative,
-        "fp8": fp8_representative,
-        "mxfp8": mxfp8_representative,
-    }
-    representative_dot = representative_builders[kind](hlo_text)
+    render_dot = re.sub(
+        r', tooltip=".*?", style=',
+        ', tooltip=" ", style=',
+        xla_dot,
+        flags=re.DOTALL,
+    )
 
     artifact_dir = ARTIFACT_ROOT / kind
     artifact_dir.mkdir(parents=True, exist_ok=True)
     (artifact_dir / "before_optimizations.txt").write_text(hlo_text)
     (artifact_dir / "before_optimizations.dot").write_text(xla_dot)
-    (artifact_dir / "representative.dot").write_text(representative_dot)
 
     targets = sorted(set(re.findall(r'custom_call_target="([^"]+)"', hlo_text)))
     provenance = {
@@ -332,10 +188,9 @@ def capture(kind: str, lowered, details: dict) -> Path:
         "compiler_output": "jax.jit(...).lower(...).compiler_ir(dialect='hlo')",
         "raw_dot": "before_optimizations.dot",
         "raw_hlo": "before_optimizations.txt",
-        "representative_dot": "representative.dot",
-        "representative_note": (
-            "Manually pruned view of the literal XLA DOT. Operation names, "
-            "targets, dtypes, and shapes are asserted against the preserved HLO."
+        "rendering": (
+            "Literal XLA DOT rendered with Graphviz after removing source-path "
+            "tooltips; nodes, edges, and visible labels are unchanged."
         ),
         "executed_on_device": True,
         "shape": {"M": M, "K": K, "N": N},
@@ -362,7 +217,9 @@ def capture(kind: str, lowered, details: dict) -> Path:
     IMAGE_ROOT.mkdir(parents=True, exist_ok=True)
     output = IMAGE_ROOT / f"hlo-precision-{kind}.svg"
     subprocess.run(
-        ["dot", "-Tsvg", str(artifact_dir / "representative.dot"), "-o", str(output)],
+        ["dot", "-Tsvg", "-o", str(output)],
+        input=render_dot,
+        text=True,
         check=True,
     )
     return output

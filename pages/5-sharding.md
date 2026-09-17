@@ -223,15 +223,14 @@ The following graphs come from the repository's explanatory fixtures. They
 were compiled on eight GPUs with JAX 0.11.0 in the MaxText v26.6 ROCm
 environment using:
 
-```text
-/opt/venv/bin/python3 -m bench.hlo_feature_fixtures sharding fsdp
-XLA_FLAGS="--xla_dump_hlo_as_text --xla_dump_hlo_as_dot ..."
+```bash
+XLA_FLAGS="--xla_dump_hlo_as_text --xla_dump_hlo_as_dot ..." \
+  python -m bench.hlo_feature_fixtures sharding fsdp
 ```
 
-The retained source files and command provenance are under
-`artifacts/hlo-fixtures/sharding/`. Graphviz renders representative subgraphs
-from XLA's DOT output. Operation names, shapes, and sharding values come
-directly from the dump.
+The retained capture includes the source text, DOT graph, command, and compiler
+options. Graphviz renders representative subgraphs from XLA's DOT output.
+Operation names, shapes, and sharding values come directly from the dump.
 Redundant attribute wrappers and source tooltips are pruned, and dependency
 arrows may contract omitted tuple or copy nodes. These fixtures explain
 compilation and are not performance measurements.
@@ -244,8 +243,8 @@ compiler marker, not an external runtime kernel.
 
 [![FSDP-style global HLO before partitioning]({{ '/pages/img/ch5-hlo-fsdp-before.svg' | relative_url }})]({{ '/pages/img/ch5-hlo-fsdp-before.svg' | relative_url }})
 
-*Representative subgraph from the literal
-`fsdp/before_optimizations.dot`; open the SVG to read the full annotations.*
+*Representative subgraph from the literal pre-optimization graph; open the
+SVG to read the full annotations.*
 
 After the SPMD partitioner, the entry parameters have local shapes.
 `x` is `f16[128,512]`, `w` is `f16[64,512]`, and the generated
@@ -254,8 +253,7 @@ remains `f16[128,512]`.
 
 [![FSDP-style device-local HLO after partitioning]({{ '/pages/img/ch5-hlo-fsdp-after.svg' | relative_url }})]({{ '/pages/img/ch5-hlo-fsdp-after.svg' | relative_url }})
 
-*Representative subgraph from the literal
-`fsdp/after_spmd_partitioner.dot`.*
+*Representative subgraph from the literal post-partitioner graph.*
 
 The tensor-parallel fixture uses `jax.shard_map`. It shards the contracting
 dimension of both operands, computes a partial dot on each device, and calls
@@ -488,9 +486,9 @@ automatic global program does not express the required algorithm clearly.
 
 Mesh dimensions multiply. A mesh with
 
-```text
-fsdp = 8
-ep   = 8
+```yaml
+fsdp: 8
+expert: 8
 ```
 
 contains
