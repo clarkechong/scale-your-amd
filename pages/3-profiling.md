@@ -44,6 +44,7 @@ toc:
       - name: "Backward pass"
       - name: "Time attribution in JAX"
       - name: "Time attribution in MaxText"
+      - name: "Verifying time attribution"
       - name: "Captured end-to-end result"
       - name: "Component roofline worksheet"
 ---
@@ -55,20 +56,24 @@ At the compiler level, we care about which HLO operations were generated. At
 the runtime level, we care about which kernels and collectives actually
 executed.
 
-A useful profile connects all of those views:
+Ideally, a profiler should connect these views:
 
 1. the duration and throughput of one optimizer update;
 2. the JAX or MaxText component that requested the work;
 3. the optimized HLO that XLA compiled; and
 4. the HIP kernel or RCCL operation that ran on the GPU.
 
-No single tool exposes all of these layers simultaneously.
+Current, different profilers operate stronger at different levels.
+Framework and compiler attribution are most visible through XPlane and XProf,
+while runtime execution is most directly observed through ROCm profiling tools.
+Taken together, they provide a path from model code to generated HLO and
+ultimately to the kernels and collectives that executed on the GPU.
 
-XProf is strongest for framework and compiler attribution, while ROCm runtime
-tools provide the most direct evidence of what executed on the GPU. This
-chapter therefore combines an XPlane capture with a separate `rocprofv3`
-capture. Hardware counters are collected in another filtered run because
-dispatch-level counter collection changes the execution schedule.
+Hardware counters form a separate layer of evidence. Because dispatch-level
+counter collection alters the execution schedule, counters are typically
+collected in a focused run after the relevant kernels have already been
+identified.
+
 
 ## Profiler metrics
 
@@ -614,7 +619,7 @@ input projections (`wi_0`, `wi_1`), combine through SiLU gating, pass through
 names come from the same release's
 [`RoutedMoE`](https://github.com/ROCm/maxtext/blob/b47d74bf4ef860c6cbd0fe5e4705c362ba360dbe/src/maxtext/layers/moe.py).
 
-{% include figure.liquid path="pages/img/ch3-mixtral-forward.png" class="img-fluid" alt="Vertical Mixtral 8x22B forward flow through attention, routing, dispatch, expert MLP, combine, and residual operations" caption="One decoder layer expanded into a single top-to-bottom flow. The highlighted blocks include the MaxText scope names used to correlate model regions with HLO and XProf." %}
+{% include figure.liquid path="pages/img/ch3-mixtral-forward.png" class="img-fluid" alt="Vertical Mixtral 8x22B forward flow through attention, routing, dispatch, expert MLP, combine, and residual operations" caption="One decoder layer expanded into a single top-to-bottom flow. The highlighted blocks include the MaxText scope names used to correlate model regions with HLO and XProf; the forward attribution table below uses these boxes as its accounting categories." %}
 
 ### Backward pass
 
@@ -629,52 +634,178 @@ Rematerialized forward work executes inside the backward interval. Attribute
 that device time to backward/rematerialization while keeping the useful model
 FLOP ledger unchanged.
 
-{% include figure.liquid path="pages/img/ch3-mixtral-backward.png" class="img-fluid" alt="Mixtral 8x22B backward flow with a main activation-gradient path and a separate parameter-gradient rail" caption="Activation gradients follow the vertical decoder-layer VJP. Parameter gradients from the MoE and attention branches feed the side rail for collectives, microstep accumulation, and the optimizer update." %}
+{% include figure.liquid path="pages/img/ch3-mixtral-backward.png" class="img-fluid" alt="Mixtral 8x22B backward flow with a main activation-gradient path and a separate parameter-gradient rail" caption="Activation gradients follow the vertical decoder-layer VJP. Parameter gradients from the MoE and attention branches feed the side rail for collectives, microstep accumulation, and the optimizer update. The backward attribution table below treats parameter-gradient work as part of its originating VJP rather than counting the side rail twice." %}
 
 ### Time attribution in JAX
 
-For a standalone JAX model, place `named_scope` around stable architecture
-components before applying `value_and_grad` and `jit`. Keep one
-`StepTraceAnnotation` around the synchronized optimizer update. After capture:
+The forward and backward diagrams define semantic components. Turning those
+components into times requires an exclusive accounting rule so that one kernel
+is not charged to several boxes.
 
-1. list optimized HLO operations by name stack;
-2. identify custom calls, fusions, collectives, and loop bodies;
-3. map each HLO operation to all corresponding Kernel Stats rows;
-4. split forward, backward, rematerialized, and optimizer occurrences; and
-5. reconcile the interval union with the selected step boundary.
+For a standalone JAX model, place `named_scope` around the components before
+applying `value_and_grad` and `jit`, then place one `StepTraceAnnotation`
+around the synchronized optimizer update. Attribute a captured step in this
+order:
+
+1. Select one complete step on one GPU.
+2. Remove collective kernels into a communication bucket before classifying
+   model work.
+3. Within the backward interval, classify
+   `checkpoint/rematted_computation` as replayed forward work before assigning
+   the remaining `transpose(jvp(...))` operations to gradient computation.
+   Use `jvp(...)` for forward work and the code outside the model VJP for loss,
+   gradient accumulation, and the optimizer.
+4. Within each phase, use the deepest stable `named_scope` to assign a
+   component. Keep operations whose metadata was lost in an explicit
+   unattributed bucket.
+5. With a raw XPlane, merge the event intervals in each component and
+   reconcile their union with the step boundary. Summed kernel durations are a
+   different quantity and can exceed wall time when streams overlap.
 
 Named scopes assist attribution, but they do not define execution boundaries.
-Confirm every large bucket against HLO shapes and runtime kernels.
+A residual add may disappear into an adjacent fusion, while one named
+projection may emit several kernels. Confirm each large bucket against its HLO
+shapes and runtime kernel names.
+
+For this case study, the missing profile was generated directly on the local
+eight-MI355X system. The instrumented source is MaxText
+[`b47d74bf`](https://github.com/ROCm/maxtext/tree/b47d74bf4ef860c6cbd0fe5e4705c362ba360dbe)
+with metadata-only `jax.named_scope` labels around the map components,
+gradient-accumulation loop, loss, and optimizer. These labels do not change
+array values or shardings.
+
+The capture uses the 8x22B FSDP=4/EP=2 configuration above. It records one
+complete step after compilation and two preceding steps on eight MI355X GPUs.
+The profiled step took 20.605 seconds; the adjacent steady steps took 20.824
+and 20.811 seconds.
+
+Kernel Stats aggregates every occurrence on all eight GPUs. The component
+tables therefore report mean **summed HLO self-time per GPU-step**, obtained by
+dividing those aggregates by eight. Raw stream intervals provide the separate
+wall-time and overlap calculation.
+
+| Exclusive phase bucket | Mean device time | Share of summed device time |
+|---|---:|---:|
+| Forward model compute | 2,322.8 ms | 8.7% |
+| Backward gradient compute | 7,287.9 ms | 27.3% |
+| Rematerialized forward replay | 2,210.5 ms | 8.3% |
+| Loss, gradient accumulation, and named optimizer work | 9.5 ms | <0.1% |
+| Communication | 14,560.8 ms | 54.6% |
+| Unattributed work | 297.5 ms | 1.1% |
+| **Total summed device time** | **26,689.0 ms** | **100%** |
+
+The summed total exceeds wall time because computation and communication
+overlap. Across the eight raw GPU timelines, the mean compute union is 12.128
+seconds and the mean communication union is 14.561 seconds. Their intersection
+is 5.966 seconds, leaving 8.594 seconds of exposed communication:
+
+$$
+12.128 + 14.561 - 5.966 = 20.723\ \mathrm{s}.
+$$
+
+The resulting busy union is 20.723 seconds inside a 20.759-second device-event
+span, leaving 36 ms with no GPU work. The event span and the logged
+20.605-second step use slightly different profiler boundaries, so the
+component tables reconcile to the raw device timeline rather than to the host
+log.
 
 ### Time attribution in MaxText
 
 MaxText already exposes a useful attribution vocabulary through its existing
-scope names.
+scope names. The forward table groups those names into the boxes in the
+forward map. Attention combines the Q/K/V/O projections, RoPE/layout work, and
+fused core; Expert MLP combines `wi_0`, `wi_1`, `ffn_act`, and `wo`.
 
-| Component | Source/HLO anchors | Runtime evidence |
-|---|---|---|
-| Attention projections | `self_attention`, query/key/value/out dots | GEMM kernel names and local shapes |
-| Attention core | fused-attention custom call and forward/backward targets | backend kernels inside each call |
-| Router | `MoeBlock_0/gate`, `top_k`, softmax/reduction fusions | vector/reduction kernels and HBM traffic |
-| Dispatch | `MoeBlock_0/dispatch`, mask materialization, AllToAll HLO | dispatch kernels, RCCL calls, payload bytes |
-| Expert up | `wi_0`, `wi_1` | selected GEMM backend, capacity shape or group sizes |
-| Activation | `ffn_act` | fused SiLU/multiply kernels |
-| Expert down | `wo` | dense or grouped GEMMs |
-| Combine | `combine`, `weight_sum`, unpermute | reverse movement, reduction/fusion kernels |
-| Backward | VJP names, gradient dots, fused-attention backward | transpose GEMMs, custom VJP kernels |
-| Optimizer | AdamW update fusions | elementwise/reduction kernels after accumulation |
+The retained extraction script classifies each Kernel Stats row exactly
+once and emits the machine-readable ledger used for these tables. It uses the
+phase name stack first and then the explicit component scope. Rows without
+phase metadata remain unattributed. The values are generated from that ledger
+rather than transcribed from the XProf UI.
 
-With `scan_layers=true`, expect a compiled loop body and repeated occurrences,
-not 56 independently named Python calls. With accumulation two, most
-forward/backward operations occur for both microsteps while the optimizer runs
-once. Occurrence counts provide a valuable consistency check when validating
-attribution.
+| Forward-map component | MaxText or HLO anchor | Mean HLO self-time/GPU-step | Share of forward compute |
+|---|---|---:|---:|
+| Layer input | attribution boundary | no standalone operation | — |
+| Embedding | `embedding` | 9.2 ms | 0.4% |
+| Pre-attention RMSNorm | `pre_attention_norm` | fused into adjacent work | — |
+| Attention | projection dots, RoPE/layout operations, fused-attention call | 311.4 ms | 13.4% |
+| Post-attention RMSNorm | `post_attention_norm` | fused into adjacent work | — |
+| Attention and MoE residual adds | adjacent fused operations | not separately measurable | — |
+| Router and top-2 selection | `router_gate`, `router_topk`, `router_weights`, `router_masks` | 38.0 ms | 1.6% |
+| Dispatch / token permutation | `dispatch` | 157.3 ms | 6.8% |
+| Expert MLP | `wi_0`, `wi_1`, `ffn_act`, `wo` | 1,541.8 ms | 66.4% |
+| Combine / restore token order | `combine`, `weight_sum` | 120.3 ms | 5.2% |
+| Scanned-loop and layout work | loop-body bookkeeping and layout fusions | 135.4 ms | 5.8% |
+| Final norm | `final_norm` | 0.1 ms | <0.1% |
+| LM head | `lm_head` | 9.4 ms | 0.4% |
+| **Attributed forward model compute** |  | **2,322.8 ms** | **100%** |
 
-The following real optimized-HLO fixture uses `tokens[64,128]` and four expert
-matrices, which keeps the graph readable. The purpose of this fixture is not
-performance analysis. It demonstrates the compiler-level signature that
-should later be matched against runtime evidence. If a sparse ragged expert
-path is selected, `ragged_dot_general` lowers to the compatibility target
+The backward table follows the reverse map and excludes rematerialized replay.
+Weight-gradient GEMMs stay in the component that produced them: attention
+Wgrad is part of Attention backward, and expert Wgrad is part of MoE backward.
+The parameter-gradient rail in the diagram is therefore a dependency view, not
+a second additive timing bucket. Kernel Stats aggregates cannot reconstruct
+overlap between activation-gradient and parameter-gradient streams; that
+optional sub-split requires correlating each raw dispatch with its HLO
+operation.
+
+| Backward-map component | Included work | Mean HLO self-time/GPU-step | Share of backward compute |
+|---|---|---:|---:|
+| Loss and metric reductions | outside the model VJP; shown in the phase table | 1.0 ms | — |
+| LM-head VJP | input and weight gradients for `lm_head` | 17.9 ms | 0.2% |
+| Final-norm VJP | `final_norm` transpose rules | 0.4 ms | <0.1% |
+| Layer-output and residual-gradient splits | attribution boundaries or adjacent fusions | not separately measurable | — |
+| MoE backward | combine VJP, expert Dgrad/Wgrad, activation VJP, reverse dispatch, router gradient | 6,065.2 ms | 83.2% |
+| Pre/post-attention RMSNorm VJPs | `pre_attention_norm`, `post_attention_norm` | 88.2 ms | 1.2% |
+| Attention backward | output and Q/K/V projection VJPs plus fused-attention backward | 958.2 ms | 13.1% |
+| Embedding VJP | token-embedding scatter/add | 7.1 ms | 0.1% |
+| Scanned-loop and layout work | transpose-loop bookkeeping and layout fusions | 150.8 ms | 2.1% |
+| **Attributed backward gradient compute** |  | **7,287.9 ms** | **100%** |
+
+Rematerialized operations retain forward-style names but execute inside the
+backward interval. The `save_dot_with_context_except_mlp` policy leaves the
+MoE intermediates to be reconstructed, which is visible in the replay split:
+
+| Replayed component | Mean HLO self-time/GPU-step | Share of replay compute |
+|---|---:|---:|
+| MoE forward replay | 2,197.2 ms | 99.4% |
+| Attention replay | 1.5 ms | 0.1% |
+| Layer-norm replay | 11.8 ms | 0.5% |
+| **Rematerialized forward replay** | **2,210.5 ms** | **100%** |
+
+The remaining rows reconcile the two maps with the complete device-time
+ledger:
+
+| Cross-cutting or unresolved bucket | Mean HLO self-time/GPU-step | Interpretation |
+|---|---:|---|
+| Forward collectives | 4,298.8 ms | communication launched from forward name stacks |
+| Backward collectives | 3,360.3 ms | communication attached to true gradient work |
+| Rematerialized collectives | 5,608.8 ms | communication replayed inside the checkpointed region |
+| Optimizer or unscoped collectives | 1,292.9 ms | collective metadata did not preserve a model phase |
+| Gradient accumulation, clipping, and AdamW | 8.6 ms | named work after the accumulated gradients |
+| Other unattributed work | 297.5 ms | retained without forcing it into a component |
+
+This demonstration makes the bottleneck visible. The expert MLP accounts for
+66.4% of attributed forward compute, while the true MoE reverse path accounts
+for 83.2% of gradient compute. MoE also accounts for 99.4% of replay compute.
+True backward plus replay is 4.09 times the forward model compute.
+Communication contributes 54.6% of summed device time, and only 41.0% of that
+communication is hidden by compute. The largest optimization targets are
+therefore MoE backward, rematerialized MoE work, and exposed collectives.
+
+With `scan_layers=true`, the profile contains repeated loop-body occurrences
+rather than independently named Python calls. The expected count is the number
+of scanned layers multiplied by the number of profiled steps, devices, and
+gradient-accumulation microsteps where applicable. A mismatch is evidence that
+the filter omitted a path or included a different executable.
+
+In this capture, each forward `wi_0`, `wi_1`, and fused-attention kernel appears
+112 times per GPU: 56 layers multiplied by two microsteps. The matching count
+confirms that the forward buckets cover the complete scanned layer stack.
+
+The measured attribution used fixed-capacity expert execution. The
+following optimized-HLO fixture uses `tokens[64,128]` and four expert matrices
+to show the signature of a sparse ragged path. Its
+`ragged_dot_general` lowers to the compatibility target
 `__cublas$lt$groupedMatmul`, which reaches the BLASLt implementation on ROCm.
 
 {% include figure.liquid path="pages/img/ch3-hlo-ragged-grouped.svg" class="img-fluid" zoomable=true alt="Graphviz rendering of a real optimized gfx950 HLO fixture in which tokens, expert matrices, and group sizes enter a grouped matrix multiplication custom call" caption="Literal gfx950 optimized HLO rendered with Graphviz. The custom-call target is the bridge between the JAX ragged-dot name and the grouped GEMM kernel sought in rocprofv3. This is compiler evidence, not a performance measurement." %}
@@ -687,10 +818,96 @@ that implemented it.
 
 {% include figure.liquid path="pages/img/hlo-attention-te.svg" class="img-fluid" zoomable=true alt="Graphviz-rendered real HLO fixture for Transformer Engine fused-attention forward with Q, K, V, and metadata entering an FFI custom call" caption="Real pre-optimization HLO fixture for the Transformer Engine attention route. Use its custom-call and source names for attribution, then use the ROCm trace for the actual backend kernels and durations." %}
 
+### Verifying time attribution
+
+Internal reconciliation proves that the ledger counts each row once; it does
+not prove that the semantic attribution is plausible. An external comparison
+should therefore match denominators before comparing ratios. Absolute
+durations are not useful here because accelerator, framework, sequence length,
+batch size, training method, and sharding all differ.
+
+A close peer-reviewed comparison is Xia et al.,
+[“Understanding the Performance and Estimating the Cost of LLM
+Fine-Tuning”](https://doi.org/10.1109/IISWC63097.2024.00027), published at
+IEEE IISWC 2024. The study profiles Mixtral 8x7B QLoRA on one NVIDIA A40.
+Although it uses the smaller Mixtral, it preserves the relevant architecture:
+eight SwiGLU experts, top-2 sparse routing, attention followed by an MoE block,
+and gradient checkpointing. Its Figure 5 divides combined forward and backward
+model time among normalization, attention, and MoE; Figure 6 then divides the
+MoE work among routing, top-k selection, dequantization, and the expert
+W1/W2/W3 matrix multiplications.
+
+The paper reports that MoE consumes 85% of model-layer time on average across
+its experiments. For the closer sparse-Mixtral subset, the authors'
+[released Figure 5 measurements](https://github.com/stsxxx/finetune/blob/728a01b61d399eed53ff333962f471fccc705f35/analytical_model/stack_bar_layer/sweep_per.txt)
+give MoE shares of 87.6% to 92.0%, with an unweighted mean of 90.3%. These
+ratios are computed from the released numbers, not estimated from the plotted
+bar heights.
+
+To construct the matching ratio for this capture, exclude communication,
+optimizer/loss, and unattributed work because the IISWC layer breakdown is
+single-GPU model execution. Include rematerialized MoE work because that study
+includes checkpoint replay within backward time. Local forward MoE time is the
+router, dispatch, Expert MLP, and combine sum:
+
+$$
+T_{\mathrm{MoE}}
+=1{,}857.4+6{,}065.2+2{,}197.2
+=10{,}119.8\ \mathrm{ms},
+$$
+
+and the matched model-compute denominator is
+
+$$
+T_{\mathrm{model}}
+=2{,}322.8+7{,}287.9+2{,}210.5
+=11{,}821.2\ \mathrm{ms}.
+$$
+
+The resulting MoE share is 85.6%. It is 2.0 percentage points below the
+lowest sparse-Mixtral bar and 4.7 points below their sparse-Mixtral mean, but
+it has the same dominant proportion. The difference has plausible workload
+causes: the external run uses sequence length 128 and QLoRA targeted at the
+MoE modules, whereas this run uses sequence length 4,096 and computes full
+attention and expert weight gradients.
+
+| Matched check | IISWC Mixtral 8x7B | This Mixtral 8x22B capture | Assessment |
+|---|---:|---:|---|
+| MoE share of local model time | 87.6–92.0% for sparse runs | 85.6% | Same dominant fraction; modestly lower here |
+| Backward / forward time | 1.71–1.93× for sparse runs | 3.14× excluding replay; 4.09× including replay | Same ordering; larger under full-weight training |
+| Largest work inside MoE | W1/W2/W3 matrix multiplications | Expert MLP is 83.0% of local forward MoE time | Same kernel-level concentration |
+
+The phase range in the table comes from the study's
+[released Figure 4 measurements](https://github.com/stsxxx/finetune/blob/728a01b61d399eed53ff333962f471fccc705f35/analytical_model/stack_bar/sweep_per.txt).
+The backward ratio is not expected to match: the paper explicitly notes that
+QLoRA computes gradients for only a small parameter subset, while this
+pretraining step differentiates all model weights.
+
+There is also a model-identical, though not peer-reviewed, systems comparison.
+NVIDIA's
+[“MoE Parallel Folding”](https://arxiv.org/abs/2504.14960)
+preprint profiles BF16 Mixtral 8x22B training on H100 GPUs. Its Figure 5 splits
+MoE-layer latency into router, FFN, permutation, AllToAll, and
+AllGather/ReduceScatter time over several EP/ETP mappings. FFN is the largest
+local component in every standard Mixtral 8x22B bar, while the paper finds
+that less favorable mappings increase the communication fraction and that
+crossing the eight-GPU NVLink domain sharply increases latency.
+
+That result supports the two main features of this attribution: expert GEMMs
+dominate local model work, and communication can become the system bottleneck.
+It does **not** provide a numerical check for the 54.6% communication share
+above. The NVIDIA figure covers only the MoE layer on H100, with fixed
+attention TP, varying EP/ETP mappings, and token dropping; this capture covers
+the complete step on eight MI355X GPUs with FSDP=4/EP=2 and includes FSDP
+parameter and gradient collectives. The external evidence therefore validates
+the proportions and bottleneck ordering, not the absolute milliseconds or the
+communication percentage.
+
 ### Captured end-to-end result
 
-The retained cluster summary contains one successful v26.6 run for the
-FSDP=4/EP=2 fixed-capacity one-hot configuration:
+An earlier, independent timing run used the same model, batch, precision, and
+v26.6 FSDP=4/EP=2 fixed-capacity strategy. It remains the unprofiled timing
+anchor:
 
 | Field | Captured or derived value |
 |---|---:|
@@ -699,6 +916,7 @@ FSDP=4/EP=2 fixed-capacity one-hot configuration:
 | Workload | synthetic, sequence 4,096, global batch 64 |
 | Recorded step samples | 1 |
 | Step time [measured] | 20.599 s |
+| Instrumented XPlane step [measured] | 20.605 s |
 | Tokens/s/device [derived from measured step] | 1,590.7 |
 | Useful TFLOP/s/device [derived from measured step and model ledger] | 385.3 |
 | BF16 MFU [derived] | 15.31% |
@@ -709,8 +927,9 @@ $$
 \mathrm{MFU}=\frac{385.3}{2516.6}=0.1531.
 $$
 
-Because only a single step was retained, the result should be treated as an
-existence proof rather than a benchmarking result.
+The instrumented step differs from the independent timing sample by 0.03%.
+That agreement supports using the XPlane to explain the original result, but
+one independent timing sample is still insufficient for a variance estimate.
 
 ### Component roofline worksheet
 

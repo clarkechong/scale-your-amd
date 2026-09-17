@@ -1,0 +1,384 @@
+{
+  "capture": {
+    "model": "Mixtral 8x22B",
+    "accelerators": "8 x MI355X",
+    "maxtext_revision": "b47d74bf4ef860c6cbd0fe5e4705c362ba360dbe",
+    "observed_profiled_step": 2,
+    "reported_step_seconds": 20.605,
+    "command": [
+      "/opt/venv/bin/python",
+      "-m",
+      "maxtext.trainers.pre_train.train",
+      "/home/clchong/work/mixtral8-22b/configs/mixtral8-22b.yml",
+      "dtype=bfloat16",
+      "quantization=",
+      "ici_fsdp_parallelism=4",
+      "ici_expert_parallelism=2",
+      "sparse_matmul=false",
+      "megablox=false",
+      "capacity_factor=1.0",
+      "ragged_buffer_factor=-1.0",
+      "moe_dispatch_no_expert_sharding=true",
+      "num_experts=8",
+      "num_experts_per_tok=2",
+      "use_custom_sort_vjp=true",
+      "use_ragged_sort=false",
+      "use_ring_of_experts=false",
+      "use_tokamax_gmm=false",
+      "profiler=xplane",
+      "skip_first_n_steps_for_profiler=3",
+      "profiler_steps=1",
+      "profile_cleanly=true",
+      "steps=5",
+      "base_output_directory=/home/clchong/work/scale-your-amd/runs/20260917-mixtral8x22b-ch3-xprof-instrumented-v3/maxtext",
+      "run_name=20260917-mixtral8x22b-ch3-xprof-instrumented-v3"
+    ],
+    "instrumentation_artifact_sha256": {
+      "instrumentation.patch": "7e6b87ddc991f50f1b65ad0938a2a4788b4243809a6ccb0ae31ad6a94aa65484",
+      "runner.py": "741c5d1087607304508fe47a48eaa70aeaa055d273497efae87cc7c3999d6b83",
+      "config.yml": "2904df55720db6c737f3f9c9f0a6fde8b345e184b8260e229405e98b4e8095b7",
+      "xla_flags.txt": "f5eb709bd8db1038b8b67534d889331b9357880f522b4a9122dad0fb2692eb43"
+    }
+  },
+  "provenance": {
+    "path": "runs/20260917-mixtral8x22b-ch3-xprof-instrumented-v3/provenance.json",
+    "sha256": "fcfd3f45ceb5bd7ee8be2b7ce12c01945a23c1be49264dbdd06e34e72e89066f"
+  },
+  "sources": [
+    {
+      "path": "runs/20260917-mixtral8x22b-ch3-xprof-instrumented-v3/maxtext/20260917-mixtral8x22b-ch3-xprof-instrumented-v3/tensorboard/plugins/profile/2026_09_17_11_16_48/smci355-ccs-aus-m15-29.xplane.pb",
+      "sha256": "947a141c69d2041d7983f62ec98d85978e35867cdeec108243445067975ec571"
+    }
+  ],
+  "portable_xplane_archive": {
+    "path": "artifacts/ch3-mixtral-8x22b.xplane.pb.gz",
+    "sha256": "defd29ad812a08f9e4aa13a3656603f0605c95e7db96a3cae764d8bcb930e023"
+  },
+  "time_basis": "component tables use mean summed Kernel Stats HLO self-time per GPU-step; interval summary uses unions of raw stream events",
+  "device_count": 8,
+  "kernel_stats_rows": 305,
+  "total_summed_self_time_ms": 26689.035050375,
+  "phase_summary_ms": {
+    "backward": 7287.86576,
+    "backward_collective": 3360.329261375,
+    "forward": 2322.844076625,
+    "forward_collective": 4298.82280425,
+    "gradient_accumulation": 0.021015125000000003,
+    "loss": 0.9531805,
+    "optimizer": 8.533312125,
+    "other_collective": 1292.8747481249998,
+    "remat": 2210.535027,
+    "remat_collective": 5608.803542625,
+    "unattributed": 297.45232262500014
+  },
+  "phase_summary_share": {
+    "backward": 0.27306591438185396,
+    "backward_collective": 0.1259067349206312,
+    "forward": 0.0870336477973325,
+    "forward_collective": 0.1610707466993865,
+    "gradient_accumulation": 7.874066994304736e-07,
+    "loss": 3.571431107197737e-05,
+    "optimizer": 0.0003197310097159208,
+    "other_collective": 0.04844216906623733,
+    "remat": 0.08282558821732074,
+    "remat_collective": 0.21015385277281473,
+    "unattributed": 0.011145113416935646
+  },
+  "forward_map": {
+    "embedding": {
+      "time_ms": 9.183540375,
+      "occurrences_per_gpu": 8.0
+    },
+    "pre_attention_norm": {
+      "time_ms": 0.0,
+      "occurrences_per_gpu": 0.0
+    },
+    "attention": {
+      "time_ms": 311.439758625,
+      "occurrences_per_gpu": 1120.0
+    },
+    "attention_residual": {
+      "time_ms": 0.0,
+      "occurrences_per_gpu": 0.0
+    },
+    "post_attention_norm": {
+      "time_ms": 0.0,
+      "occurrences_per_gpu": 0.0
+    },
+    "router": {
+      "time_ms": 37.964183625,
+      "occurrences_per_gpu": 1792.0
+    },
+    "dispatch": {
+      "time_ms": 157.28336712499998,
+      "occurrences_per_gpu": 448.0
+    },
+    "expert_mlp": {
+      "time_ms": 1541.829023625,
+      "occurrences_per_gpu": 560.0
+    },
+    "combine": {
+      "time_ms": 120.29346375,
+      "occurrences_per_gpu": 112.0
+    },
+    "moe_residual": {
+      "time_ms": 0.0,
+      "occurrences_per_gpu": 0.0
+    },
+    "scan_and_layout": {
+      "time_ms": 135.3643965,
+      "occurrences_per_gpu": 2244.0
+    },
+    "final_norm": {
+      "time_ms": 0.089365625,
+      "occurrences_per_gpu": 4.0
+    },
+    "lm_head": {
+      "time_ms": 9.396977375,
+      "occurrences_per_gpu": 2.0
+    }
+  },
+  "backward_map": {
+    "embedding_vjp": {
+      "time_ms": 7.114073250000001,
+      "occurrences_per_gpu": 2.0
+    },
+    "lm_head_vjp": {
+      "time_ms": 17.91151375,
+      "occurrences_per_gpu": 8.0
+    },
+    "final_norm_vjp": {
+      "time_ms": 0.38546762500000004,
+      "occurrences_per_gpu": 8.0
+    },
+    "attention_backward": {
+      "time_ms": 958.1701512500002,
+      "occurrences_per_gpu": 1792.0
+    },
+    "layer_norm_vjps": {
+      "time_ms": 88.23530112499999,
+      "occurrences_per_gpu": 1008.0
+    },
+    "moe_backward": {
+      "time_ms": 6065.244340499999,
+      "occurrences_per_gpu": 2688.0
+    },
+    "scan_and_layout": {
+      "time_ms": 150.80491249999997,
+      "occurrences_per_gpu": 3144.0
+    }
+  },
+  "remat_map": {
+    "attention_replay": {
+      "time_ms": 1.523102375,
+      "occurrences_per_gpu": 224.0
+    },
+    "layer_norm_replay": {
+      "time_ms": 11.797538375,
+      "occurrences_per_gpu": 336.0
+    },
+    "moe_replay": {
+      "time_ms": 2197.2143862499997,
+      "occurrences_per_gpu": 2688.0
+    },
+    "scan_and_layout": {
+      "time_ms": 0.0,
+      "occurrences_per_gpu": 0.0
+    }
+  },
+  "communication": {
+    "forward_collective": {
+      "time_ms": 4298.82280425,
+      "components": {
+        "dispatch": {
+          "time_ms": 375.34693425,
+          "occurrences_per_gpu": 112.0
+        },
+        "expert_down": {
+          "time_ms": 2600.742872375,
+          "occurrences_per_gpu": 224.0
+        },
+        "router_weights": {
+          "time_ms": 10.4692235,
+          "occurrences_per_gpu": 112.0
+        },
+        "scan_and_layout": {
+          "time_ms": 1312.263774125,
+          "occurrences_per_gpu": 224.0
+        }
+      }
+    },
+    "backward_collective": {
+      "time_ms": 3360.329261375,
+      "components": {
+        "dispatch": {
+          "time_ms": 850.0899563749999,
+          "occurrences_per_gpu": 112.0
+        },
+        "expert_down": {
+          "time_ms": 399.52310987500005,
+          "occurrences_per_gpu": 112.0
+        },
+        "router_masks": {
+          "time_ms": 860.4348126250001,
+          "occurrences_per_gpu": 112.0
+        },
+        "scan_and_layout": {
+          "time_ms": 1250.2813825,
+          "occurrences_per_gpu": 112.0
+        }
+      }
+    },
+    "remat_collective": {
+      "time_ms": 5608.803542625,
+      "components": {
+        "dispatch": {
+          "time_ms": 385.7664385,
+          "occurrences_per_gpu": 112.0
+        },
+        "expert_activation": {
+          "time_ms": 2094.72285925,
+          "occurrences_per_gpu": 112.0
+        },
+        "expert_down": {
+          "time_ms": 3100.3232232499995,
+          "occurrences_per_gpu": 224.0
+        },
+        "router_weights": {
+          "time_ms": 27.991021625,
+          "occurrences_per_gpu": 224.0
+        }
+      }
+    },
+    "other_collective": {
+      "time_ms": 1292.8747481249998,
+      "components": {
+        "other": {
+          "time_ms": 1292.7591824999997,
+          "occurrences_per_gpu": 568.0
+        },
+        "scan_and_layout": {
+          "time_ms": 0.115565625,
+          "occurrences_per_gpu": 3.0
+        }
+      }
+    }
+  },
+  "interval_summary": {
+    "per_device": [
+      {
+        "gpu": 0,
+        "compute_union_s": 12.210528812,
+        "communication_union_s": 14.451571688,
+        "communication_hidden_s": 5.938005397,
+        "communication_exposed_s": 8.513566291,
+        "busy_union_s": 20.724095103,
+        "event_span_s": 20.759112418,
+        "idle_within_event_span_s": 0.035017315
+      },
+      {
+        "gpu": 1,
+        "compute_union_s": 12.096214452,
+        "communication_union_s": 14.629496595,
+        "communication_hidden_s": 6.002151805,
+        "communication_exposed_s": 8.62734479,
+        "busy_union_s": 20.723559242,
+        "event_span_s": 20.75908869,
+        "idle_within_event_span_s": 0.035529448
+      },
+      {
+        "gpu": 2,
+        "compute_union_s": 12.174467309,
+        "communication_union_s": 14.50397722,
+        "communication_hidden_s": 5.955033279,
+        "communication_exposed_s": 8.548943941,
+        "busy_union_s": 20.72341125,
+        "event_span_s": 20.759100088,
+        "idle_within_event_span_s": 0.035688838
+      },
+      {
+        "gpu": 3,
+        "compute_union_s": 12.157239185,
+        "communication_union_s": 14.566140033,
+        "communication_hidden_s": 5.99976076,
+        "communication_exposed_s": 8.566379273,
+        "busy_union_s": 20.723618458,
+        "event_span_s": 20.759107402,
+        "idle_within_event_span_s": 0.035488944
+      },
+      {
+        "gpu": 4,
+        "compute_union_s": 12.109822781,
+        "communication_union_s": 14.545850601,
+        "communication_hidden_s": 5.933697376,
+        "communication_exposed_s": 8.612153225,
+        "busy_union_s": 20.721976006,
+        "event_span_s": 20.759107742,
+        "idle_within_event_span_s": 0.037131736
+      },
+      {
+        "gpu": 5,
+        "compute_union_s": 12.070277031,
+        "communication_union_s": 14.63378827,
+        "communication_hidden_s": 5.982604268,
+        "communication_exposed_s": 8.651184002,
+        "busy_union_s": 20.721461033,
+        "event_span_s": 20.759155405,
+        "idle_within_event_span_s": 0.037694372
+      },
+      {
+        "gpu": 6,
+        "compute_union_s": 12.100602061,
+        "communication_union_s": 14.557829619,
+        "communication_hidden_s": 5.936773291,
+        "communication_exposed_s": 8.621056328,
+        "busy_union_s": 20.721658389,
+        "event_span_s": 20.759108156,
+        "idle_within_event_span_s": 0.037449767
+      },
+      {
+        "gpu": 7,
+        "compute_union_s": 12.106383842,
+        "communication_union_s": 14.597988825,
+        "communication_hidden_s": 5.982693072,
+        "communication_exposed_s": 8.615295753,
+        "busy_union_s": 20.721679595,
+        "event_span_s": 20.759154746,
+        "idle_within_event_span_s": 0.037475151
+      }
+    ],
+    "mean": {
+      "compute_union_s": 12.128191934125,
+      "communication_union_s": 14.560830356375,
+      "communication_hidden_s": 5.966339906,
+      "communication_exposed_s": 8.594490450375,
+      "busy_union_s": 20.7226823845,
+      "event_span_s": 20.759116830875,
+      "idle_within_event_span_s": 0.036434446375
+    },
+    "min": {
+      "compute_union_s": 12.070277031,
+      "communication_union_s": 14.451571688,
+      "communication_hidden_s": 5.933697376,
+      "communication_exposed_s": 8.513566291,
+      "busy_union_s": 20.721461033,
+      "event_span_s": 20.75908869,
+      "idle_within_event_span_s": 0.035017315
+    },
+    "max": {
+      "compute_union_s": 12.210528812,
+      "communication_union_s": 14.63378827,
+      "communication_hidden_s": 6.002151805,
+      "communication_exposed_s": 8.651184002,
+      "busy_union_s": 20.724095103,
+      "event_span_s": 20.759155405,
+      "idle_within_event_span_s": 0.037694372
+    }
+  },
+  "notes": [
+    "Each Kernel Stats row is assigned to one phase and one component.",
+    "Parameter-gradient kernels remain in their originating attention, MoE, norm, embedding, or head VJP.",
+    "Residual additions that disappeared into adjacent fusions have no standalone duration.",
+    "Summed component self-times are not wall time; use the raw interval unions for overlap reconciliation."
+  ]
+}
