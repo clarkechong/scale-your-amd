@@ -200,7 +200,7 @@ The result is a single profiling artifact that combines framework information,
 compiler metadata, and GPU execution records. This artifact is an XSpace,
 which XProf reads.
 
-{% include figure.liquid path="pages/img/ch3-jax-profiler-pipeline.png" class="img-fluid" alt="Minimal ROCm profiler pipeline from RocmTracer through RocmTraceCollector to XSpace and XProf" caption="The ROCm profiler path reduced to its core objects. The tracer receives runtime records; the collector organizes them into XPlanes; the profiler session stores those planes in XSpace for XProf." %}
+{% include figure.liquid path="pages/img/ch3-jax-profiler-pipeline.png" class="img-fluid" alt="Vertical white-on-black pipeline from jax.profiler through the XLA profiler backend to an XSpace protobuf, then XProf parser, timeline, roofline, kernel statistics, and framework ops" caption="The JAX profiler path. Python starts a session, the XLA profiler backend populates an XSpace protobuf, and XProf parses that schema into timeline, roofline, kernel-statistics, and framework-op views." %}
 
 ### XSpace
 

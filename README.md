@@ -1,4 +1,6 @@
-# Training on MI355X with JAX and ROCm
+# How to Scale Your Model on ROCm
+
+*An AMD companion to How to Scale Your Model, performed on MI355X*
 
 A Distill-style Jekyll site, published at https://clarkechong.github.io/scale-your-amd.
 

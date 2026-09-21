@@ -1,0 +1,1042 @@
+# JAX ML Scaling Book — Content Outline
+
+- Source: [jax-ml/scaling-book](https://github.com/jax-ml/scaling-book)
+- Revision: `ac72f020e4320b02e54b6f1b2324cdf1c579388c`
+- Retrieved: 2026-09-13
+- Method: source-order outline of substantive topics, exercises, and appendices; labels are intentionally compressed.
+
+- Introduction — How to Scale Your Model
+  - Purpose
+    - Performance estimation
+    - Parallelism selection
+    - Training cost
+    - Inference cost
+    - Algorithm design
+    - Hardware co-design
+  - Prerequisites
+    - LLM basics
+    - Transformers
+    - Training
+    - JAX
+  - Goals
+    - Sharding choice
+    - Runtime estimates
+  - Motivation
+    - Hardware limits
+    - Scaling laws
+    - Roofline efficiency
+    - Architecture feasibility
+  - Strong scaling
+    - Linear throughput
+    - Added communication
+    - Communication bounds
+    - Single-chip bounds
+  - Hardware balance
+    - Compute
+    - Bandwidth
+    - Capacity
+  - Hardware evolution
+    - TPU specialization
+    - Systolic arrays
+    - GPU specialization
+    - Tensor Cores
+  - Book map
+    - Rooflines
+    - TPU hardware
+    - Sharding
+    - Transformer math
+    - Training
+    - Applied training
+    - Inference
+    - Applied inference
+    - Profiling
+    - JAX programming
+    - Conclusions
+    - GPU systems
+
+- Part I — Preliminaries
+  - Chapter 1 — Rooflines
+    - Runtime decomposition
+      - Compute time
+      - HBM traffic
+      - Interchip traffic
+      - ICI
+      - DCN
+      - PCIe
+    - Overlap model
+      - Maximum bound
+      - Sum bound
+      - Runtime overhead
+    - Arithmetic intensity
+      - FLOPs/byte
+      - Hardware intensity
+      - Compute-bound
+      - Bandwidth-bound
+      - Dot-product example
+    - Roofline plots
+      - Intensity axis
+      - Throughput axis
+      - Ridge point
+      - Algorithm shifts
+    - Matmul roofline
+      - FLOP counting
+      - Byte counting
+      - Exact intensity
+      - Batch approximation
+      - Critical batch
+      - Token batches
+      - Quantization
+      - Tiling
+      - Local memory
+    - Network roofline
+      - Sharded contraction
+      - Partial sums
+      - Link bandwidth
+      - Critical width
+    - Exercises
+      - INT8 matmul
+      - Mixed precision
+      - Roofline plotting
+      - Batched weights
+      - H100 roofline
+
+  - Chapter 2 — TPU Hardware
+    - TPU anatomy
+      - TensorCore
+      - MXU
+      - VPU
+      - VMEM
+      - HBM
+      - Scalar core
+      - SMEM
+    - MXU execution
+      - Matrix tiles
+      - Systolic arrays
+      - BF16
+      - INT8
+      - V6e tiles
+    - Memory movement
+      - HBM staging
+      - VMEM staging
+      - VREG staging
+      - Transfer overlap
+      - Weight reuse
+    - VMEM effects
+      - Arithmetic intensity
+      - Prefetching
+      - Layer residency
+    - Chip organization
+      - TPU cores
+      - Megacore
+      - Shared memory
+      - Generation differences
+    - Host organization
+      - Trays
+      - TPU VMs
+      - PCIe
+      - Host offload
+    - TPU networking
+      - ICI
+      - Direct links
+      - 2D torus
+      - 3D torus
+      - Wraparound
+      - Twisted torus
+      - Superpods
+      - Optical cubes
+      - Slice topology
+      - Multi-slice DCN
+    - GPU comparison
+      - Switched networks
+      - Neighbor networks
+      - Hop count
+      - Scale limits
+    - Bandwidth hierarchy
+      - HBM
+      - ICI
+      - PCIe
+      - DCN
+    - TPU specifications
+      - TPU v3
+      - TPU v4p
+      - TPU v5p
+      - TPU v5e
+      - TPU v6e
+      - TPU7x
+      - Pod sizes
+      - Host sizes
+      - HBM
+      - FLOPs
+      - ICI bandwidth
+    - Shape constraints
+      - MXU padding
+      - Lower precision
+    - Exercises
+      - LLM latency
+      - Pod inventory
+      - PCIe intensity
+      - HBM matmul
+      - VMEM matmul
+      - ICI routing
+      - Host gathering
+    - Appendix A — TPU Internals
+      - VREGs
+      - VPU lanes
+      - Sublanes
+      - Vector FLOPs
+      - Reductions
+      - XLU
+      - GPU analogy
+      - Scalar dispatch
+      - DMA limits
+    - Appendix B — Systolic Arrays
+      - ALU grid
+      - Weight flow
+      - Activation flow
+      - Diagonal loading
+      - Output streaming
+      - Pipeline bubbles
+      - Multiple MXUs
+      - V6e scaling
+
+  - Chapter 3 — Sharded Matrices
+    - Scaling motives
+      - HBM limits
+      - Training speed
+      - Inference latency
+    - Sharding notation
+      - Device mesh
+      - Mesh axes
+      - Logical axes
+      - Global shape
+      - Local shape
+      - Replication
+      - Partial sums
+      - Unreduced axes
+    - Sharding layouts
+      - Single-axis
+      - Multi-axis
+      - Partial replication
+      - Flattened axes
+      - Traversal order
+    - JAX notation
+      - `Mesh`
+      - Axis types
+      - `PartitionSpec`
+      - `NamedSharding`
+      - Input shardings
+      - Output shardings
+      - Addressable shards
+    - Sharded operations
+      - Elementwise ops
+      - Contractions
+      - Block matmuls
+      - Local products
+      - Partial products
+    - Matmul case 1
+      - Unsharded contraction
+      - Inherited sharding
+      - Local matmuls
+      - Zero communication
+    - Matmul case 2
+      - One-sided contraction
+      - Input AllGather
+      - Local matmul
+      - AllReduce alternative
+      - Strategy tradeoff
+    - AllGather
+      - Sharding removal
+      - Ring algorithm
+      - Unidirectional ring
+      - Bidirectional ring
+      - Bandwidth model
+      - Latency floor
+      - Multi-axis gather
+      - Logical remapping
+    - Matmul case 3
+      - Matched contraction
+      - Partial sums
+      - AllReduce
+      - ReduceScatter
+    - Matmul case 4
+      - Shared output axis
+      - Invalid output
+      - Operand gathering
+      - Downstream choice
+    - Core collectives
+      - AllGather
+      - ReduceScatter
+      - AllReduce
+      - AllToAll
+    - AllToAll
+      - Layout conversion
+      - Subscript movement
+      - MoE routing
+      - Bidirectional routing
+      - ND scaling
+    - Collective duality
+      - Gather transpose
+      - Scatter transpose
+      - Broadcast transpose
+      - Backpropagation
+    - Collective matmul
+      - Deferred gathering
+      - Chunk pipelining
+      - Ring reduction
+      - Compute overlap
+      - Mosaic implementation
+    - Summary
+      - Four cases
+      - Four collectives
+      - Bandwidth regime
+      - Latency regime
+    - Exercises
+      - Replication ratio
+      - Collective latency
+      - Tiny AllGather
+      - Matmul strategies
+      - Minimum latency
+      - Case identification
+      - Transformer sharding
+      - Collective benchmarks
+      - Alternative matmul
+      - AllToAll derivation
+
+- Part II — Transformers
+  - Chapter 4 — Transformer Math
+    - Counting dots
+      - Dot products
+      - Matrix products
+      - General contractions
+      - Einsum dimensions
+      - FLOP counting
+      - Byte counting
+    - Backpropagation
+      - Input gradients
+      - Weight gradients
+      - Forward cost
+      - Backward cost
+      - Six-FLOP rule
+    - Transformer anatomy
+      - Decoder blocks
+      - SwiGLU
+      - Gating projections
+      - MHA
+      - MQA
+      - GQA
+      - Self-attention
+      - Cross-attention
+      - Pre-norm
+      - Post-norm
+      - Causal masking
+    - MLP accounting
+      - Parameters
+      - Training FLOPs
+      - Gate activation
+    - Attention accounting
+      - Q projection
+      - K projection
+      - V projection
+      - O projection
+      - QK product
+      - Softmax
+      - Value product
+      - Projection FLOPs
+      - Score FLOPs
+    - Other accounting
+      - Normalization
+      - Vocabulary projection
+      - Embeddings
+    - Global heuristics
+      - Parameter dominance
+      - `6 × params × tokens`
+      - Attention crossover
+      - Context scaling
+      - Local attention
+    - Mixture-of-Experts
+      - Expert parameters
+      - Activated parameters
+      - Top-k routing
+      - Sparsity ratio
+      - Expert AllToAll
+    - Gradient checkpointing
+      - Activation storage
+      - Block remat
+      - Matmul checkpoints
+      - Recomputation
+      - Eight-FLOP rule
+    - KV caching
+      - Prefill
+      - Generation
+      - Cache shape
+      - Cache sizing
+      - GQA savings
+    - Exercises
+      - Model accounting
+      - Sharded FLOPs
+      - Tensor contraction
+      - GQA intensity
+      - Attention crossover
+      - Rematerialization
+      - DeepSeek utilization
+      - MoE roofline
+    - Appendix — Flash Attention
+      - Quadratic attention
+      - Score elision
+      - KV chunking
+      - Online softmax
+      - Running maxima
+      - Running sums
+      - SRAM tiling
+      - Flash backward
+      - Ring Attention
+
+  - Chapter 5 — Training Parallelism
+    - Scaling objective
+      - Strong scaling
+      - Per-device work
+      - Communication growth
+      - Compute overlap
+    - Baseline model
+      - Dense MLP
+      - Forward pass
+      - Backward pass
+      - Gradient equations
+    - Strategy overview
+      - Data parallelism
+      - FSDP
+      - Tensor parallelism
+      - Pipeline parallelism
+    - Data parallelism
+      - Batch sharding
+      - State replication
+      - Local forward
+      - Gradient AllReduce
+      - Activation savings
+      - Adam memory
+      - Communication roofline
+      - Multi-axis bandwidth
+      - Context parallelism
+      - Ring Attention
+    - FSDP
+      - Parameter sharding
+      - Gradient sharding
+      - Optimizer sharding
+      - Weight AllGather
+      - Gradient ReduceScatter
+      - Weight prefetch
+      - ZeRO-1
+      - ZeRO-2
+      - ZeRO-3
+      - Communication roofline
+      - Critical batch
+    - Tensor parallelism
+      - Hidden sharding
+      - Feedforward sharding
+      - Activation AllGather
+      - Output ReduceScatter
+      - Paired matmuls
+      - Communication roofline
+      - Parallelism limit
+      - Precision effects
+    - Mixed FSDP/TP
+      - Two-axis sharding
+      - Weight movement
+      - Activation movement
+      - Forward algorithm
+      - Backward algorithm
+      - Overlap
+      - Optimal split
+      - Compute threshold
+      - Regime plots
+    - Pipeline parallelism
+      - Layer sharding
+      - Stage transfers
+      - Forward staging
+      - Backward staging
+      - Pipeline bubbles
+      - Microbatching
+      - Zero-bubble schedules
+    - Cross-pod scaling
+      - Multi-slice
+      - DCN
+      - Pod-level FSDP
+      - Inter-pod DP
+      - Hybrid parallelism
+      - DCN roofline
+    - Takeaways
+      - Strategy regimes
+      - Memory constraints
+      - Communication constraints
+      - Batch constraints
+    - Exercises
+      - LLaMA-2 parameters
+      - Training memory
+      - Parallelism plan
+    - Appendix
+      - Backward communication
+      - Matmul derivatives
+      - Collective derivation
+
+  - Chapter 6 — Training LLaMA 3
+    - Model architecture
+      - 8B
+      - 70B
+      - 405B
+      - Model dimensions
+      - Attention heads
+      - KV heads
+      - Vocabulary
+    - Parameter counting
+      - SwiGLU
+      - Attention
+      - Embeddings
+      - Output head
+      - MLP dominance
+    - Training FLOPs
+      - Per-token FLOPs
+      - Token budget
+      - Total FLOPs
+      - Single-chip runtime
+      - Pod runtime
+      - MFU
+    - Training memory
+      - Parameters
+      - Adam state
+      - Activations
+      - Checkpoints
+      - Recompute
+      - Minimum chips
+    - Training sharding
+      - Sequence limits
+      - Pure FSDP
+      - Sequence FSDP
+      - Communication bound
+      - Mixed FSDP/TP
+      - Optimal split
+      - Data parallelism
+      - Sequence parallelism
+      - Tensor parallelism
+    - Exercises
+      - Four-pod 70B
+      - LLaMA 405B
+
+  - Chapter 7 — Transformer Inference
+    - Inference algorithm
+      - Naive sampling
+      - Prefix reprocessing
+      - KV caching
+      - Prefill
+      - Generation
+      - EOS stopping
+    - Optimization targets
+      - Offline inference
+      - Chat serving
+      - Edge inference
+      - TTFT
+      - Token latency
+      - Throughput
+      - Cost
+    - Transformer anatomy
+      - Linear layers
+      - Attention
+      - Normalization
+      - Sampling
+      - Fusion
+    - Linear roofline
+      - Matmul time
+      - HBM time
+      - Critical batch
+      - Weight precision
+      - Compute precision
+      - Prefill behavior
+      - Decode behavior
+    - Attention roofline
+      - Flash Attention
+      - KV reads
+      - Score FLOPs
+      - Prefill intensity
+      - Decode intensity
+      - Bandwidth bound
+    - Latency model
+      - Parameter loading
+      - KV loading
+      - MLP compute
+      - Minimum step
+      - Maximum throughput
+      - Pareto frontier
+    - Memory model
+      - Parameter memory
+      - KV memory
+      - Activation memory
+      - Training comparison
+      - LLaMA 2-13B
+      - GQA comparison
+    - Generation techniques
+      - GQA
+      - Local attention
+      - Cross-layer KV
+      - Quantization
+      - Ragged reads
+      - Paged Attention
+    - Distributed prefill
+      - Model parallelism
+      - Sequence parallelism
+      - Pipeline parallelism
+      - Ring Attention
+      - TTFT scaling
+    - Distributed generation
+      - FSDP exclusion
+      - Data replicas
+      - Model parallelism
+      - Oversharding
+      - ICI/HBM bound
+    - KV sharding
+      - Head sharding
+      - Batch sharding
+      - Sequence sharding
+      - Query AllToAll
+      - Output AllToAll
+      - Stationary caches
+    - Inference engines
+      - Coupled serving
+      - Interleaving
+      - Disaggregation
+      - Continuous batching
+      - Prefix caching
+      - Slot scheduling
+      - KV transfer
+      - JetStream
+      - Prefill API
+      - Insert API
+      - Generate API
+    - Exercises
+      - Synthetic model
+      - KV capacity
+      - Parameter loading
+      - Prefill sharding
+      - Decode sharding
+      - MoE inference
+      - Expert sharding
+      - 2D stationary
+    - Appendix A — Batch Rule
+      - Weight prefetch
+      - Flat latency
+      - Throughput peak
+    - Appendix B — 2D Stationary
+      - Dual-axis weights
+      - Activation collectives
+      - Attention extension
+    - Appendix C — Latency
+      - Ring latency
+      - Hop count
+      - Small messages
+      - Model bound
+    - Appendix D — Speculation
+      - Draft models
+      - N-gram drafts
+      - Target verification
+      - Accepted prefix
+      - Bonus token
+      - Embedded drafters
+      - Non-greedy decoding
+      - Metropolis-Hastings
+
+  - Chapter 8 — Serving LLaMA 3
+    - Serving setup
+      - LLaMA 3-70B
+      - TPU v5e
+      - Hardware pricing
+      - FLOPs/dollar
+    - KV sizing
+      - Per-token cache
+      - Context scaling
+      - Batch scaling
+      - Parameter comparison
+    - Serving memory
+      - BF16
+      - INT8
+      - INT4
+      - Minimum topology
+      - Maximum batch
+    - Decode roofline
+      - Critical batch
+      - HBM bound
+      - FLOPs bound
+      - ICI bound
+      - Step latency
+      - Per-chip throughput
+    - Throughput analysis
+      - Quantization
+      - Topology size
+      - Latency floor
+      - Requests/chip
+      - Doubling topology
+    - Generation sharding
+      - Model parallelism
+      - Communication limit
+      - Memory-bound scaling
+      - Oversharding
+      - Practical range
+    - Prefill analysis
+      - Prefill FLOPs
+      - MFU
+      - Cache eviction
+      - Sequence completion
+    - Disaggregated serving
+      - Prefill servers
+      - Decode servers
+      - Server ratio
+    - Pareto visualization
+      - Batch sweep
+      - Context sweep
+      - Parameter loading
+      - KV loading
+      - Compute time
+      - Cost/latency curve
+    - Exercises
+      - LLaMA 405B
+      - LLaMA 8B
+      - Latency target
+      - Inference implementation
+      - Weight loading
+      - KV caching
+      - Batched decode
+      - Pallas attention
+
+- Part III — Practical Tutorials
+  - Chapter 9 — TPU Profiling
+    - Software stack
+      - JAX
+      - `jax.jit`
+      - StableHLO
+      - XLA
+      - HLO
+      - LLO
+      - Machine code
+      - TPU IMEM
+      - Pallas
+    - Compiler behavior
+      - Tracing
+      - Fusion
+      - Layouts
+      - Sharding
+      - DMA scheduling
+      - Systolic execution
+    - HLO inspection
+      - `lower`
+      - `compile`
+      - `as_text`
+      - Parameters
+      - Conversions
+      - Dot dimensions
+    - JAX Profiler
+      - Trace capture
+      - Synchronization
+      - TensorBoard
+      - XProf
+      - Perfetto
+      - Profile sharing
+    - Trace Viewer
+      - TPU timeline
+      - Per-core actions
+      - XLA ops
+      - Named scopes
+      - Source mapping
+      - Layer isolation
+    - XLA op anatomy
+      - Op name
+      - Shape
+      - Dtype
+      - Layout
+      - Memory space
+      - Arguments
+      - Dependencies
+    - Physical layouts
+      - Axis order
+      - Tiling
+      - Padding
+      - Nested tiles
+      - Retiling
+      - Relayout copies
+    - Graph Viewer
+      - HLO graphs
+      - Fusion graphs
+      - Source mapping
+    - Example profile
+      - Transformer MLP
+      - Local shapes
+      - Global shapes
+      - Compute roofline
+      - ReduceScatter
+      - Attention
+      - Head sharding
+    - Memory Profile
+      - Allocation timeline
+      - OOM debugging
+      - Parameter memory
+      - Free capacity
+    - Exercises
+      - Profile reconstruction
+      - Suspicious ops
+      - Sharding inference
+      - Sharding repair
+      - `with_sharding_constraint`
+      - MFU improvement
+
+  - Chapter 10 — JAX Parallelism
+    - Parallelism modes
+      - Automatic
+      - Explicit
+      - Manual
+    - Automatic mode
+      - `jax.jit`
+      - Shardy
+      - Global view
+      - Auto axes
+      - Implicit collectives
+      - Input shardings
+      - Output shardings
+      - HLO inspection
+      - Sharding constraints
+    - Explicit mode
+      - Explicit axes
+      - Sharding types
+      - Rule propagation
+      - `jax.typeof`
+      - Ambiguity errors
+      - Mode composition
+    - Manual mode
+      - `jax.shard_map`
+      - Local view
+      - Input specs
+      - Output specs
+      - Explicit collectives
+      - `all_gather`
+      - `psum`
+      - `pmean`
+      - `ppermute`
+    - Collective matmul
+      - Naive AllGather
+      - Chunk rotation
+      - Partial products
+      - Compute overlap
+      - Wang algorithm
+      - Performance comparison
+    - Exercises
+      - Shard averages
+      - Shard-local roll
+      - MoE routing
+      - Dense masking
+      - Padded sorting
+      - `ragged_dot`
+      - Explicit AllToAll
+      - Top-k routing
+      - Transformer AllReduce
+      - ReduceScatter matmul
+      - Full MLP
+      - Bidirectional collectives
+
+- Part IV — Conclusions and Bonus Content
+  - Chapter 11 — Conclusions
+    - Acknowledgments
+      - Foundational ideas
+      - Writing
+      - Editing
+      - Visuals
+      - GPU chapter
+    - Further reading
+      - TPU architecture
+      - Hardware co-design
+      - GPU rooflines
+      - Pallas kernels
+      - CUDA matmul
+      - Distributed arrays
+      - JAX parallelism
+      - LLM performance
+      - Efficient inference
+      - Ultra-Scale
+      - CS336
+      - ML engineering
+      - PyTorch internals
+      - Collective anatomy
+    - Research directions
+      - Systems writing
+      - Hardware-light work
+    - Feedback
+      - Comments
+      - Email
+      - GitHub
+
+  - Chapter 12 — GPU Systems
+    - GPU anatomy
+      - H100
+      - B200
+      - SMs
+      - Subpartitions
+      - CUDA cores
+      - Tensor Cores
+      - Warp schedulers
+      - Register files
+      - SMEM
+      - HBM
+    - GPU execution
+      - SIMD
+      - SIMT
+      - FMA
+      - Warp divergence
+      - Resident warps
+      - Latency hiding
+      - Warp groups
+      - TMEM
+    - GPU memory
+      - Registers
+      - Occupancy limits
+      - SMEM/L1
+      - Shared L2
+      - Cache thrashing
+      - HBM capacity
+      - HBM bandwidth
+    - GPU specifications
+      - V100
+      - A100
+      - H100
+      - H200
+      - B200
+      - Compute throughput
+      - Memory capacity
+      - Memory bandwidth
+    - GPU/TPU comparison
+      - Component mapping
+      - Modularity
+      - Control model
+      - Compiler reliance
+      - Cache capacity
+      - Chip economics
+      - Weight prefetching
+    - Hardware exercises
+      - CUDA-core count
+      - Vector FLOPs
+      - Matmul intensity
+      - Matmul runtime
+      - Cache capacity
+      - Clock estimation
+      - Vector addition
+    - GPU networking
+      - TPU contrast
+      - Switched hierarchy
+      - NVLink domains
+      - GPU nodes
+      - Scalable Units
+      - InfiniBand
+      - Ethernet
+      - Per-GPU NICs
+    - Node networking
+      - NVLink
+      - NVSwitch
+      - Full duplex
+      - GPU egress
+      - Bisection bandwidth
+      - Ampere
+      - Hopper
+      - Blackwell
+      - NVL72
+    - Node exercises
+      - Total bandwidth
+      - Bisection bandwidth
+      - AllGather cost
+    - Beyond-node networking
+      - DGX SuperPod
+      - Fat trees
+      - Leaf switches
+      - Spine switches
+      - Full bisection
+      - Oversubscription
+      - H100 SuperPod
+      - GB200 NVL72
+      - TPU comparison
+    - Fabric exercises
+      - Fat-tree proof
+      - Pod expansion
+      - Core switches
+    - GPU collectives
+      - NCCL
+      - NVSHMEM
+      - Algorithm selection
+      - Message latency
+      - Topology awareness
+    - Intra-node collectives
+      - Ring AllGather
+      - ReduceScatter
+      - AllReduce
+      - Tree reduction
+      - AllToAll
+      - Ragged AllToAll
+      - MoE routing
+      - Empirical bandwidth
+      - SHARP
+      - In-network reduction
+    - Cross-node collectives
+      - Hierarchical reduction
+      - Node reduction
+      - Leaf reduction
+      - Spine reduction
+      - Full bisection
+      - Cross-node AllToAll
+      - Separate-axis reductions
+    - Collective exercises
+      - SU AllGather
+      - SHARP AllReduce
+      - Spine AllReduce
+      - Two-node AllGather
+    - GPU LLM rooflines
+      - MLP model
+      - Collective bandwidth
+      - Data parallelism
+      - FSDP
+      - MoE inflation
+      - Tensor parallelism
+      - Expert parallelism
+      - Pipeline parallelism
+      - Latency caveats
+    - Scaling examples
+      - DeepSeek V3
+      - LLaMA 3
+      - Megatron-LM
+      - Mixed parallelism
+    - Scaling recipe
+      - Dense models
+      - MoE models
+      - TP limits
+      - EP limits
+      - FSDP limits
+      - Pipeline tradeoffs
+    - Roofline exercises
+      - B200 rooflines
+      - LLaMA 70B
+      - Megatron configs
+    - Further reading
+      - Tensor Core history
+      - Blackwell
+      - SuperPod networking
+      - DeepSeek
+      - CUDA matmul
+      - Ultra-Scale
+    - Appendix A — GB200
+      - NVLink 5
+      - NVL72
+      - Scale-out bandwidth
+      - Roofline effects
+      - Grace Hopper
+      - NVLink C2C
+      - Host offload
+    - Appendix B — Networking
+      - NVSwitch internals
+      - Switch capacity
+      - Node bandwidth
+      - Leaf bandwidth
+      - Spine bandwidth
+      - Per-GPU rates
+      - Empirical AllReduce
+      - Empirical AllGather
+      - AllToAll accuracy

@@ -22,7 +22,18 @@ import matplotlib
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt  # noqa: E402
+from matplotlib.font_manager import FontProperties, fontManager  # noqa: E402
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch  # noqa: E402
+
+for _font in (
+    "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+    "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+):
+    fontManager.addfont(_font)
+
+# Liberation Sans is the Arial-metric face available on this host.
+ARIAL = FontProperties(fname="/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf")
+ARIAL_BOLD = FontProperties(fname="/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf")
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "pages" / "img"
@@ -150,111 +161,337 @@ def save(fig, ax, name: str, *, xlim=(0, 14), ylim=(0.25, 9.35)) -> Path:
 
 
 def jax_profiler_pipeline() -> Path:
-    fig, ax = plt.subplots(figsize=(14.0, 4.6))
-    ax.text(
-        0.25,
-        4.15,
-        "How ROCm events become an XSpace profile",
-        fontsize=15,
-        weight="bold",
-        color=INK,
-        ha="left",
-    )
-    ax.text(
-        0.25,
-        3.82,
-        "OpenXLA separates event capture from organization and storage.",
-        fontsize=9.2,
-        color=MUTED,
-        ha="left",
-    )
+    """Vertical jax.profiler → XSpace → XProf pipeline, white on black."""
+    white = "#ffffff"
+    black = "#000000"
+    fig, ax = plt.subplots(figsize=(5.8, 11.2), facecolor=black)
+    ax.set_facecolor(black)
 
-    box(
-        ax,
-        1.45,
-        2.55,
+    def node(cx, cy, w, h, text, *, fontsize=11.5, weight="normal"):
+        ax.add_patch(
+            FancyBboxPatch(
+                (cx - w / 2, cy - h / 2),
+                w,
+                h,
+                boxstyle="square,pad=0",
+                facecolor=black,
+                edgecolor=white,
+                linewidth=1.35,
+                zorder=3,
+            )
+        )
+        ax.text(
+            cx,
+            cy,
+            text,
+            ha="center",
+            va="center",
+            fontsize=fontsize,
+            weight=weight,
+            color=white,
+            linespacing=1.35,
+            family="DejaVu Sans",
+            parse_math=False,
+            zorder=4,
+        )
+
+    def down_arrow(y0, y1, label=""):
+        ax.annotate(
+            "",
+            xy=(0, y1),
+            xytext=(0, y0),
+            arrowprops=dict(
+                arrowstyle="-|>",
+                color=white,
+                lw=1.25,
+                mutation_scale=12,
+            ),
+            zorder=2,
+        )
+        if label:
+            ax.text(
+                0.28,
+                (y0 + y1) / 2,
+                label,
+                ha="left",
+                va="center",
+                fontsize=9.5,
+                color=white,
+                family="DejaVu Sans",
+                parse_math=False,
+                zorder=4,
+            )
+
+    w = 3.85
+    cx = 0.0
+    node(cx, 9.55, w, 0.95, "jax.profiler", fontsize=12.5, weight="bold")
+    down_arrow(9.07, 8.48)
+    node(cx, 7.90, w, 1.15, "XLA Profiler\nBackend", fontsize=12.0, weight="bold")
+    down_arrow(7.32, 6.62, "populates")
+    node(cx, 6.00, w, 1.15, "XSpace (.pb)\nTrace Schema", fontsize=12.0, weight="bold")
+    down_arrow(5.42, 4.72, "parsed by")
+    node(cx, 4.10, w, 1.15, "XProf\nParser + Backend", fontsize=12.0, weight="bold")
+    down_arrow(3.52, 2.92)
+    node(
+        cx,
+        1.70,
+        w,
         2.35,
-        0.72,
-        "ROCprofiler-SDK\nHIP · kernels · copies",
-        NEUTRAL,
-        fontsize=8.4,
-    )
-    box(
-        ax,
-        1.45,
-        1.35,
-        2.35,
-        0.72,
-        "JAX / XLA annotations\nnames · correlation IDs",
-        NEUTRAL,
-        fontsize=8.4,
-    )
-    box(
-        ax,
-        4.35,
-        1.95,
-        2.35,
-        0.92,
-        "RocmTracer\nreceives event records",
-        FRAMEWORK,
-        fontsize=9.0,
-        weight="bold",
-    )
-    box(
-        ax,
-        7.35,
-        1.95,
-        2.45,
-        0.92,
-        "RocmTraceCollector\nbuilds XPlanes",
-        FRAMEWORK,
-        fontsize=9.0,
-        weight="bold",
-    )
-    box(
-        ax,
-        10.25,
-        1.95,
-        2.10,
-        0.92,
-        "XSpace\nhost + GPU planes",
-        FRAMEWORK,
-        fontsize=9.0,
-        weight="bold",
-    )
-    box(
-        ax,
-        12.75,
-        1.95,
-        1.65,
-        0.92,
-        "XProf\nviews",
-        EVIDENCE,
-        fontsize=9.0,
+        "XProf\nTimeline\nRoofline\nKernel Statistics\nFramework Ops",
+        fontsize=11.5,
         weight="bold",
     )
 
-    arrow(ax, (2.64, 2.43), (3.17, 2.12))
-    arrow(ax, (2.64, 1.47), (3.17, 1.78))
-    arrow(ax, (5.55, 1.95), (6.10, 1.95))
-    arrow(ax, (8.59, 1.95), (9.18, 1.95))
-    arrow(ax, (11.32, 1.95), (11.91, 1.95))
+    ax.set_xlim(-2.55, 2.75)
+    ax.set_ylim(0.25, 10.25)
+    ax.axis("off")
+    OUT.mkdir(parents=True, exist_ok=True)
+    path = OUT / "ch3-jax-profiler-pipeline.png"
+    fig.savefig(path, dpi=220, bbox_inches="tight", pad_inches=0.28, facecolor=black)
+    plt.close(fig)
+    return path
 
-    ax.text(
-        7.35,
-        0.55,
-        "Tracer: capture records    Collector: normalize and organize    XSpace: serialize the profile",
-        ha="center",
-        fontsize=8.7,
-        color=MUTED,
-    )
-    return save(
-        fig,
-        ax,
-        "ch3-jax-profiler-pipeline.png",
-        xlim=(0, 14),
-        ylim=(0.2, 4.45),
-    )
+
+def rocm_profiler_pipeline() -> Path:
+    """Horizontal ROCprofiler-SDK to XProf frontend pipeline, white on black."""
+    white = "#ffffff"
+    black = "#000000"
+    dim = "#a5abb3"
+    faint = "#484d52"
+
+    stages = [
+        ("ROCprofiler-SDK", "HIP API · kernel dispatch\nmemory copies"),
+        ("RocmTracer", "receives runtime\nevent records"),
+        ("RocmTraceCollector", "normalizes timestamps\nbuilds XPlanes"),
+        ("XSpace (.pb)", "host and GPU planes\nlines · events · stats"),
+        ("XProf parser", "reads the\ntrace schema"),
+        ("XProf database", "derived per-event\nand per-op tables"),
+        ("XProf frontend", "timeline · roofline\nkernel and op views"),
+    ]
+    groups = [
+        (0, 0, "ROCm"),
+        (1, 2, "XLA profiler backend"),
+        (3, 3, "trace format"),
+        (4, 6, "XProf"),
+    ]
+
+    width, pitch = 3.30, 5.05
+    height, mid = 1.30, 2.00
+    centers = [width / 2 + 0.35 + i * pitch for i in range(len(stages))]
+
+    fig, ax = plt.subplots(figsize=(21.0, 3.6), facecolor=black)
+    ax.set_facecolor(black)
+    ax.set_position([0.0, 0.0, 1.0, 1.0])
+
+    def text(x, y, body, *, size, color, weight="normal", ha="center", va="center"):
+        ax.text(
+            x,
+            y,
+            body,
+            ha=ha,
+            va=va,
+            fontsize=size,
+            weight=weight,
+            color=color,
+            linespacing=1.35,
+            fontproperties=ARIAL_BOLD if weight == "bold" else ARIAL,
+            parse_math=False,
+            zorder=5,
+        )
+
+    for start, end, label in groups:
+        x0 = centers[start] - width / 2 - 0.30
+        x1 = centers[end] + width / 2 + 0.30
+        ax.add_patch(
+            FancyBboxPatch(
+                (x0, mid - height / 2 - 0.34),
+                x1 - x0,
+                height + 0.68,
+                boxstyle="round,pad=0,rounding_size=0.10",
+                facecolor=black,
+                edgecolor=faint,
+                linewidth=1.0,
+                linestyle=(0, (5, 4)),
+                zorder=1,
+            )
+        )
+        text(
+            (x0 + x1) / 2,
+            mid + height / 2 + 0.60,
+            label.upper(),
+            size=9.5,
+            color=white,
+        )
+
+    for (title_text, subtitle), cx in zip(stages, centers):
+        ax.add_patch(
+            FancyBboxPatch(
+                (cx - width / 2, mid - height / 2),
+                width,
+                height,
+                boxstyle="round,pad=0,rounding_size=0.08",
+                facecolor="#0d0d0d",
+                edgecolor=white,
+                linewidth=1.45,
+                zorder=3,
+            )
+        )
+        text(cx, mid + 0.26, title_text, size=12.5, color=white, weight="bold")
+        text(cx, mid - 0.25, subtitle, size=9.0, color=dim)
+
+    for cx in centers[:-1]:
+        x0, x1 = cx + width / 2 + 0.12, cx + pitch - width / 2 - 0.12
+        ax.annotate(
+            "",
+            xy=(x1, mid),
+            xytext=(x0, mid),
+            arrowprops=dict(arrowstyle="-|>", color=white, lw=1.3, mutation_scale=13),
+            zorder=4,
+        )
+
+    ax.set_xlim(0, centers[-1] + width / 2 + 0.55)
+    ax.set_ylim(mid - height / 2 - 0.55, mid + height / 2 + 0.95)
+    ax.axis("off")
+    OUT.mkdir(parents=True, exist_ok=True)
+    path = OUT / "ch3-rocm-profiler-pipeline.png"
+    fig.savefig(path, dpi=220, bbox_inches="tight", pad_inches=0.30, facecolor=black)
+    plt.close(fig)
+    return path
+
+
+def python_to_kernels() -> Path:
+    """Python train_step to JAX ops and kernels, white on black."""
+    white = "#ffffff"
+    black = "#000000"
+    dim = "#c4c8cc"
+    fill = "#0d0d0d"
+
+    fig, ax = plt.subplots(figsize=(11.4, 9.4), facecolor=black)
+    ax.set_facecolor(black)
+    ax.set_position([0.0, 0.0, 1.0, 1.0])
+
+    def text(x, y, body, *, size, color, weight="normal"):
+        ax.text(
+            x,
+            y,
+            body,
+            ha="center",
+            va="center",
+            fontsize=size,
+            weight=weight,
+            color=color,
+            linespacing=1.2,
+            fontproperties=ARIAL_BOLD if weight == "bold" else ARIAL,
+            parse_math=False,
+            zorder=5,
+        )
+
+    def node(cx, cy, w, h, title_text, subtitle=""):
+        ax.add_patch(
+            FancyBboxPatch(
+                (cx - w / 2, cy - h / 2),
+                w,
+                h,
+                boxstyle="round,pad=0,rounding_size=0.07",
+                facecolor=fill,
+                edgecolor=white,
+                linewidth=1.35,
+                zorder=3,
+            )
+        )
+        if subtitle:
+            text(cx, cy + 0.15, title_text, size=11.5, color=white, weight="bold")
+            text(cx, cy - 0.16, subtitle, size=9.5, color=dim)
+        else:
+            text(cx, cy, title_text, size=11.5, color=white, weight="bold")
+
+    def v_arrow(x, y0, y1):
+        ax.annotate(
+            "",
+            xy=(x, y1),
+            xytext=(x, y0),
+            arrowprops=dict(arrowstyle="-|>", color=white, lw=1.25, mutation_scale=12),
+            zorder=4,
+        )
+
+    def stem(x0, y0, x1, y1):
+        ax.plot([x0, x1], [y0, y1], color=white, lw=1.25, solid_capstyle="butt", zorder=2)
+
+    mid = 6.0
+    top_w, top_h = 3.35, 0.82
+    op_w, op_h = 1.72, 0.78
+    k_w, k_h = 1.42, 0.48
+    op_xs = (2.40, 6.00, 9.60)
+    k_spread = 0.92
+    k_y = 3.28
+
+    node(mid, 7.20, top_w, top_h, "Python function", "train_step()")
+    v_arrow(mid, 6.79, 6.33)
+    text(mid + 0.48, 6.56, "jax.jit", size=9.5, color=dim)
+    node(mid, 5.92, top_w, top_h, "JAX module", "compiled computation")
+
+    split_y = 5.17
+    stem(mid, 5.51, mid, split_y)
+    stem(op_xs[0], split_y, op_xs[2], split_y)
+    for x in op_xs:
+        v_arrow(x, split_y, 4.73)
+
+    ops = (("JAX op", "dot"), ("JAX op", "softmax"), ("JAX op", "rms_norm"))
+    op_y = 4.34
+    for x, (title_text, subtitle) in zip(op_xs, ops):
+        node(x, op_y, op_w, op_h, title_text, subtitle)
+
+    kernel_groups = [
+        (op_xs[0], [op_xs[0] - k_spread, op_xs[0] + k_spread], ["Kernel A", "Kernel B"]),
+        (op_xs[1], [op_xs[1] - k_spread, op_xs[1] + k_spread], ["Kernel C", "Kernel D"]),
+        (op_xs[2], [op_xs[2]], ["Kernel E"]),
+    ]
+    k_split = 3.74
+    for parent_x, xs, names in kernel_groups:
+        stem(parent_x, op_y - op_h / 2, parent_x, k_split)
+        if len(xs) > 1:
+            stem(xs[0], k_split, xs[-1], k_split)
+        for x in xs:
+            v_arrow(x, k_split, k_y + k_h / 2)
+        for x, name in zip(xs, names):
+            node(x, k_y, k_w, k_h, name)
+
+    row2_y = k_y - 0.92
+    row3_y = row2_y - (k_h + (0.92 - k_h) / 3)
+    text(mid, (k_y + row2_y) / 2, "...", size=16, color=white)
+    extra_rows = [
+        (
+            row2_y,
+            [
+                (1.48, 1.42, "Kernel 1"),
+                (3.28, 1.10, "Kernel 2"),
+                (6.00, 3.10, "Kernel 3"),
+                (8.42, 1.20, "Kernel 4"),
+                (10.05, 1.30, "Kernel 5"),
+            ],
+        ),
+        (
+            row3_y,
+            [
+                (2.40, 2.20, "Kernel X"),
+                (5.20, 1.20, "Kernel Y"),
+                (7.55, 2.40, "Kernel Z"),
+                (9.95, 1.30, "Kernel K"),
+            ],
+        ),
+    ]
+    for cy, boxes in extra_rows:
+        for cx, w, name in boxes:
+            node(cx, cy, w, k_h, name)
+
+    ax.set_xlim(0.4, 11.6)
+    ax.set_ylim(1.35, 7.82)
+    ax.axis("off")
+    OUT.mkdir(parents=True, exist_ok=True)
+    path = OUT / "ch3-python-to-kernels.png"
+    fig.savefig(path, dpi=220, bbox_inches="tight", pad_inches=0.28, facecolor=black)
+    plt.close(fig)
+    return path
 
 
 def mixtral_forward() -> Path:
@@ -531,6 +768,8 @@ def render_hlo_fixture() -> Path:
 if __name__ == "__main__":
     outputs = [
         jax_profiler_pipeline(),
+        rocm_profiler_pipeline(),
+        python_to_kernels(),
         mixtral_forward(),
         mixtral_backward(),
         render_hlo_fixture(),

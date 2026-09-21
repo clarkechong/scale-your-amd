@@ -1,7 +1,7 @@
 ---
 layout: distill
-title: "Training on MI355X with JAX and ROCm"
-subtitle: "An AMD Companion to How To Scale Your Model"
+title: "How to Scale Your Model on AMD"
+subtitle: "An AMD companion to How to Scale Your Model, performed on MI355X"
 description: "How MI355X hardware, ROCm kernels, JAX compilation, and MaxText configuration affect training throughput."
 date: 2026-09-10
 
