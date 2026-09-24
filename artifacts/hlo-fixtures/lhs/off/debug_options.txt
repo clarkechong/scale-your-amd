@@ -1,5 +1,0 @@
-xla_cpu_enable_fast_min_max: false
-xla_gpu_cuda_data_dir: "None"
-xla_dump_to: "/tmp/hlo-lhs-off-0i38vr6g"
-xla_dump_hlo_as_text: true
-xla_dump_hlo_as_dot: true

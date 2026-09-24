@@ -7,7 +7,7 @@ date: 2026-09-16
 section_number: 6
 
 previous_section_url: "/pages/5-sharding"
-previous_section_name: "Chapter 5: Sharding, Meshes, and Parallelism"
+previous_section_name: "Chapter 5: Sharding and Parallelism"
 
 next_section_url: ""
 next_section_name: ""
@@ -152,7 +152,7 @@ The same rule applies to communication. A collective outside the checkpointed
 region executes once. A collective inside the region may be replayed during
 reconstruction.
 
-{% include figure.liquid path="pages/img/ch6-remat-saved-vs-recomputed.png" class="img-fluid" alt="Three forward and backward dataflows showing all residuals saved, named residuals saved, and only a layer input saved with the omitted forward work replayed" caption="The policy controls what crosses the autodiff boundary. Sharding changes the bytes represented by each checkpoint; the operations inside the rematerialized region determine replayed FLOPs and communication." %}
+{% include figure.liquid path="pages/img/pg6/ch6-remat-saved-vs-recomputed.png" class="img-fluid" alt="Three forward and backward dataflows showing all residuals saved, named residuals saved, and only a layer input saved with the omitted forward work replayed" caption="The policy controls what crosses the autodiff boundary. Sharding changes the bytes represented by each checkpoint; the operations inside the rematerialized region determine replayed FLOPs and communication." %}
 
 ### Implementing in JAX
 
@@ -238,7 +238,7 @@ The following figure uses a real two-layer BF16 fixture. Without explicit remat,
 reconstructs the missing value with `%dot_general.9` and `%tanh.6`; both carry
 `checkpoint/rematted_computation` in their literal metadata.
 
-{% include figure.liquid path="pages/img/ch6-hlo-remat-none-full.svg" class="img-fluid" zoomable=true alt="Pruned literal HLO comparison in which no remat reuses tanh.3 and full remat reconstructs it with dot_general.9 and tanh.6" caption="Real JAX 0.11 `before_optimizations` HLO rendered with Graphviz. Exact operation names and shapes are retained; layout-only and unrelated gradient nodes are pruned." %}
+{% include figure.liquid path="pages/img/pg6/ch6-hlo-remat-none-full.svg" class="img-fluid" zoomable=true alt="Pruned literal HLO comparison in which no remat reuses tanh.3 and full remat reconstructs it with dot_general.9 and tanh.6" caption="Real JAX 0.11 `before_optimizations` HLO rendered with Graphviz. Exact operation names and shapes are retained; layout-only and unrelated gradient nodes are pruned." %}
 
 The appearance of additional HLO operations does not, by itself, prove that
 memory has been reduced. The useful checks are a smaller forward-to-backward
@@ -397,7 +397,7 @@ plus \(O(BHS)\) row statistics in HBM. The exact tile, staging depth, and accumu
 layout are backend decisions. [FlashAttention-2](https://arxiv.org/abs/2307.08691)
 also changes work partitioning to improve occupancy and parallelism.
 
-{% include figure.liquid path="pages/img/flashattention-figure1.svg" class="img-fluid" alt="FlashAttention Figure 1 showing tiled movement between GPU HBM and on-chip SRAM together with the paper's GPT-2 attention speedup" caption="Figure 1 from <a href='https://arxiv.org/abs/2205.14135'>FlashAttention</a>. The left panel shows the relevant mechanism: Q, K, and V tiles move through on-chip SRAM without materializing the full attention matrix in HBM. The right panel is the paper's A100 result and is not an MI355X measurement." %}
+{% include figure.liquid path="pages/img/pg6/flashattention-figure1.svg" class="img-fluid" alt="FlashAttention Figure 1 showing tiled movement between GPU HBM and on-chip SRAM together with the paper's GPT-2 attention speedup" caption="Figure 1 from <a href='https://arxiv.org/abs/2205.14135'>FlashAttention</a>. The left panel shows the relevant mechanism: Q, K, and V tiles move through on-chip SRAM without materializing the full attention matrix in HBM. The right panel is the paper's A100 result and is not an MI355X measurement." %}
 
 Backward attention should be considered a separate implementation problem
 rather than a consequence of forward performance. It may reconstruct scores
@@ -451,14 +451,14 @@ Their HLO contains `%dot_general.2`, the causal selection, FP32
 `%reduce_max.7`, `%exp.1`, `%reduce_sum.7`, `%div.7`, and the final
 `%dot_general.3`.
 
-{% include figure.liquid path="pages/img/ch6-hlo-attention-xla.svg" class="img-fluid" zoomable=true alt="Literal pruned XLA HLO graph for standard JAX attention showing QK dot mask softmax reductions and PV dot" caption="Real JAX 0.11 `before_optimizations` HLO. The score path is visible as ordinary HLO and uses FP32 for the softmax-shaped tensors." %}
+{% include figure.liquid path="pages/img/pg6/ch6-hlo-attention-xla.svg" class="img-fluid" zoomable=true alt="Literal pruned XLA HLO graph for standard JAX attention showing QK dot mask softmax reductions and PV dot" caption="Real JAX 0.11 `before_optimizations` HLO. The score path is visible as ordinary HLO and uses FP32 for the softmax-shaped tensors." %}
 
 Transformer Engine instead produces
 `custom_call_target="te_fused_attn_forward_ffi"`. Its tuple contains the BF16 output,
 FP32 row state, RNG state, and a byte result before `%te_fused_attn_forward_ffi.6`
 extracts the output.
 
-{% include figure.liquid path="pages/img/ch6-hlo-attention-te.svg" class="img-fluid" zoomable=true alt="Literal pruned HLO graph for Transformer Engine attention with Q K V and metadata entering te_fused_attn_forward_ffi" caption="Real JAX 0.11 `before_optimizations` HLO. The graph shows the TE typed-FFI boundary and its result contract; kernel internals remain outside HLO." %}
+{% include figure.liquid path="pages/img/pg6/ch6-hlo-attention-te.svg" class="img-fluid" zoomable=true alt="Literal pruned HLO graph for Transformer Engine attention with Q K V and metadata entering te_fused_attn_forward_ffi" caption="Real JAX 0.11 `before_optimizations` HLO. The graph shows the TE typed-FFI boundary and its result contract; kernel internals remain outside HLO." %}
 
 These graphs describe only the forward computation visible to HLO. The TE
 source defines the separate
@@ -475,7 +475,7 @@ The one-layer capture uses the production attention shape: BF16, batch 4, sequen
 regular VGPR, and accumulator VGPR fields. It does not report a universal attention
 tile, so the figure preserves those fields rather than inferring \(B_q\) and \(B_k\).
 
-{% include figure.liquid path="pages/img/ch6-attention-observed-kernels.png" class="img-fluid" alt="Three columns of literal rocprof kernel names and launch metadata for Transformer Engine direct JAX-AITER and Pallas-Triton forward and backward attention" caption="Observed launch geometry from the 10 September one-layer PMC campaign. Transformer Engine and direct JAX-AITER reach the same named forward kernel and geometry, then use different backward kernels. The fields are literal CSV values." %}
+{% include figure.liquid path="pages/img/pg6/ch6-attention-observed-kernels.png" class="img-fluid" alt="Three columns of literal rocprof kernel names and launch metadata for Transformer Engine direct JAX-AITER and Pallas-Triton forward and backward attention" caption="Observed launch geometry from the 10 September one-layer PMC campaign. Transformer Engine and direct JAX-AITER reach the same named forward kernel and geometry, then use different backward kernels. The fields are literal CSV values." %}
 
 Both TE and direct JAX-AITER launch
 `aiter::fmha_fwd_hd128_bf16_causal` with grid `4096×32×4`, a 512-thread
@@ -576,7 +576,7 @@ computation efficiently. Four implementation choices are useful:
 4. Grouped GEMM submits one runtime \(M=n_e\) problem per expert to one grouped
    library operation.
 
-{% include figure.liquid path="pages/img/ch6-moe-routing-and-padding.png" class="img-fluid" alt="Uneven expert assignments shown as dense masked fixed capacity ragged dense-padded and ragged grouped GEMM workloads" caption="An illustrative routed layer. Dense masked runs every expert, fixed capacity reserves equal slots, and a dense-padded ragged lowering masks padded rows. Grouped GEMM retains one runtime row count per expert; hardware tile tails still remain." %}
+{% include figure.liquid path="pages/img/pg6/ch6-moe-routing-and-padding.png" class="img-fluid" alt="Uneven expert assignments shown as dense masked fixed capacity ragged dense-padded and ragged grouped GEMM workloads" caption="An illustrative routed layer. Dense masked runs every expert, fixed capacity reserves equal slots, and a dense-padded ragged lowering masks padded rows. Grouped GEMM retains one runtime row count per expert; hardware tile tails still remain." %}
 
 For a row tile \(T_M\), a padded-work upper model is
 
@@ -722,7 +722,7 @@ capacity 16. Dense masked HLO forms `%dot_general.2` with output
 dispatches to `bf16[4,16,128]`, applies the expert `%dot_general.4`, then combines
 with `%dot_general.5`.
 
-{% include figure.liquid path="pages/img/ch6-hlo-moe-dense-fixed.svg" class="img-fluid" zoomable=true alt="Pruned literal HLO for dense-masked and fixed-capacity expert execution with exact dot names and shapes" caption="Real JAX 0.11 `before_optimizations` HLO. Dense masked carries an expert dimension for every token. Fixed capacity carries an expert and capacity dimension through dispatch, expert GEMM, and combine." %}
+{% include figure.liquid path="pages/img/pg6/ch6-hlo-moe-dense-fixed.svg" class="img-fluid" zoomable=true alt="Pruned literal HLO for dense-masked and fixed-capacity expert execution with exact dot names and shapes" caption="Real JAX 0.11 `before_optimizations` HLO. Dense masked carries an expert dimension for every token. Fixed capacity carries an expert and capacity dimension through dispatch, expert GEMM, and combine." %}
 
 The ragged pair begins with the same FP16 `jax.lax.ragged_dot` over 64 rows and four
 groups. With grouped lowering disabled, optimized HLO expands and masks rows in
@@ -734,7 +734,7 @@ With grouped lowering enabled, the graph becomes one
 and `s32[4]` group sizes. The result tuple contains `f16[64,128]` plus a 784-byte
 workspace.
 
-{% include figure.liquid path="pages/img/ch6-hlo-moe-ragged-lowerings.svg" class="img-fluid" zoomable=true alt="Pruned literal optimized HLO comparing ragged dot lowered to dense-padded Triton fusions and to a groupedMatmul custom call" caption="Real JAX 0.11 gfx950 optimized HLO. The frontend operation is the same; the XLA flag changes its backend lowering. Exact operation names and shapes are retained." %}
+{% include figure.liquid path="pages/img/pg6/ch6-hlo-moe-ragged-lowerings.svg" class="img-fluid" zoomable=true alt="Pruned literal optimized HLO comparing ragged dot lowered to dense-padded Triton fusions and to a groupedMatmul custom call" caption="Real JAX 0.11 gfx950 optimized HLO. The frontend operation is the same; the XLA flag changes its backend lowering. Exact operation names and shapes are retained." %}
 
 These fixtures isolate expert execution. They do not include the full Mixtral router,
 ragged AllToAll, three expert projections, rematerialization, or backward. For a model
@@ -750,17 +750,13 @@ recipe uses Transformer Engine attention, scanned layers, and
 `remat_policy=save_dot_with_context_except_mlp`.
 
 These measurements should be interpreted as integration checkpoints rather
-than controlled kernel comparisons:
+than controlled kernel comparisons. The rows come from separate captures, so
+the step times are not a comparison of the two meshes:
 
-| Cohort | Mesh and expert path | Measured step | Tokens/s/GPU | Compiled memory | Measurement window |
-|---|---|---:|---:|---:|---|
-| 26 Aug., `maxtext-v26.5`, JAX 0.10 | FSDP-1 / EP-8, BF16 fixed capacity | 8.354 s | 3,922.4 | 220.0 GiB/GPU | one post-warmup step |
-| 7 Sep. retained cluster summary | FSDP-4 / EP-2, BF16 fixed capacity | 20.599 s | 1,590.7 | not recorded | one measured step |
-
-The first row's metadata records the container, command, effective flags, JAX
-version, and successful completion. The second comes from the retained cluster
-summary; its adjacent software manifest was not retained, so it remains a
-separate historical point.
+| Mesh and expert path | Measured step | Tokens/s/GPU | Compiled memory |
+|---|---:|---:|---:|
+| FSDP-1 / EP-8, BF16 fixed capacity | 8.354 s | 3,922.4 | 220.0 GiB/GPU |
+| FSDP-4 / EP-2, BF16 fixed capacity | 20.599 s | 1,590.7 | not recorded |
 
 Both rows show that the 140.63-billion-parameter model and fixed-capacity mesh can
 complete an update on eight MI355X GPUs. They do not compare ragged dense-padded with

@@ -1120,10 +1120,10 @@ references, checksums, and enough metadata to audit every published number.
 - `index.md`, Chapters 1 through 12, and Appendices A through F now use the paths
   listed above.
 - The former `pages/3-dl-methods.md` is preserved as
-  `pages/archive/v2-3-dl-methods.md`.
+  `pages/archive/v1/v2-3-dl-methods.md`.
 - The former Chapter 4 through 7 stubs were replaced by the renumbered case-study
   drafts.
-- Archived appendix sources remain under `pages/archive/`; active appendices contain
+- Archived appendix sources remain under `pages/archive/v1/`; active appendices contain
   the MI355X revisions.
 - Front matter, previous/next links, section numbers, index navigation, TOC anchors,
   and the Jekyll build are validated as one chain.
@@ -1133,7 +1133,7 @@ references, checksums, and enough metadata to audit every published number.
 Archived pages are source material, not drop-in chapters. Remove MI300X constants,
 serving scope, stale support claims, and old chapter-number assumptions before reuse.
 
-### `pages/archive/1-rooflines.md`
+### `pages/archive/v1/1-rooflines.md`
 
 - Reuse compact explanations of compute, memory, and communication bounds in
   Chapter 3.
@@ -1141,7 +1141,7 @@ serving scope, stale support claims, and old chapter-number assumptions before r
 - Do not recreate a standalone generic roofline chapter.
 - Replace every hardware constant with a cited MI355X value.
 
-### `pages/archive/2-amd-gpus.md`
+### `pages/archive/v1/2-amd-gpus.md`
 
 - Reuse MI355X-relevant architecture explanations in Chapter 1.
 - Retain only short MI300X comparisons that explain a changed MI355X result.
@@ -1149,14 +1149,14 @@ serving scope, stale support claims, and old chapter-number assumptions before r
 - Correct xGMI directionality and aggregate-bandwidth wording.
 - Remove any implication that JAX sees pooled memory across GPUs.
 
-### `pages/archive/3-profiling.md`
+### `pages/archive/v1/3-profiling.md`
 
 - Reuse tooling limitations, command patterns, and profiler signatures in Chapter 3
   and Appendix D.
 - Recheck all zero-field, counter, and XProf limitations on the pinned stack.
 - Prefer the tighter active `pages/3-profiling-and-analysis-of-one-training-step.md` structure when material overlaps.
 
-### `pages/archive/4-sharding.md`
+### `pages/archive/v1/4-sharding.md`
 
 - Reuse notation, collective-cost examples, sharded matmul cases, and parallelism
   mechanics in Chapters 3 and 6.
@@ -1164,14 +1164,14 @@ serving scope, stale support claims, and old chapter-number assumptions before r
 - Replace MI300X topology assumptions with the MI355X eight-GPU topology.
 - Move implementation recipes into the MaxText field sections of Chapter 6.
 
-### `pages/archive/5-transformers.md`
+### `pages/archive/v1/5-transformers.md`
 
 - Reuse parameter, FLOP, activation, and MoE accounting examples in Chapter 3.
 - Reuse only compact architectural context in Chapters 4 and 8.
 - Do not repeat a general Transformer tutorial.
 - Recalculate all examples for Llama 7B, Llama 70B, and Mixtral 8x22B.
 
-### `pages/archive/6-training.md`
+### `pages/archive/v1/6-training.md`
 
 - Reuse parallelism, rematerialization, gradient accumulation, and optimizer-state
   material in Chapters 5 and 6.
@@ -1179,50 +1179,50 @@ serving scope, stale support claims, and old chapter-number assumptions before r
 - Remove unsupported multi-node implications.
 - Revalidate all configuration fields.
 
-### `pages/archive/7-moe.md`
+### `pages/archive/v1/7-moe.md`
 
 - Reuse routing, imbalance, capacity, expert implementation, and AllToAll material in
   Chapter 8.
 - Move model-specific observations into Chapter 12.
 - Recheck grouped-kernel and ragged-collective support on the pinned stack.
 
-### `pages/archive/8-getting-to-roofline.md`
+### `pages/archive/v1/8-getting-to-roofline.md`
 
 - Reuse the cheapest-first diagnosis sequence in Chapter 3.
 - Reuse worked performance-gap patterns in Chapters 7 and 9.
 - Remove broad tuning advice that has no exercised MI355X control or evidence.
 
-### `pages/archive/9-llama.md`
+### `pages/archive/v1/9-llama.md`
 
 - Use as background for the structure of Chapters 10 and 11.
 - Do not carry MI300X results into the MI355X case studies.
 - Preserve useful prediction-versus-measurement framing after updating the workload.
 
-### `pages/archive/10-deepseek.md`
+### `pages/archive/v1/10-deepseek.md`
 
 - Keep the model-ledger and MoE acceptance material archived for possible future use.
 - Do not reuse old measurements as new performance evidence.
 - Mark every unexecuted path as future.
 
-### `pages/archive/11-inference.md` and `pages/archive/12-serving.md`
+### `pages/archive/v1/11-inference.md` and `pages/archive/v1/12-serving.md`
 
 - Keep archived.
 - Link externally when Chapter 0 explains the training-only boundary.
 - Do not migrate their content into active chapters.
 
-### `pages/archive/13-conclusion.md`
+### `pages/archive/v1/13-conclusion.md`
 
 - Keep archived.
 - Reuse only concrete limitations or retest items in Appendix E.
 - Do not add a generic conclusion chapter.
 
-### `pages/archive/a-appendix-install.md`
+### `pages/archive/v1/a-appendix-install.md`
 
 - Use as the starting point for `pages/a-reproducible-mi355x-environment.md`.
 - Replace the environment matrix with the pinned MI355X stack.
 - Add commit, patch, topology, and smoke-test requirements.
 
-### `pages/archive/b-appendix-protocol.md`
+### `pages/archive/v1/b-appendix-protocol.md`
 
 - Use as the starting point for `pages/b-measurement-and-convergence-protocol.md`.
 - Make tokens/s/GPU the primary output.
@@ -1377,7 +1377,7 @@ studies, but their recommendations must be grounded in case-study measurements.
 ### Phase 1 — Migrate the skeleton (complete)
 
 1. Preserve `pages/3-dl-methods.md` at
-   `pages/archive/v2-3-dl-methods.md`.
+   `pages/archive/v1/v2-3-dl-methods.md`.
 2. Rename the three current case-study pages to Chapters 10, 11, and 12.
 3. Create empty, front-matter-complete skeletons for Chapters 3 through 9.
 4. Create active appendix skeletons A through F.

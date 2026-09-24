@@ -1,2 +1,0 @@
-"Name","Calls","TotalDurationNs","AverageNs","Percentage","MinNs","MaxNs","StdDev"
-"transformer_block/train_step",52,4320994,83096.038462,100.00,4040,564045,107550.549491

@@ -87,7 +87,6 @@ exclude:
   - artifacts
   - docs
   - pages/archive
-  - pages/archive2
   - tools
   - vendor
   - runs

@@ -1,9 +1,0 @@
-HloModule jit_maxtext_bf16_dot, entry_computation_layout={(f32[256,256]{1,0}, bf16[128,256]{1,0})->bf16[128,256]{1,0}}
-
-ENTRY main.1 {
-  x.1 = bf16[128,256]{1,0} parameter(1)
-  weight.1 = f32[256,256]{1,0} parameter(0)
-  convert_element_type.1 = bf16[256,256]{1,0} convert(weight.1)
-  ROOT dot_general.1 = bf16[128,256]{1,0} dot(x.1, convert_element_type.1), lhs_contracting_dims={1}, rhs_contracting_dims={0}
-}
-

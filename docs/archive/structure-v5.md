@@ -1,3 +1,21 @@
+1-mi355x.md
+
+1. Inside an MI355X
+    - package organisation
+    - partition modes (follows from discussion of XCDs) - highlight physical locality as the motive
+    - vector/SIMD pipeline (generic vector arithmetic) (VALU, etc)
+    - matrix cores (explain the mfma instruction as C+=A.B as a single tile, and that MNK refer to (M,K) * (K,N) where K is contracting dimension)
+
+2. GPU programming perspective
+    - cover all the things that affect occupancy: VGPR, SGPR, LDS, memory hierarchy, and that with mfma we tend not to focus around occupancy! often is 1/8
+    - spills and bank conflicts
+
+3. toplogy
+    - 8 gpu node, ICI
+    - scale out domain, DCN
+
+4. 
+
 
 ---
 

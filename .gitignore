@@ -14,6 +14,7 @@ vendor
 *.swp
 .jj
 *.docx
+.rocprofv3
 
 # Measurement artifacts. env.json and results.json are the record and stay
 # tracked; traces and HLO dumps are large and regenerable.
